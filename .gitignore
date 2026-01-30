@@ -1,0 +1,40 @@
+# --- System & OS Files ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- JetBrains IDEs (IntelliJ IDEA, WebStorm) ---
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+gen/
+
+# --- Backend (Java / Spring Boot / Maven) ---
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.ear
+backend/logs/
+backend/bin/
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# --- Frontend (Node / React / Vite) ---
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# --- Environment & Infrastructure ---
+.env
+.env.backup
+.env.sample
+docker-compose.override.yml
+.vscode/
