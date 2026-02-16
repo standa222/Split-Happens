@@ -1,0 +1,31 @@
+package cz.splithappens.model;
+
+import cz.splithappens.model.enums.TransactionType;
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "\"transaction\"")
+public class Transaction {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    private String title;
+    private BigDecimal totalAmount;
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private TransactionType type;
+
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
+    private List<TransactionItem> items = new ArrayList<>();
+}
