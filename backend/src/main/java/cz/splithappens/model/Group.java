@@ -2,11 +2,15 @@ package cz.splithappens.model;
 
 import cz.splithappens.model.enums.*;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "\"group\"")
 public class Group {
     @Id
@@ -29,4 +33,9 @@ public class Group {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> members = new HashSet<>();
+
+    public void addMember(User user) {
+        members.add(user);
+        user.getGroups().add(this);
+    }
 }

@@ -2,6 +2,8 @@ package cz.splithappens.model;
 
 import cz.splithappens.model.enums.TransactionType;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -9,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "\"transaction\"")
 public class Transaction {
     @Id

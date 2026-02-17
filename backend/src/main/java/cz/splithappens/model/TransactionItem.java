@@ -1,10 +1,14 @@
 package cz.splithappens.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "transaction_item")
 public class TransactionItem {
     @Id
