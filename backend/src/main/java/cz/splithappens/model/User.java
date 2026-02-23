@@ -44,9 +44,6 @@ public class User implements UserDetails {
     )
     private Set<User> friends = new HashSet<>();
 
-    @ManyToMany(mappedBy = "members")
-    private Set<Group> groups = new HashSet<>();
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

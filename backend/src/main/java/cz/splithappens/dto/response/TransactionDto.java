@@ -13,6 +13,6 @@ public class TransactionDto {
     private String title;
     private BigDecimal totalAmount;
     private OffsetDateTime createdAt;
-    private TransactionType type;
+    private TransactionType transactionType;
     private List<TransactionItemDto> items;
 }

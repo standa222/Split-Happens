@@ -11,6 +11,6 @@ public class TransactionCreateDto {
     private String title;
     private Long groupId;
     private BigDecimal totalAmount;
-    private TransactionType type;
+    private TransactionType transactionType;
     private List<TransactionItemCreateDto> items;
 }

@@ -30,7 +30,7 @@ public class Transaction {
     private OffsetDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
-    private TransactionType type;
+    private TransactionType transactionType;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
     private List<TransactionItem> items = new ArrayList<>();

@@ -30,7 +30,6 @@ public class GroupServiceImpl implements GroupService {
     public GroupDto createGroup(GroupCreateDto createDto, User user) {
         Group group = groupMapper.toEntity(createDto);
         group.getMembers().add(user);
-        user.getGroups().add(group);
         return groupMapper.toDto(groupRepository.save(group));
     }
 
@@ -44,7 +43,6 @@ public class GroupServiceImpl implements GroupService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
             group.getMembers().add(user);
-            user.getGroups().add(group);
         });
         return groupMapper.toDto(groupRepository.save(group));
     }
@@ -52,7 +50,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public List<GroupLightDto> getUserGroups(User user) {
-        return user.getGroups().stream()
+        return groupRepository.findByMembersId(user.getId()).stream()
                 .map(groupMapper::toLightDto)
                 .toList();
     }
@@ -75,10 +73,7 @@ public class GroupServiceImpl implements GroupService {
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
-
         group.getMembers().remove(user);
-        user.getGroups().remove(group);
-
         return groupMapper.toDto(groupRepository.save(group));
     }
 }
