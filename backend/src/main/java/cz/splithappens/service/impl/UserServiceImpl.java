@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -20,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto registerUser(UserCreateDto createDto) {
+    public UserDto createUser(UserCreateDto createDto) {
         if (userRepository.findByEmail(createDto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists"); // TODO custom exception
         }
@@ -30,9 +32,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto getUserById(Long id) {
-        return userRepository.findById(id)
-                .map(userMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("User not found")); // TODO custom exception
+    @Transactional
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
+    @Transactional
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }

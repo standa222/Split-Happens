@@ -17,14 +17,15 @@ public class Group {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
     private String defaultCurrency = "CZK";
 
     @Enumerated(EnumType.STRING)
-    private PermissionMode mode = PermissionMode.SOFT;
+    private PermissionMode permissionMode = PermissionMode.SOFT;
 
     @Enumerated(EnumType.STRING)
-    private GroupType type = GroupType.GROUP;
+    private GroupType groupType = GroupType.GROUP;
 
     @ManyToMany
     @JoinTable(
@@ -33,9 +34,4 @@ public class Group {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> members = new HashSet<>();
-
-    public void addMember(User user) {
-        members.add(user);
-        user.getGroups().add(this);
-    }
 }

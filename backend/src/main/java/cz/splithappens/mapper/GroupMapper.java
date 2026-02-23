@@ -2,6 +2,7 @@ package cz.splithappens.mapper;
 
 import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
+import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.model.Group;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,5 +13,8 @@ public interface GroupMapper {
     @Mapping(target = "members", ignore = true)
     Group toEntity(GroupCreateDto createDto);
 
+    @Mapping(target = "transactions", ignore = true)
     GroupDto toDto(Group group);
+
+    GroupLightDto toLightDto(Group group);
 }

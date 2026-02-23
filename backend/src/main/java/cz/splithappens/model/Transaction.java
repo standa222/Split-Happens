@@ -25,10 +25,12 @@ public class Transaction {
 
     private String title;
     private BigDecimal totalAmount;
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
-    private TransactionType type;
+    private TransactionType transactionType;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
     private List<TransactionItem> items = new ArrayList<>();

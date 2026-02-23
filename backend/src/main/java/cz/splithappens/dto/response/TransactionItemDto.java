@@ -1,9 +1,12 @@
 package cz.splithappens.dto.response;
 
+import lombok.Data;
+
 import java.math.BigDecimal;
 
+@Data
 public class TransactionItemDto {
     private Long id;
-    private UserDto user;
+    private Long userId;
     private BigDecimal balanceChange; // Positive for payers, negative for participants
 }
