@@ -3,18 +3,20 @@ package cz.splithappens.controller;
 import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
+import cz.splithappens.security.CustomUserDetails;
+import cz.splithappens.security.SecurityUtils;
 import cz.splithappens.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Security;
 import java.util.List;
 
 @RestController
@@ -22,7 +24,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Groups", description = "Collective expense contexts")
 public class GroupController {
-
     private final GroupService groupService;
 
     @PostMapping
@@ -34,9 +35,9 @@ public class GroupController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<GroupDto> createGroup(
             @RequestBody GroupCreateDto createDto,
-            @AuthenticationPrincipal Long userId
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(groupService.createGroup(createDto, userId));
+        return ResponseEntity.ok(groupService.createGroup(createDto, userDetails.getUser()));
     }
 
     @GetMapping
@@ -45,8 +46,8 @@ public class GroupController {
             @ApiResponse(responseCode = "200", description = "Successful operation"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<List<GroupLightDto>> getMyGroups(@AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(groupService.getUserGroups(userId));
+    public ResponseEntity<List<GroupLightDto>> getMyGroups(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(groupService.getUserGroups(userDetails.getUser()));
     }
 
     @GetMapping("/{groupId}")

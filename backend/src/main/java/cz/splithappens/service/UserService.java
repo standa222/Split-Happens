@@ -7,7 +7,7 @@ import cz.splithappens.model.User;
 import java.util.Optional;
 
 public interface UserService {
-    UserDto registerUser(UserCreateDto createDto);
+    UserDto createUser(UserCreateDto createDto);
     Optional<User> findById(Long id);
 //    UserDto updateProfile(Long id, UserUpdateDto updateDto);
     Optional<User> findByEmail(String email);

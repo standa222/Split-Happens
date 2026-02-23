@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDto registerUser(UserCreateDto createDto) {
+    public UserDto createUser(UserCreateDto createDto) {
         if (userRepository.findByEmail(createDto.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists"); // TODO custom exception
         }
@@ -32,11 +32,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
     }
 
     @Override
+    @Transactional
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }

@@ -8,13 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -27,23 +26,18 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class WebSecurityConfig {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final TokenBlacklist tokenBlacklist;
-
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(
                 auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll() // Allow unauthenticated access to auth endpoints
+                    .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll() // Allow unauthenticated access to auth endpoints
+                    .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // allow unauthenticated access to user registration
                     .requestMatchers("/v3/api-docs/**","/swagger-ui/**", "/swagger-ui.html").permitAll() // Allow unauthenticated access to Swagger UI
                     .anyRequest().authenticated() // Require authentication for all other endpoints
             )

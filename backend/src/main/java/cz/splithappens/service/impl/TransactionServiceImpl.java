@@ -38,6 +38,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public List<TransactionDto> getGroupTransactions(Long groupId) {
         return transactionRepository.findByGroupId(groupId).stream()
                 .map(transactionMapper::toDto)
@@ -45,6 +46,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @Transactional
     public TransactionDto getTransactionById(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception

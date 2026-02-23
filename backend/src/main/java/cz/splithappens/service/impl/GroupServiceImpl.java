@@ -27,11 +27,10 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupDto createGroup(GroupCreateDto createDto, Long creatorId) {
-        User creator = userRepository.findById(creatorId)
-                .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
+    public GroupDto createGroup(GroupCreateDto createDto, User user) {
         Group group = groupMapper.toEntity(createDto);
-        group.getMembers().add(creator);
+        group.getMembers().add(user);
+        user.getGroups().add(group);
         return groupMapper.toDto(groupRepository.save(group));
     }
 
@@ -51,15 +50,15 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<GroupLightDto> getUserGroups(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
+    @Transactional
+    public List<GroupLightDto> getUserGroups(User user) {
         return user.getGroups().stream()
                 .map(groupMapper::toLightDto)
                 .toList();
     }
 
     @Override
+    @Transactional
     public GroupDto getGroupDetails(Long groupId) {
         List<TransactionDto> transactions = transactionService.getGroupTransactions(groupId);
         Group group = groupRepository.findById(groupId)
