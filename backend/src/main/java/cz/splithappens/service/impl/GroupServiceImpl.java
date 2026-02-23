@@ -31,22 +31,23 @@ public class GroupServiceImpl implements GroupService {
         User creator = userRepository.findById(creatorId)
                 .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
         Group group = groupMapper.toEntity(createDto);
-        group.addMember(creator);
+        group.getMembers().add(creator);
         return groupMapper.toDto(groupRepository.save(group));
     }
 
     @Override
     @Transactional
-    public void addMembers(Long groupId, List<Long> userIds) {
+    public GroupDto addMembers(Long groupId, List<Long> userIds) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
 
         userIds.forEach(userId -> {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
-            group.addMember(user);
+            group.getMembers().add(user);
+            user.getGroups().add(group);
         });
-        groupRepository.save(group);
+        return groupMapper.toDto(groupRepository.save(group));
     }
 
     @Override
@@ -66,5 +67,18 @@ public class GroupServiceImpl implements GroupService {
         GroupDto groupDto = groupMapper.toDto(group);
         groupDto.setTransactions(transactions);
         return groupDto;
+    }
+
+    @Override
+    public GroupDto removeMember(Long groupId, Long userId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
+
+        group.getMembers().remove(user);
+        user.getGroups().remove(group);
+
+        return groupMapper.toDto(groupRepository.save(group));
     }
 }

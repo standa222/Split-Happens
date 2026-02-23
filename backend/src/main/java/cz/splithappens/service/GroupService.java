@@ -8,7 +8,8 @@ import java.util.List;
 
 public interface GroupService {
     GroupDto createGroup(GroupCreateDto createDto, Long creatorId);
-    void addMembers(Long groupId, List<Long> userId);
+    GroupDto addMembers(Long groupId, List<Long> userId);
     List<GroupLightDto> getUserGroups(Long userId);
     GroupDto getGroupDetails(Long groupId);
+    GroupDto removeMember(Long groupId, Long userId);
 }

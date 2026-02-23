@@ -68,20 +68,19 @@ public class GroupController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    public ResponseEntity<Void> addMembers(@PathVariable Long groupId, @RequestBody List<Long> userIds) {
+    public ResponseEntity<GroupDto> addMembers(@PathVariable Long groupId, @RequestBody List<Long> userIds) {
         groupService.addMembers(groupId, userIds);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(groupService.addMembers(groupId, userIds));
     }
 
     @DeleteMapping("/{groupId}/members/{userId}")
     @Operation(summary = "Remove a member from a group", description = "Removes a member from an existing group.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Member removed successfully"),
+            @ApiResponse(responseCode = "200", description = "Member removed successfully"),
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group or user not found")
     })
-    public ResponseEntity<Void> removeMember(@PathVariable Long groupId, @PathVariable Long userId) {
-//        groupService.removeMember(groupId, userId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<GroupDto> removeMember(@PathVariable Long groupId, @PathVariable Long userId) {
+        return ResponseEntity.ok(groupService.removeMember(groupId, userId));
     }
 }
