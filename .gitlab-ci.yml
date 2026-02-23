@@ -1,0 +1,41 @@
+stages:
+  - build
+  - test
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+
+cache:
+  paths:
+    - backend/.m2/repository
+
+# Build the backend
+build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - cd backend
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
+  artifacts:
+    paths:
+      - backend/target/*.jar
+    expire_in: 1 hour
+
+# Run tests
+test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-21
+  services:
+    - postgres:17-alpine
+  variables:
+    POSTGRES_DB: splithappens_test
+    POSTGRES_USER: test
+    POSTGRES_PASSWORD: test
+    DATABASE_URL: jdbc:postgresql://postgres:5432/splithappens_test
+    DB_USERNAME: test
+    DB_PASSWORD: test
+    SHOW_SQL: "false"
+  script:
+    - cd backend
+    - mvn $MAVEN_CLI_OPTS test

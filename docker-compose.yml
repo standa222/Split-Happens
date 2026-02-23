@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./backend
+    container_name: splithappens-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DATABASE_URL: ${DATABASE_URL}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SHOW_SQL: ${SHOW_SQL:-false}
+    ports:
+      - "8080:8080"
+    networks:
+      - splithappens-network
+
+#  TODO add frontend service here
+
+networks:
+  splithappens-network:
+    driver: bridge
