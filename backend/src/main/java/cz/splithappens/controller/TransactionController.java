@@ -1,11 +1,15 @@
 package cz.splithappens.controller;
 
+import cz.splithappens.dto.request.TransactionCreateDto;
+import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.model.Transaction;
 import cz.splithappens.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,11 +26,11 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Transaction not found")
     })
-    public void getTransactionDetails() {
-        // TODO implement
+    public ResponseEntity<TransactionDto> getTransactionDetails(@PathVariable Long transactionId) {
+        return ResponseEntity.ok(transactionService.getTransactionById(transactionId));
     }
 
-    @PostMapping("/{groupId}")
+    @PostMapping
     @Operation(summary = "Create a new transaction", description = "Creates a new transaction within a group, specifying the amount, description, date, and involved members.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Transaction created successfully"),
@@ -34,8 +38,8 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    public void createTransaction() {
-        // TODO implement
+    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionCreateDto createDto) {
+        return ResponseEntity.ok(transactionService.createTransaction(createDto));
     }
 
     @PutMapping("/{transactionId}")
@@ -46,8 +50,8 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Transaction not found")
     })
-    public void updateTransaction() {
-        // TODO implement
+    public ResponseEntity<TransactionDto> updateTransaction(@RequestBody TransactionCreateDto updateDto, @PathVariable Long transactionId) {
+        return ResponseEntity.ok(transactionService.updateTransaction(transactionId, updateDto));
     }
 
     @DeleteMapping("/{transactionId}")
@@ -57,7 +61,8 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Transaction not found")
     })
-    public void deleteTransaction() {
-        // TODO implement
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long transactionId) {
+        transactionService.deleteTransaction(transactionId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -34,9 +34,4 @@ public class Group {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> members = new HashSet<>();
-
-    public void addMember(User user) {
-        members.add(user);
-        user.getGroups().add(this);
-    }
 }

@@ -33,7 +33,7 @@ public class GroupController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<GroupDto> createGroup(
-            @Valid @RequestBody GroupCreateDto createDto,
+            @RequestBody GroupCreateDto createDto,
             @AuthenticationPrincipal Long userId
     ) {
         return ResponseEntity.ok(groupService.createGroup(createDto, userId));
@@ -69,7 +69,6 @@ public class GroupController {
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     public ResponseEntity<GroupDto> addMembers(@PathVariable Long groupId, @RequestBody List<Long> userIds) {
-        groupService.addMembers(groupId, userIds);
         return ResponseEntity.ok(groupService.addMembers(groupId, userIds));
     }
 

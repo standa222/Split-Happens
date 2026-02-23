@@ -23,8 +23,8 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional
-    public TransactionDto createTransaction(Long groupId, TransactionCreateDto createDto) {
-        Group group = groupRepository.findById(groupId)
+    public TransactionDto createTransaction(TransactionCreateDto createDto) {
+        Group group = groupRepository.findById(createDto.getGroupId())
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
 
         Transaction transaction = transactionMapper.toEntity(createDto);
@@ -42,5 +42,39 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findByGroupId(groupId).stream()
                 .map(transactionMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public TransactionDto getTransactionById(Long transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
+        return transactionMapper.toDto(transaction);
+    }
+
+    @Override
+    @Transactional
+    public TransactionDto updateTransaction(Long transactionId, TransactionCreateDto updateDto) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
+
+        transaction.setTitle(updateDto.getTitle());
+        transaction.setItems(updateDto.getItems().stream()
+                .map(transactionMapper::toItemEntity)
+                .toList());
+        transaction.setTotalAmount(updateDto.getTotalAmount());
+
+        // TODO recalculate group balances and debts
+
+        return transactionMapper.toDto(transactionRepository.save(transaction));
+    }
+
+    @Override
+    @Transactional
+    public void deleteTransaction(Long transactionId) {
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
+        transactionRepository.delete(transaction);
+
+        // TODO recalculate group balances and debts
     }
 }

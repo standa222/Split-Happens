@@ -6,7 +6,10 @@ import cz.splithappens.dto.response.TransactionDto;
 import java.util.List;
 
 public interface TransactionService {
-    TransactionDto createTransaction(Long groupId, TransactionCreateDto createDto);
+    TransactionDto createTransaction(TransactionCreateDto createDto);
     List<TransactionDto> getGroupTransactions(Long groupId);
+    TransactionDto getTransactionById(Long transactionId);
+    TransactionDto updateTransaction(Long transactionId, TransactionCreateDto updateDto);
+    void deleteTransaction(Long transactionId);
 }
 
