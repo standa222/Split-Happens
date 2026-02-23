@@ -17,14 +17,15 @@ public class Group {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "name", nullable = false, length = 50)
     private String name;
     private String defaultCurrency = "CZK";
 
     @Enumerated(EnumType.STRING)
-    private PermissionMode mode = PermissionMode.SOFT;
+    private PermissionMode permissionMode = PermissionMode.SOFT;
 
     @Enumerated(EnumType.STRING)
-    private GroupType type = GroupType.GROUP;
+    private GroupType groupType = GroupType.GROUP;
 
     @ManyToMany
     @JoinTable(

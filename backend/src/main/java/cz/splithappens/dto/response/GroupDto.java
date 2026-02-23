@@ -2,16 +2,17 @@ package cz.splithappens.dto.response;
 
 import cz.splithappens.model.enums.GroupType;
 import cz.splithappens.model.enums.PermissionMode;
-import lombok.Getter;
+import lombok.Data;
 
 import java.util.List;
 
-@Getter
+@Data
 public class GroupDto {
     private Long id;
     private String name;
     private String defaultCurrency;
-    private PermissionMode mode;
-    private GroupType type;
+    private PermissionMode permissionMode;
+    private GroupType groupType;
     private List<UserDto> members;
+    private List<TransactionDto> transactions;
 }

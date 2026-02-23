@@ -9,6 +9,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "passwordHash", ignore = true)
+    @Mapping(target = "groups", ignore = true)
+    @Mapping(target = "friends", ignore = true)
+    @Mapping(target = "authorities", ignore = true)
     User toEntity(UserCreateDto createDto);
 
     UserDto toDto(User user);

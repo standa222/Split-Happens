@@ -1,8 +1,8 @@
 package cz.splithappens.dto.request;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class UserCreateDto {
     private String firstName;
     private String lastName;
