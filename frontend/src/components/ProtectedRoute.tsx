@@ -1,6 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-
-import {ROUTES} from "../enums/routes";
+import { ROUTES } from "../enums/routes";
 
 export function ProtectedRoute() {
     const location = useLocation();

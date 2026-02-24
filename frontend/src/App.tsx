@@ -9,9 +9,6 @@ import {Page404} from "./pages/Page404";
 import {AppLayout} from "./components/AppLayout";
 
 const queryClient = new QueryClient();
-// const VITE_DEV = process.env
-
-// console.log(VITE_DEV);
 
 export function App() {
     return (
@@ -25,14 +22,13 @@ export function App() {
                     <Route element={<AppLayout />}>
                         <Route element={<ProtectedRoute />}>
                             {generateRoutes(navigations)}
-
-                            {/* Redirects & 404 */}
+                            {/* 404 */}
                             <Route path="*" element={<Page404 />} />
                         </Route>
                     </Route>
                 </Routes>
             </Router>
-            {/*{true && <ReactQueryDevtools initialIsOpen={false} />}*/}
+            {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         </QueryClientProvider>
     );
 }
