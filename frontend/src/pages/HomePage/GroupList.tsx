@@ -1,0 +1,12 @@
+export function GroupList() {
+    return (
+        <div>
+            <h2>Groups</h2>
+            <ul>
+                <li>Group 1</li>
+                <li>Group 2</li>
+                <li>Group 3</li>
+            </ul>
+        </div>
+    );
+}
