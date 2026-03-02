@@ -1,6 +1,8 @@
 import { Stack } from "@mui/material";
 import {OverallBalance} from "../../components/OverallBalance";
-import {HomePageContent} from "./HomePageContent";
+import {GroupList} from "./GroupList";
+import {RecentActivity} from "./RecentActivity";
+import {BigAddExpenseButton} from "./BigAddExpenseButton";
 
 export function HomePage() {
     return (
@@ -8,9 +10,16 @@ export function HomePage() {
             width="100%"
         >
             <OverallBalance />
-            <HomePageContent />
-            <h1>Home Page</h1>
-            <p>Welcome to the home page!</p>
+            <Stack
+                width="100%"
+                direction="row"
+            >
+                <GroupList />
+                <Stack>
+                    <RecentActivity />
+                    <BigAddExpenseButton />
+                </Stack>
+            </Stack>
         </Stack>
     );
 }
