@@ -2,6 +2,12 @@ import {createTheme} from "@mui/material";
 import {COLORS} from "../constants/colors";
 
 export const theme = createTheme({
+    typography: {
+        fontFamily: "Work Sans, sans-serif",
+        allVariants: {
+            color: COLORS.PRIMARY
+        }
+    },
     components: {
         // 1. Styling the container and the label position
         MuiTextField: {

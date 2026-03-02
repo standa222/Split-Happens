@@ -1,13 +1,18 @@
-import { Stack } from "@mui/material";
+import { Stack, Box } from "@mui/material";
+import {OverallBalance} from "../../components/OverallBalance";
 
 
 export const GroupsPage = () => {
     return (
-        <Stack
+        <Box
             width="100%"
         >
-            <h1 className="text-2xl font-bold mb-4">Groups Page</h1>
-            <p>This is the Groups Page. Here you can manage your groups.</p>
-        </Stack>
+            <Stack
+                direction="row"
+                justifyContent="space-between"
+            >
+                <OverallBalance />
+            </Stack>
+        </Box>
     );
 }

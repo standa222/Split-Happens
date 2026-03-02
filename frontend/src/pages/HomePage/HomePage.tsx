@@ -1,25 +1,29 @@
-import { Stack } from "@mui/material";
+import { Stack, Box } from "@mui/material";
 import {OverallBalance} from "../../components/OverallBalance";
-import {GroupList} from "./GroupList";
+import {GroupGrid} from "./GroupGrid";
 import {RecentActivity} from "./RecentActivity";
 import {BigAddExpenseButton} from "./BigAddExpenseButton";
 
 export function HomePage() {
+
     return (
-        <Stack
-            width="100%"
-        >
-            <OverallBalance />
+        <Box width="100%">
+            <Stack direction="row" justifyContent="space-between">
+                <OverallBalance />
+            </Stack>
             <Stack
                 width="100%"
                 direction="row"
+                gap={10}
             >
-                <GroupList />
-                <Stack>
+                <Box sx = {{ flex: 2 }}>
+                    <GroupGrid/>
+                </Box>
+                <Stack sx = {{ flex: 1 }} gap={4}>
                     <RecentActivity />
                     <BigAddExpenseButton />
                 </Stack>
             </Stack>
-        </Stack>
+        </Box>
     );
 }

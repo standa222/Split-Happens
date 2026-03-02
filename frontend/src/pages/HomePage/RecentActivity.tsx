@@ -1,12 +1,78 @@
-export function RecentActivity() {
+import {Typography, Stack, Box} from "@mui/material";
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import { COLORS } from "../../constants/colors";
+
+const testActivity = [
+    { user: 'John', amount: 20, group: 'Group 1' },
+    { user: 'Jane', amount: -30, group: 'Group 2' },
+    { user: 'Bob', amount: 20, group: 'Group 3' },
+]
+
+const ActivityItem = ({ user, action, amount, group, date }: any) => {
+    const isNegative = amount < 0;
+
     return (
-        <div>
-            <h2>Recent Activity</h2>
-            <ul>
-                <li>John added $50 to Group 1</li>
-                <li>Jane added $30 to Group 2</li>
-                <li>Bob added $20 to Group 3</li>
-            </ul>
-        </div>
+        <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
+            <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                    sx={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: '50%',
+                        border: `2px dashed ${COLORS.PRIMARY}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                    }}
+                >
+                    <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
+                </Box>
+
+                <Stack spacing={0.5}>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {user} {action} in {group}
+                    </Typography>
+
+                    {amount !== undefined && (
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                            Your split:{" "}
+                            <Box component="span" sx={{ color: isNegative ? COLORS.RED : COLORS.PRIMARY }}>
+                                {amount.toFixed(2)} $
+                            </Box>
+                        </Typography>
+                    )}
+
+                    <Typography variant="caption" sx={{ color: 'gray', fontWeight: 600 }}>
+                        {date}
+                    </Typography>
+                </Stack>
+            </Stack>
+        </Box>
+    );
+};
+
+export function RecentActivity() {
+    // TODO fetch recent activity from backend when notifications implemented
+    // const { data: activity, isLoading, isError } = { data: testActivity, isLoading: false, isError: false }; // Placeholder for actual query
+    const isLoading = false;
+    const isError = false;
+
+    const content = isLoading ? (
+        <Typography variant="h4">Loading...</Typography>
+    ) : isError ? (
+        <Typography variant="h4">Error loading recent activity.</Typography>
+    ) : (
+        testActivity.map((item) => (
+            <ActivityItem user={item.user} amount={item.amount} group={item.group} />
+        ))
+    )
+    return (
+        <Stack>
+            <Typography variant="h4" sx={{ mb: 3}}>
+                Recent activity
+            </Typography>
+            {content}
+        </Stack>
     );
 }
