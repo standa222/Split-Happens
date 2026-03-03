@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: db/updates/001-create-tables.sql
+  - include:
+      file: db/updates/002-add-debt-table.sql
+  - include:
+      file: db/updates/003-add-group-last-activity.sql

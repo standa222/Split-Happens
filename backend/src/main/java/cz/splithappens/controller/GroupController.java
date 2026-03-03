@@ -4,7 +4,6 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.security.CustomUserDetails;
-import cz.splithappens.security.SecurityUtils;
 import cz.splithappens.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,11 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Security;
 import java.util.List;
 
 @RestController
-@RequestMapping("/groups")
+@RequestMapping("/api/groups")
 @RequiredArgsConstructor
 @Tag(name = "Groups", description = "Collective expense contexts")
 public class GroupController {

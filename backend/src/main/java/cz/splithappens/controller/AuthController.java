@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "auth", description = "Authentication operations")
 public class AuthController {

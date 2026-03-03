@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping("/api/transactions")
 @RequiredArgsConstructor
 @Tag(name = "Transactions", description = "Endpoints for managing transactions within groups")
 public class TransactionController {

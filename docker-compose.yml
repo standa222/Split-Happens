@@ -7,7 +7,6 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      SHOW_SQL: ${SHOW_SQL:-false}
     ports:
       - "8080:8080"
     networks:
