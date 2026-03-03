@@ -19,12 +19,14 @@ public class Debt {
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 
-    @Column(name = "amount", nullable = false)
+    @Column(name = "amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    @Column(name = "debtor", nullable = false)
+    @ManyToOne
+    @Column(name = "debtor_id", nullable = false)
     private User debtor;
 
-    @Column(name = "creditor", nullable = false)
+    @ManyToOne
+    @Column(name = "creditor_id", nullable = false)
     private User creditor;
 }

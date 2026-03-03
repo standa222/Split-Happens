@@ -18,7 +18,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,13 +59,21 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public List<GroupLightDto> getUserGroups(User user) {
-        return groupRepository.findByMembersId(user.getId()).stream()
-                .map(groupMapper::toLightDto)
-                .peek(group -> {
-                    group.setUserDebts(debtRepository.findByGroupId(group.getId()).stream()
-                            .filter(debt -> isUserInvolvedInDebt(debt, user.getId()))
-                            .map(debtMapper::toDto)
-                            .toList());
+        List<Group> groups = groupRepository.findByMembersId(user.getId());
+        List<Long> groupIds = groups.stream().map(Group::getId).toList();
+
+        Map<Long, List<Debt>> debtsByGroupId = debtRepository.findByGroupIdIn(groupIds).stream()
+                .filter(debt -> isUserInvolvedInDebt(debt, user.getId()))
+                .collect(Collectors.groupingBy(debt -> debt.getGroup().getId()));
+
+        return groups.stream()
+                .map(group -> {
+                    System.out.println("Processing group: " + group.getName() + " with ID: " + group.getId());
+                    GroupLightDto dto = groupMapper.toLightDto(group);
+                    List<Debt> groupDebts = debtsByGroupId.getOrDefault(group.getId(), Collections.emptyList());
+                    dto.setUserDebts(debtMapper.toDtoList(groupDebts));
+                    System.out.println("DTO for group " + group.getName() + ": " + dto);
+                    return dto;
                 })
                 .toList();
     }
