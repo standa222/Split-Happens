@@ -20,7 +20,7 @@ import java.security.Security;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/groups")
+@RequestMapping("/groups")
 @RequiredArgsConstructor
 @Tag(name = "Groups", description = "Collective expense contexts")
 public class GroupController {
