@@ -8,7 +8,7 @@ export function HomePage() {
 
     return (
         <Box width="100%">
-            <Stack direction="row" justifyContent="space-between">
+            <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
                 <OverallBalance />
             </Stack>
             <Stack

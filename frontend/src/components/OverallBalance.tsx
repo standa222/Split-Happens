@@ -31,7 +31,6 @@ export function OverallBalance() {
 
     return (
         <Stack
-            sx = {{padding: '20px 0px 40px 0px'}}
             direction="row"
             spacing={2}
         >

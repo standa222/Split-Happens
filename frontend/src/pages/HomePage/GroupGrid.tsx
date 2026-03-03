@@ -1,18 +1,20 @@
-import {Box, Grid, Stack, Typography } from "@mui/material";
+import {Box, Grid, Typography } from "@mui/material";
 import { COLORS } from "../../constants/colors";
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import {TGroupLight} from "../../types/dto/TGroupLight";
-import {useGroupsQuery} from "../../hooks/useGroupsQuery";
+import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
 
-// TODO delete later when we have real data
-const testGroups: TGroupLight[] = [
-    { id: 1, name: "Group 1" },
-    { id: 2, name: "Group 2" },
-    { id: 3, name: "Group 3" },
-    { id: 4, name: "Group 4" },
-];
+type GroupContentProps = {
+    groups: TGroupLight[] | undefined,
+    isLoading: boolean,
+    isError: boolean,
+}
 
-const GroupCard = ({ name, balance }: { name: string; balance: number }) => {
+const GroupCard = ({ id, name, debts }: TGroupLight) => {
+    let balance = 0;
+    if (debts) {    // TODO delete check after BE returns debts
+        balance = debts.reduce((acc, debt) => acc + debt.amount, 0);
+    }
     const isNegative = balance < 0;
 
     return (
@@ -64,28 +66,36 @@ const GroupCard = ({ name, balance }: { name: string; balance: number }) => {
     );
 };
 
-export function GroupGrid() {
-    const { data: groups, isLoading, isError } = useGroupsQuery();
-    const content = isLoading ? (
-        <Typography>Loading...</Typography>
-    ) : isError ? (
-        <Typography>Error loading groups.</Typography>
-    ) : (
+const GroupGridContent = ({ groups, isLoading, isError }: GroupContentProps) => {
+    if (isLoading) {
+        return <Typography>Loading...</Typography>;
+    }
+    if (isError) {
+        return <Typography>Error loading groups.</Typography>;
+    }
+    return (
         <Grid container spacing={5}>
-            {testGroups.map((group) => (
+            {(groups || []).map((group) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={group.id}>
-                    <GroupCard name={group.name} balance={10} />
+                    <GroupCard id={group.id} name={group.name} debts={group.debts} lastActivity={group.lastActivity} />
                 </Grid>
             ))}
         </Grid>
     );
+}
 
+export function GroupGrid() {
+    const { data: groups, isLoading, isError } = useGroupsGridQuery();
     return (
         <Box>
             <Typography variant="h4" sx={{ mb: 3}}>
                 Groups
             </Typography>
-            {content}
+            <GroupGridContent
+                groups={groups}
+                isLoading={isLoading}
+                isError={isError}
+            />
         </Box>
     );
 }

@@ -64,7 +64,7 @@ export function RecentActivity() {
         <Typography variant="h4">Error loading recent activity.</Typography>
     ) : (
         testActivity.map((item) => (
-            <ActivityItem user={item.user} amount={item.amount} group={item.group} />
+            <ActivityItem key={item.amount} user={item.user} amount={item.amount} group={item.group} />
         ))
     )
     return (
