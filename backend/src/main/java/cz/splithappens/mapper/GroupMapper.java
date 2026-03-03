@@ -7,7 +7,7 @@ import cz.splithappens.model.Group;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring", uses = {UserMapper.class})
+@Mapper(componentModel = "spring", uses = {UserMapper.class, DebtMapper.class})
 public interface GroupMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "members", ignore = true)
@@ -16,5 +16,6 @@ public interface GroupMapper {
     @Mapping(target = "transactions", ignore = true)
     GroupDto toDto(Group group);
 
+    @Mapping(target = "userDebts", ignore = true)
     GroupLightDto toLightDto(Group group);
 }

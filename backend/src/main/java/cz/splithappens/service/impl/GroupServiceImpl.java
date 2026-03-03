@@ -4,9 +4,12 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.mapper.DebtMapper;
 import cz.splithappens.mapper.GroupMapper;
+import cz.splithappens.model.Debt;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.User;
+import cz.splithappens.repository.DebtRepository;
 import cz.splithappens.repository.GroupRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.GroupService;
@@ -24,6 +27,8 @@ public class GroupServiceImpl implements GroupService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final GroupMapper groupMapper;
+    private final DebtRepository debtRepository;
+    private final DebtMapper debtMapper;
 
     @Override
     @Transactional
@@ -52,6 +57,12 @@ public class GroupServiceImpl implements GroupService {
     public List<GroupLightDto> getUserGroups(User user) {
         return groupRepository.findByMembersId(user.getId()).stream()
                 .map(groupMapper::toLightDto)
+                .peek(group -> {
+                    group.setUserDebts(debtRepository.findByGroupId(group.getId()).stream()
+                            .filter(debt -> isUserInvolvedInDebt(debt, user.getId()))
+                            .map(debtMapper::toDto)
+                            .toList());
+                })
                 .toList();
     }
 
@@ -75,5 +86,9 @@ public class GroupServiceImpl implements GroupService {
                 .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
         group.getMembers().remove(user);
         return groupMapper.toDto(groupRepository.save(group));
+    }
+
+    private boolean isUserInvolvedInDebt(Debt debt, Long userId) {
+        return debt.getCreditor().getId().equals(userId) || debt.getDebtor().getId().equals(userId);
     }
 }
