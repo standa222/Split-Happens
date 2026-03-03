@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 public interface GroupMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "members", ignore = true)
+    @Mapping(target = "lastActivity", ignore = true)
     Group toEntity(GroupCreateDto createDto);
 
     @Mapping(target = "transactions", ignore = true)

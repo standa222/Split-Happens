@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
-    List<Group> findByMembersId(Long userId);
+    List<Group> findByMembersIdOrderByLastActivityDesc(Long userId);
 }

@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class GroupServiceImpl implements GroupService {
     public GroupDto createGroup(GroupCreateDto createDto, User user) {
         Group group = groupMapper.toEntity(createDto);
         group.getMembers().add(user);
+        group.setLastActivity(OffsetDateTime.now());
         return groupMapper.toDto(groupRepository.save(group));
     }
 
@@ -63,7 +65,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public List<GroupLightDto> getUserGroups(User user) {
-        List<Group> groups = groupRepository.findByMembersId(user.getId());
+        List<Group> groups = groupRepository.findByMembersIdOrderByLastActivityDesc(user.getId());
         List<Long> groupIds = groups.stream().map(Group::getId).toList();
 
         Map<Long, List<Debt>> debtsByGroupId = debtRepository.findByGroupIdIn(groupIds).stream()
