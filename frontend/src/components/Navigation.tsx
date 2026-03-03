@@ -2,8 +2,10 @@ import {NavLink} from "react-router-dom";
 import {COLORS} from "../constants/colors";
 import {ROUTES} from "../enums/routes";
 import logo from "../assets/logo_dark.png";
-import { Box, Stack, IconButton, Typography } from "@mui/material";
+import {Box, Stack, IconButton, Typography} from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import LogoutIcon from '@mui/icons-material/Logout';
+import {useAuthStore} from "../store/authStore";
 
 function NavLogo() {
     return (
@@ -16,7 +18,7 @@ function NavLogo() {
     );
 }
 
-function NavButton({label, path}: {label: string; path: string}) {
+function NavButton({label, path}: { label: string; path: string }) {
     return (
         <NavLink
             to={path}
@@ -54,7 +56,26 @@ function BellIcon() {
             }}
         >
             {/*TODO add badge with number of unread notifications and switch icon to filled version when there are unread notifications*/}
-            <NotificationsIcon sx={{ fontSize: 40 }} />
+            <NotificationsIcon sx={{fontSize: 40}}/>
+        </IconButton>
+    );
+}
+
+interface LogoutButtonProps {
+    logout?: () => void
+}
+
+const LogoutButton = ({ logout }: LogoutButtonProps) => {
+    return (
+        <IconButton
+            aria-label="Logout"
+            sx={{
+                color: COLORS.RED,
+                padding: 0,
+            }}
+            onClick={logout}
+        >
+            <LogoutIcon sx={{fontSize: 40}}/>
         </IconButton>
     );
 }
@@ -67,6 +88,8 @@ const NAV_ITEMS = [
 ];
 
 export function Navigation() {
+    const {logout} = useAuthStore();
+
     return (
         <Stack
             direction="row"
@@ -75,13 +98,16 @@ export function Navigation() {
             paddingY={4}
             gap={10}
         >
-            <NavLogo />
+            <NavLogo/>
             <Box>
                 {NAV_ITEMS.map((item) => (
                     <NavButton key={item.path} label={item.label} path={item.path}/>
                 ))}
             </Box>
-            <BellIcon />
+            <Stack direction="row" gap={2}>
+                <BellIcon/>
+                <LogoutButton logout={logout}/>
+            </Stack>
         </Stack>
     );
 }
