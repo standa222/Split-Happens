@@ -16,6 +16,8 @@ import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
@@ -27,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
+    private static final Logger logger = LoggerFactory.getLogger(GroupServiceImpl.class);
+
     private final TransactionService transactionService;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
@@ -68,11 +72,9 @@ public class GroupServiceImpl implements GroupService {
 
         return groups.stream()
                 .map(group -> {
-                    System.out.println("Processing group: " + group.getName() + " with ID: " + group.getId());
                     GroupLightDto dto = groupMapper.toLightDto(group);
                     List<Debt> groupDebts = debtsByGroupId.getOrDefault(group.getId(), Collections.emptyList());
                     dto.setUserDebts(debtMapper.toDtoList(groupDebts));
-                    System.out.println("DTO for group " + group.getName() + ": " + dto);
                     return dto;
                 })
                 .toList();

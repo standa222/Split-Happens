@@ -23,10 +23,10 @@ public class Debt {
     private BigDecimal amount;
 
     @ManyToOne
-    @Column(name = "debtor_id", nullable = false)
+    @JoinColumn(name = "debtor_id", nullable = false)
     private User debtor;
 
     @ManyToOne
-    @Column(name = "creditor_id", nullable = false)
+    @JoinColumn(name = "creditor_id", nullable = false)
     private User creditor;
 }
