@@ -36,11 +36,23 @@ export const useGroupsQuery = () => {
 }
 
 const groupActiveAndInactive = (groups: TGroupLight[]) => {
-    return {activeGroups: groups, inactiveGroups: groups}; // TODO delete after BE returns lastActivity
-    const activeGroups = groups.filter(group => group.debts.some(debt => debt.amount !== 0) || group.lastActivity > Date.now() - monthMillis); // Active if has non-zero debts or activity in last 30 days
-    const inactiveGroups = groups.filter(group => group.debts.every(debt => debt.amount === 0) && group.lastActivity <= Date.now() - monthMillis); // Inactive if all debts are zero and no activity in last 30 days
-    console.log("actve", activeGroups);
-    console.log("inactive", inactiveGroups);
+    const monthMillis = 30 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgo = Date.now() - monthMillis;
+
+    const activeGroups = groups.filter(group => {
+        const hasNonZeroDebt = group.userDebts.some(debt => debt.amount !== 0);
+        const isRecentlyActive = new Date(group.lastActivity).getTime() > thirtyDaysAgo;
+
+        return hasNonZeroDebt || isRecentlyActive;
+    });
+
+    const inactiveGroups = groups.filter(group => {
+        const allDebtsZero = group.userDebts.every(debt => debt.amount === 0);
+        const isOldActivity = new Date(group.lastActivity).getTime() <= thirtyDaysAgo;
+
+        return allDebtsZero && isOldActivity;
+    });
+
     return {activeGroups, inactiveGroups};
 }
 

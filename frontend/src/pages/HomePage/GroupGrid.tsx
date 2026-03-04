@@ -10,10 +10,10 @@ type GroupContentProps = {
     isError: boolean,
 }
 
-const GroupCard = ({ id, name, debts }: TGroupLight) => {
+const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
     let balance = 0;
-    if (debts) {    // TODO delete check after BE returns debts
-        balance = debts.reduce((acc, debt) => acc + debt.amount, 0);
+    if (userDebts) {    // TODO delete check after BE returns debts
+        balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
     }
     const isNegative = balance < 0;
 
@@ -77,7 +77,7 @@ const GroupGridContent = ({ groups, isLoading, isError }: GroupContentProps) => 
         <Grid container spacing={5}>
             {(groups || []).map((group) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={group.id}>
-                    <GroupCard id={group.id} name={group.name} debts={group.debts} lastActivity={group.lastActivity} />
+                    <GroupCard {...group} />
                 </Grid>
             ))}
         </Grid>
