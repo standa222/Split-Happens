@@ -11,10 +11,7 @@ type GroupContentProps = {
 }
 
 const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
-    let balance = 0;
-    if (userDebts) {    // TODO delete check after BE returns debts
-        balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
-    }
+    const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
     const isNegative = balance < 0;
 
     return (

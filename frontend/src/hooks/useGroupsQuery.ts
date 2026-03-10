@@ -10,12 +10,12 @@ export type GroupsByActivity = {
 const fetchGridGroups = async (): Promise<TGroupLight[]> => {
     const { data } = await api.get('/groups');
     console.log("grid groups", data);
-    return data;
+    return data.slice(0, 4);
 }
 
 export const useGroupsGridQuery = () => {
     return useQuery({
-        queryKey: ['groups'],
+        queryKey: ['groupsGrid'],
         queryFn: fetchGridGroups,
         retry: false,
     })
@@ -55,5 +55,3 @@ const groupActiveAndInactive = (groups: TGroupLight[]) => {
 
     return {activeGroups, inactiveGroups};
 }
-
-const monthMillis = 30 * 24 * 60 * 60 * 1000; // Approximate month in milliseconds
