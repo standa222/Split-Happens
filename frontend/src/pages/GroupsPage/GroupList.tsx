@@ -17,7 +17,6 @@ type Props = {
 
 const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
     const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
-    const isNegative = balance < 0;
     const timeAgo = formatDistanceToNow(parseISO(lastActivity), { addSuffix: true });
 
     return (
@@ -40,7 +39,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                 <Stack direction="row" flex={1} sx={{ px: 5 }}>
                     <Stack width="50%" gap={3}>
                         <Typography variant="h6" sx={{fontWeight: 600 }}>{name}</Typography>
-                        <Typography variant="body1">{timeAgo}</Typography>
+                        <Typography variant="body1">Last activity: {timeAgo}</Typography>
                     </Stack>
                     <Stack width="50%" gap={3}>
                         <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
