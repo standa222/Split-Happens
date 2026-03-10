@@ -13,6 +13,7 @@ public class GroupDto {
     private String defaultCurrency;
     private PermissionMode permissionMode;
     private GroupType groupType;
+    private List<DebtDto> debts;
     private List<UserDto> members;
     private List<TransactionDto> transactions;
 }

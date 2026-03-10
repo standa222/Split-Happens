@@ -15,6 +15,7 @@ public interface GroupMapper {
     Group toEntity(GroupCreateDto createDto);
 
     @Mapping(target = "transactions", ignore = true)
+    @Mapping(target = "debts", ignore = true)
     GroupDto toDto(Group group);
 
     @Mapping(target = "userDebts", ignore = true)

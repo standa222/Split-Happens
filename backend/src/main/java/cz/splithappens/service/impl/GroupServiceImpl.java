@@ -1,6 +1,7 @@
 package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.request.GroupCreateDto;
+import cz.splithappens.dto.response.DebtDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.TransactionDto;
@@ -86,10 +87,12 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public GroupDto getGroupDetails(Long groupId) {
         List<TransactionDto> transactions = transactionService.getGroupTransactions(groupId);
+        List<DebtDto> debts = debtMapper.toDtoList(debtRepository.findByGroupId(groupId));
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
         GroupDto groupDto = groupMapper.toDto(group);
         groupDto.setTransactions(transactions);
+        groupDto.setDebts(debts);
         return groupDto;
     }
 
