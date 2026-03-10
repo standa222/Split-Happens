@@ -22,7 +22,7 @@ function NavButton({label, path}: { label: string; path: string }) {
     return (
         <NavLink
             to={path}
-            end
+            // end
             style={({isActive}) => ({
                 padding: "10px 30px",
                 margin: "0 12px",

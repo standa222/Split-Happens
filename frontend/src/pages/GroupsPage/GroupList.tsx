@@ -1,8 +1,13 @@
-import { Typography, Box, Stack, Button } from "@mui/material";
+import { Typography, Box, Stack } from "@mui/material";
 import {GroupsByActivity, useGroupsQuery} from "../../hooks/useGroupsQuery";
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {COLORS} from "../../constants/colors";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import {NavLink} from "react-router-dom";
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import {ROUTES} from "../../enums/routes";
+import {DebtsList} from "../../components/DebtsList";
+import {BalanceDisplay} from "../../components/BalanceDisplay";
 
 type Props = {
     groups: GroupsByActivity;
@@ -10,20 +15,18 @@ type Props = {
     isError: boolean;
 }
 
-const GroupListItem = ({ id, name, debts, lastActivity }: TGroupLight) => {
-    let balance = 0;
-    if (debts) {    // TODO delete check after BE returns debts
-        balance = debts.reduce((acc, debt) => acc + debt.amount, 0);
-    }
+const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
+    const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
     const isNegative = balance < 0;
+    const timeAgo = formatDistanceToNow(parseISO(lastActivity), { addSuffix: true });
 
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ px: 3}}>
                 <Box
                     sx={{
-                        width: 100,
-                        height: 100,
+                        width: 120,
+                        height: 120,
                         borderRadius: '50%',
                         border: `2px dashed ${COLORS.PRIMARY}`,
                         display: 'flex',
@@ -34,12 +37,31 @@ const GroupListItem = ({ id, name, debts, lastActivity }: TGroupLight) => {
                 >
                     <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
                 </Box>
-                <Stack spacing={0.5} flex={1}>
-                    <Typography>{name}</Typography>
+                <Stack direction="row" flex={1} sx={{ px: 5 }}>
+                    <Stack width="50%" gap={3}>
+                        <Typography variant="h6" sx={{fontWeight: 600 }}>{name}</Typography>
+                        <Typography variant="body1">{timeAgo}</Typography>
+                    </Stack>
+                    <Stack width="50%" gap={3}>
+                        <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
+                        <DebtsList userDebts={userDebts}/>
+                    </Stack>
                 </Stack>
-                <Button>
+                <NavLink
+                    to={ROUTES.GROUPS.detail(id)}
+                    style={{
+                        padding: "12px 32px",
+                        margin: "0 12px",
+                        borderRadius: 9999,
+                        backgroundColor: COLORS.PRIMARY,
+                        color: COLORS.SECONDARY,
+                        fontSize: 20,
+                        textDecoration: "none",
+                        transition: "background-color 0.15s, color 0.15s",
+                    }}
+                >
                     Detail
-                </Button>
+                </NavLink>
             </Stack>
         </Box>
     )
@@ -53,22 +75,17 @@ const GroupListContent = ({groups, isLoading, isError}: Props) => {
         return <Typography>Error loading groups.</Typography>;
     }
 
-    const activeGroups = groups.activeGroups
-    const inactiveGroups = groups.inactiveGroups
-    console.log("active content", activeGroups)
-    console.log("inacitve content", inactiveGroups)
-
     return (
         <>
-            <Typography>Active</Typography>
+            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>Active Groups</Typography>
             {(groups?.activeGroups || []).map((group) => (
                 <GroupListItem
                     key={group.id}
                     {...group}
                 />
             ))}
-            <Typography>Inactive</Typography>
-            {(groups?.activeGroups || []).map((group) => (
+            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>Inactive groups</Typography>
+            {(groups?.inactiveGroups || []).map((group) => (
                 <GroupListItem
                     key={group.id}
                     {...group}

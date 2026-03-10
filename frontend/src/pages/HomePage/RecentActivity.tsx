@@ -5,7 +5,7 @@ import { COLORS } from "../../constants/colors";
 const testActivity = [
     { user: 'John', amount: 20, group: 'Group 1' },
     { user: 'Jane', amount: -30, group: 'Group 2' },
-    { user: 'Bob', amount: 20, group: 'Group 3' },
+    { user: 'Bob', amount: 25, group: 'Group 3' },
 ]
 
 const ActivityItem = ({ user, action, amount, group, date }: any) => {

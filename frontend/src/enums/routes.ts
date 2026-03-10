@@ -5,7 +5,8 @@ export const ROUTES = {
     },
     GROUPS: {
         LIST: '/groups',
-        DETAIL: '/groups/:groupId'
+        DETAIL: '/groups/:groupId',
+        detail: (groupId: number) => `/groups/${groupId}`,
     },
     USER: {
         PROFILE: '/profile'
