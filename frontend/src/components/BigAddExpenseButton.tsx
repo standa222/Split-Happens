@@ -1,8 +1,13 @@
-import { Stack, Typography, Box, IconButton } from "@mui/material";
+import {Stack, Typography, Box, IconButton, TypographyVariant} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import { COLORS } from "../../constants/colors";
+import { COLORS } from "../constants/colors";
 
-export function BigAddExpenseButton({ onClick }: { onClick?: () => void }) {
+type Props = {
+    onClick?: () => void;
+    variant: TypographyVariant;
+}
+
+export function BigAddExpenseButton({ onClick, variant }: Props) {
     return (
         <Stack
             component="button" // Makes the whole Stack semantically a button
@@ -25,7 +30,7 @@ export function BigAddExpenseButton({ onClick }: { onClick?: () => void }) {
             }}
         >
             <Typography
-                variant="h3"
+                variant={variant}
                 sx={{
                     color: COLORS.PRIMARY,
                     fontWeight: 500,

@@ -1,3 +1,5 @@
+import {TUser} from "./TUser";
+
 export type TTransaction = {
     id: number;
     title: string;
@@ -6,7 +8,7 @@ export type TTransaction = {
     transactionType: 'expense' | 'payment';
     items: {
         id: number;
-        userId: number;
+        user: TUser;
         balanceChange: number;
-    }
+    }[];
 }
