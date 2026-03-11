@@ -7,6 +7,6 @@ import java.math.BigDecimal;
 @Data
 public class TransactionItemDto {
     private Long id;
-    private Long userId;
+    private UserDto user;
     private BigDecimal balanceChange; // Positive for payers, negative for participants
 }

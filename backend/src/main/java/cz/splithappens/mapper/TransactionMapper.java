@@ -9,7 +9,7 @@ import cz.splithappens.model.TransactionItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface TransactionMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "groupId", target = "group.id")
@@ -23,6 +23,5 @@ public interface TransactionMapper {
     @Mapping(source = "userId", target = "user.id")
     TransactionItem toItemEntity(TransactionItemCreateDto itemCreateDto);
 
-    @Mapping(source = "user.id", target = "userId")
     TransactionItemDto toItemDto(TransactionItem transactionItem);
 }
