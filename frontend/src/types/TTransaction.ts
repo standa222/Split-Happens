@@ -3,7 +3,7 @@ import {TUser} from "./TUser";
 export type TTransaction = {
     id: number;
     title: string;
-    amount: number;
+    totalAmount: number;
     createdAt: string;
     transactionType: 'expense' | 'payment';
     items: {

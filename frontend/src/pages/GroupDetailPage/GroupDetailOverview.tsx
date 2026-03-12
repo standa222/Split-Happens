@@ -8,7 +8,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
     const userId = useAuthStore.getState().currentUser.id;
-    console.log(group);
     const userDebts = group.debts.filter((debt) =>
     debt.debtor.id === userId || debt.creditor.id === userId);
     const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);

@@ -11,7 +11,8 @@ type Props = {
 }
 
 const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
-    const userSplit = transaction.items.filter(item => item.user.id === useAuthStore.getState().currentUser.id)[0]?.balanceChange || 0;
+    const userId = useAuthStore.getState().currentUser.id
+    const userSplit = transaction.items.filter(item => item.user.id === userId)[0]?.balanceChange || 0;
     const isNegative = userSplit < 0;
     const paidBy = transaction.items.find(item => item.balanceChange > 0)?.user.id || 0;
 
@@ -45,7 +46,7 @@ const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
 
                         <Box textAlign="right" sx={{ minWidth: 180 }}>
                             <Typography color={COLORS.PRIMARY}>
-                                total paid: {transaction.amount.toFixed(2)} $
+                                total paid: {transaction.totalAmount.toFixed(2)} $
                             </Typography>
                             <Typography variant="body2" color={COLORS.PRIMARY}>
                                 paid by: {paidBy}
