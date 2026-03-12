@@ -3,6 +3,7 @@ import { COLORS } from "../../constants/colors";
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
+import {useAuthStore} from "../../store/authStore";
 
 type GroupContentProps = {
     groups: TGroupLight[] | undefined,
@@ -11,7 +12,8 @@ type GroupContentProps = {
 }
 
 const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
-    const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
+    const userId = useAuthStore.getState().currentUser.id
+    const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const isNegative = balance < 0;
 
     return (

@@ -8,6 +8,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns';
 import {ROUTES} from "../../enums/routes";
 import {DebtsList} from "../../components/DebtsList";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
+import {useAuthStore} from "../../store/authStore";
 
 type Props = {
     groups: GroupsByActivity;
@@ -16,7 +17,8 @@ type Props = {
 }
 
 const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
-    const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
+    const userId = useAuthStore.getState().currentUser.id
+    const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const timeAgo = formatDistanceToNow(parseISO(lastActivity), { addSuffix: true });
 
     return (
