@@ -45,7 +45,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                     </Stack>
                     <Stack width="50%" gap={3}>
                         <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
-                        <DebtsList userDebts={userDebts}/>
+                        <DebtsList userDebts={userDebts} userId={userId}/>
                     </Stack>
                 </Stack>
                 <NavLink
@@ -100,7 +100,7 @@ export const GroupList = () => {
     const { data: groups, isLoading, isError } = useGroupsQuery();
 
     return (
-        <Box mt={4}>
+        <Box>
             <GroupListContent
                 groups={groups}
                 isLoading={isLoading}

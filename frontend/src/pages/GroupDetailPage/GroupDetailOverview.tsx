@@ -10,7 +10,7 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
     const userId = useAuthStore.getState().currentUser.id;
     const userDebts = group.debts.filter((debt) =>
     debt.debtor.id === userId || debt.creditor.id === userId);
-    const balance = userDebts.reduce((acc, debt) => acc + debt.amount, 0);
+    const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
 
     return (
         <Stack direction="row" gap={6} alignItems="center">
