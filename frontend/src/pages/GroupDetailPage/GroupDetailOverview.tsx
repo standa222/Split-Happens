@@ -7,7 +7,7 @@ import {BalanceDisplay} from "../../components/BalanceDisplay";
 import SettingsIcon from '@mui/icons-material/Settings';
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
-    const userId = useAuthStore.getState().currentUser.id;
+    const userId = useAuthStore((s) => s.currentUser.id)
     const userDebts = group.debts.filter((debt) =>
     debt.debtor.id === userId || debt.creditor.id === userId);
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);

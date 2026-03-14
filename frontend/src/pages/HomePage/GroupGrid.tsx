@@ -12,7 +12,7 @@ type GroupContentProps = {
 }
 
 const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
-    const userId = useAuthStore.getState().currentUser.id
+    const userId = useAuthStore((s) => s.currentUser.id)
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const isNegative = balance < 0;
 

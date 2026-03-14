@@ -17,8 +17,8 @@ type Props = {
 }
 
 const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
-    const userId = useAuthStore.getState().currentUser.id
-    const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
+    const user = useAuthStore((s) => s.currentUser);
+    const balance = userDebts.reduce((acc, debt) => user.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const timeAgo = formatDistanceToNow(parseISO(lastActivity), { addSuffix: true });
 
     return (
@@ -39,20 +39,19 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                     <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
                 </Box>
                 <Stack direction="row" flex={1} sx={{ px: 5 }}>
-                    <Stack width="50%" gap={3}>
+                    <Stack width="50%" gap={3} justifyContent="center">
                         <Typography variant="h6" sx={{fontWeight: 600 }}>{name}</Typography>
                         <Typography variant="body1">Last activity: {timeAgo}</Typography>
                     </Stack>
                     <Stack width="50%" gap={3}>
                         <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
-                        <DebtsList userDebts={userDebts} userId={userId}/>
+                        <DebtsList userDebts={userDebts} user={user}/>
                     </Stack>
                 </Stack>
                 <NavLink
                     to={ROUTES.GROUPS.detail(id)}
                     style={{
                         padding: "12px 32px",
-                        margin: "0 12px",
                         borderRadius: 9999,
                         backgroundColor: COLORS.PRIMARY,
                         color: COLORS.SECONDARY,

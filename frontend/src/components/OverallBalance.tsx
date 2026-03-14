@@ -5,6 +5,7 @@ import {useAuthStore} from "../store/authStore";
 
 const Content = () => {
     const { data: groups, isLoading, isError } = useOverallBalanceQuery();
+    const userId = useAuthStore((s) => s.currentUser.id)
 
     if (isLoading) {
         return (
@@ -20,7 +21,7 @@ const Content = () => {
             </Typography>
         )
     }
-    const userId = useAuthStore.getState().currentUser.id
+
     const balance = groups.flatMap(group => group.userDebts).reduce((acc, debt) => {
         return userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount;
     }, 0);

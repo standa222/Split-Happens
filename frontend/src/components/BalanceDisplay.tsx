@@ -12,7 +12,7 @@ export const BalanceDisplay = ({ balance, variant, sx }: Props) => {
 
     return (
         <Typography variant={variant} sx={sx}>
-            Your balance
+            Balance
             <Box
                 component="span"
                 sx={{

@@ -25,7 +25,7 @@ const PaidBy = ( { payers }: { payers: string[] }) => {
 }
 
 const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
-    const userId = useAuthStore.getState().currentUser.id
+    const userId = useAuthStore((s) => s.currentUser.id)
     const userSplit = transaction.items.filter(item => item.user.id === userId)[0]?.balanceChange || 0;
     const isNegative = userSplit < 0;
     const paidBy = transaction.items
