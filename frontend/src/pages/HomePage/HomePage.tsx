@@ -2,12 +2,12 @@ import { Stack, Box } from "@mui/material";
 import {OverallBalance} from "../../components/OverallBalance";
 import {GroupGrid} from "./GroupGrid";
 import {RecentActivity} from "./RecentActivity";
-import {BigAddExpenseButton} from "./BigAddExpenseButton";
+import {BigAddExpenseButton} from "../../components/BigAddExpenseButton";
 
 export function HomePage() {
 
     return (
-        <Box width="100%">
+        <Box width="100%" aria-label={"homepage"}>
             <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
                 <OverallBalance />
             </Stack>
@@ -21,7 +21,7 @@ export function HomePage() {
                 </Box>
                 <Stack sx = {{ flex: 1 }} gap={4}>
                     <RecentActivity />
-                    <BigAddExpenseButton />
+                    <BigAddExpenseButton variant={"h3"} />
                 </Stack>
             </Stack>
         </Box>

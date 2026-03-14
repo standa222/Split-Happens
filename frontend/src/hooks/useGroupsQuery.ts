@@ -55,3 +55,17 @@ const groupActiveAndInactive = (groups: TGroupLight[]) => {
 
     return {activeGroups, inactiveGroups};
 }
+
+const fetchGroupDetail = async (groupId: number) => {
+    const { data } = await api.get(`/groups/${groupId}`);
+    console.log("group detail", data);
+    return data;
+}
+
+export const useGroupDetail = (groupId: number) => {
+    return useQuery({
+        queryKey: ['groupDetail', groupId],
+        queryFn: () => fetchGroupDetail(groupId),
+        retry: false,
+    })
+}

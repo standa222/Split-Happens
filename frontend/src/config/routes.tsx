@@ -1,6 +1,7 @@
 import {ROUTES} from "../enums/routes";
 import {GroupsPage} from "../pages/GroupsPage/GroupsPage";
 import {HomePage} from "../pages/HomePage/HomePage";
+import {GroupDetailPage} from "../pages/GroupDetailPage/GroupDetailPage";
 
 export type RouteType = {
     title: string;
@@ -21,5 +22,11 @@ export const navigations: RouteType[] = [
         path: ROUTES.HOME,
         url: ROUTES.HOME,
         element: <HomePage />,
+    },
+    {
+        title: 'Group Detail',
+        path: ROUTES.GROUPS.DETAIL,
+        url: ROUTES.GROUPS.DETAIL,
+        element: <GroupDetailPage />,
     }
 ]
