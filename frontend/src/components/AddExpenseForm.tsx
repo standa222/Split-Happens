@@ -16,14 +16,15 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { COLORS } from "../constants/colors";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
 import {Controller, useForm} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
 import {zodResolver} from "@hookform/resolvers/zod";
 import currencyCodes from "currency-codes";
-import {useGroupsQuery} from "../hooks/useGroupsQuery";
+import {useGroupDetail, useGroupsQuery} from "../hooks/useGroupsQuery";
+import {TUser} from "../types/TUser";
+import {useAddExpense} from "../hooks/useAddExpense";
 
 type Props = {
     onClose?: () => void;
@@ -31,20 +32,6 @@ type Props = {
 };
 
 type Mode = "fixed" | "partial" | "percentage";
-
-type ParticipantRow = {
-    id: number;
-    firstName: string;
-    lastName?: string;
-    paid: { enabled: boolean; amount: number };
-    split: { enabled: boolean; value: number };
-};
-
-type UserLike = {
-    id: number;
-    firstName?: string;
-    lastName?: string;
-};
 
 type RowState = {
     paidEnabled: boolean;
@@ -70,7 +57,7 @@ const unitAdornment = (mode: Mode) => {
 export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
     const [paidMode, setPaidMode] = useState<Mode>("fixed");
     const [splitMode, setSplitMode] = useState<Mode>("fixed");
-    const [search, setSearch] = useState("");
+    const [groupId, setGroupId] = useState<number>(initGroup?.id ?? 0);
     const [participants, setParticipants] = useState(initGroup?.members || []);
     const [rowState, setRowState] = useState<Record<number, RowState>>({});
     const { data: fetchedGroups, isLoading: isGroupsLoading, isError: isGroupError } = useGroupsQuery();
@@ -78,6 +65,13 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
         if (isGroupsLoading || isGroupError || !fetchedGroups) return [];
         return [...fetchedGroups.activeGroups, ...fetchedGroups.inactiveGroups];
     }, [isGroupsLoading, isGroupError, fetchedGroups]);
+    const { data: groupDetail } = useGroupDetail(groupId);
+
+    useEffect(() => {
+        setParticipants(groupDetail?.members || []);
+    }, [groupDetail]);
+
+    const { mutate, isPending, isError, error } = useAddExpense();
 
     const {
         control,
@@ -89,38 +83,22 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
         defaultValues: {
             paidBy: [],
             splitBetween: [],
+            transactionType: "EXPENSE",
         }
-    })
-
-    useEffect(() => {
-        register("paidBy");
-        register("splitBetween");
-    }, [register]);
-
-    const filtered = useMemo(() => {
-        const q = search.trim().toLowerCase();
-        if (!q) return participants;
-        return participants.filter((p) => `${p.firstName} ${p.lastName ?? ""}`.toLowerCase().includes(q));
-    }, [participants, search]);
-
-    const updateParticipant = (id: ParticipantRow["id"], patch: Partial<ParticipantRow>) => {
-        setParticipants((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
-    };
+    });
 
     const onSubmit = (data: TAddExpenseForm) => {
-        console.log(data);
-
-        const paidBy: TAddExpenseForm["paidBy"] = (participants as unknown as UserLike[])
+        const paidBy: TAddExpenseForm["paidBy"] = (participants as unknown as TUser[])
             .map((u) => ({u, s: rowState[u.id]}))
-            .filter((x): x is { u: UserLike; s: RowState } => !!x.s?.paidEnabled)
+            .filter((x): x is { u: TUser; s: RowState } => !!x.s?.paidEnabled)
             .map(({u, s}) => ({
                 userId: u.id,
                 ...asModeValue(paidMode, s.paidValue),
             }));
 
-        const splitBetween: TAddExpenseForm["splitBetween"] = (participants as unknown as UserLike[])
+        const splitBetween: TAddExpenseForm["splitBetween"] = (participants as unknown as TUser[])
             .map((u) => ({u, s: rowState[u.id]}))
-            .filter((x): x is { u: UserLike; s: RowState } => !!x.s?.splitEnabled)
+            .filter((x): x is { u: TUser; s: RowState } => !!x.s?.splitEnabled)
             .map(({u, s}) => ({
                 userId: u.id,
                 ...asModeValue(splitMode, s.splitValue),
@@ -130,9 +108,11 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
             ...data,
             paidBy,
             splitBetween,
+            transactionType: "EXPENSE",
         };
 
         console.log(payload);
+        mutate(payload);
     }
 
     // TODO choose how to use currencies - all / or just choose few popular
@@ -157,11 +137,11 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                 <Box display="flex" gap={3} alignItems="center">
                     <Stack flex={1}>
                         <TextField
-                            label="Name"
+                            label="Title"
                             size="small"
-                            {...register("name")}
-                            error={!!errors.name}
-                            helperText={errors.name?.message}
+                            {...register("title")}
+                            error={!!errors.title}
+                            helperText={errors.title?.message}
                         />
                     </Stack>
 
@@ -218,7 +198,10 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                     getOptionLabel={(o) => o.name}
                                     isOptionEqualToValue={(option, value) => option.id === value.id}
                                     value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
-                                    onChange={(_, selected) => field.onChange(selected?.id ?? 0)}
+                                    onChange={(_, selected) => {
+                                        field.onChange(selected?.id ?? 0);
+                                        setGroupId(selected?.id ?? 0);
+                                    }}
                                     onBlur={field.onBlur}
                                     filterOptions={(options, state) => {
                                         const q = state.inputValue.trim().toLowerCase();
@@ -249,9 +232,9 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                             <TextField
                                 label="Amount"
                                 size="small"
-                                {...register("amount", { valueAsNumber: true })}
-                                error={!!errors.amount}
-                                helperText={errors.amount?.message}
+                                {...register("totalAmount", { valueAsNumber: true })}
+                                error={!!errors.totalAmount}
+                                helperText={errors.totalAmount?.message}
                             />
                         </Stack>
 
@@ -305,10 +288,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                 </Box>
             </Stack>
 
-            <Typography variant="body1" sx={{ fontWeight: 700, mt: 3 }}>
-                Who is involved?
-            </Typography>
-            <Box sx={{ mt: 0.5 }}>
+            <Box sx={{ mt: 3.5 }}>
                 <Grid
                     container
                     alignItems="center"
@@ -317,21 +297,9 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                 >
                     {/* Header row */}
                     <Grid size={3.5}>
-                        <TextField
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            size="small"
-                            placeholder="Search..."
-                            slotProps={{
-                                input: {
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <SearchIcon sx={{ color: COLORS.PRIMARY }} />
-                                        </InputAdornment>
-                                    ),
-                                },
-                            }}
-                        />
+                        <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                            Who is involved?
+                        </Typography>
                     </Grid>
 
                     <Grid
@@ -395,7 +363,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     <Grid size={3.3} /> {/* split input header spacer */}
 
                     {/* Rows */}
-                    {(participants as unknown as UserLike[]).map((u) => {
+                    {(participants as unknown as TUser[]).map((u) => {
                         const s: RowState = rowState[u.id] ?? {
                             paidEnabled: false,
                             paidValue: 0,
@@ -495,8 +463,9 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                         backgroundColor: COLORS.PRIMARY,
                         color: COLORS.SECONDARY,
                     }}
+                    disabled={isPending}
                 >
-                    Add expense
+                    {isPending ? "Adding..." : "Add expense"}
                 </Button>
             </Box>
         </Box>

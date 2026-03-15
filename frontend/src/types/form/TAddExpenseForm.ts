@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const addExpenseFormSchema = z.object({
-    name: z.string(),
+    title: z.string(),
     category: z.string(),
     groupId: z.number(),
-    amount: z.number(),
+    totalAmount: z.number(),
     currency: z.string(),
     paidBy: z.array(z.object({
         userId: z.number(),
@@ -18,7 +18,7 @@ export const addExpenseFormSchema = z.object({
         partial: z.number().optional(),
         percentage: z.number().optional(),
     })),
-
+    transactionType: z.enum(["EXPENSE", "PAYMENT"]),
 });
 
 export type TAddExpenseForm = z.infer<typeof addExpenseFormSchema>;

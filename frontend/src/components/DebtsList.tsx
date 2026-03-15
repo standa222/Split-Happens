@@ -94,8 +94,8 @@ export const DebtsList = ({
         return (
             <Stack gap={1}>
                 {userDebts.map(debt => (
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                        <Typography variant="body1" key={debt.id}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" key={debt.id}>
+                        <Typography variant="body1">
                             {debt.debtor.id === currentUserId ? "You owe" : debt.debtor.firstName + " owes"}{" "}
                             {debt.amount.toFixed(2)} $ to{" "}
                             {debt.creditor.id === currentUserId ? "you" : debt.creditor.firstName}
