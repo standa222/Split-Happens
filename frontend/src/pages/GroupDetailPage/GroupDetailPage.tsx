@@ -17,9 +17,10 @@ type WrapperProps = {
 
 type GroupDetailState = "expenses" | "members" | "statistics";
 
-const GroupDetailSidebar = ({ activeTab, onTabChange }: {
+const GroupDetailSidebar = ({ activeTab, onTabChange, group }: {
     activeTab: GroupDetailState;
     onTabChange: (tab: GroupDetailState) => void;
+    group: TGroupDetail;
 }) => {
     const tabs: GroupDetailState[] = ["expenses", "members", "statistics"];
 
@@ -45,7 +46,7 @@ const GroupDetailSidebar = ({ activeTab, onTabChange }: {
                 </Button>
             ))}
 
-            <BigAddExpenseButton variant={"h4"} />
+            <BigAddExpenseButton variant={"h4"} group={group} />
         </Stack>
     );
 };
@@ -67,7 +68,7 @@ const GroupDetailContent = ({ group }: { group: TGroupDetail }) => {
     return (
         <Box mt={8}>
             <Stack direction="row" gap={6} alignItems="flex-start">
-                <GroupDetailSidebar activeTab={activeTab} onTabChange={setActiveTab} />
+                <GroupDetailSidebar activeTab={activeTab} onTabChange={setActiveTab} group={group} />
                 <Box flex={1}>
                     <GroupDetailTabContent activeTab={activeTab} group={group} />
                 </Box>
