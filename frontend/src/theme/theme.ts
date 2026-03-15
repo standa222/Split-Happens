@@ -59,5 +59,17 @@ export const theme = createTheme({
                 },
             },
         },
+
+        // Radio color
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    color: COLORS.PRIMARY,
+                    "&.Mui-checked": {
+                        color: COLORS.PRIMARY,
+                    },
+                },
+            },
+        },
     },
 });

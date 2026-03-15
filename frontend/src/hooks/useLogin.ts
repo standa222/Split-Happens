@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../axios/axios'
 import { useAuthStore } from '../store/authStore'
 import { ROUTES } from '../enums/routes'
-import {TLoginFormSchema} from "../types/form/TLoginForm";
+import {TLoginForm} from "../types/form/TLoginForm";
 import {TLoginResponse} from "../types/dto/TLoginResponse";
 
 export function useLogin() {
     const { setCurrentUser, setToken } = useAuthStore()
     const navigate = useNavigate()
 
-    return useMutation<TLoginResponse, Error, TLoginFormSchema>({
+    return useMutation<TLoginResponse, Error, TLoginForm>({
         mutationFn: (data) => api.post('/auth/login', data).then(res => res.data),
         onSuccess: (data) => {
             setToken(data.token)
