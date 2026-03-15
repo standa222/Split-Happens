@@ -25,4 +25,10 @@ public class TransactionItem {
 
     @Column(nullable = false)
     private BigDecimal balanceChange; // Positive for payers, negative for participants
+
+    public TransactionItem(User user, Transaction transaction, BigDecimal balanceChange) {
+        this.user = user;
+        this.transaction = transaction;
+        this.balanceChange = balanceChange;
+    }
 }
