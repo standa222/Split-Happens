@@ -21,10 +21,10 @@ import {TGroupDetail} from "../types/dto/TGroupDetail";
 import {Controller, useForm} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
 import {zodResolver} from "@hookform/resolvers/zod";
-import currencyCodes from "currency-codes";
 import {useGroupDetail, useGroupsQuery} from "../hooks/useGroupsQuery";
 import {TUser} from "../types/TUser";
 import {useAddExpense} from "../hooks/useAddExpense";
+import {favCurrencies} from "../utils/currencyUtils";
 
 type Props = {
     onClose?: () => void;
@@ -115,19 +115,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
 
         console.log(payload);
         mutate(payload);
-    }
-
-    // TODO choose how to use currencies - all / or just choose few popular
-    const allCurrencies = currencyCodes.data
-        .filter((c) => c.code) // ISO 4217
-        .map((c) => ({ code: c.code, name: c.currency }));
-
-    const favCurrencies = [
-        { code: "CZK", name: "Czech Crown" },
-        { code: "USD", name: "US Dollar" },
-        { code: "EUR", name: "Euro" },
-        { code: "GBP", name: "British Pound" },
-    ]
+    };
 
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY }}>
@@ -244,7 +232,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                             <Controller
                                 name="currency"
                                 control={control}
-                                defaultValue=""
+                                defaultValue={initGroup?.defaultCurrency ?? ""}
                                 render={({ field }) => (
                                     <Autocomplete
                                         size="small"
@@ -264,8 +252,8 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                                 onChange={field.onChange}
                                                 onBlur={field.onBlur}
                                                 inputRef={field.ref}
-                                                error={!!errors.category}
-                                                helperText={errors.category?.message}
+                                                error={!!errors.currency}
+                                                helperText={errors.currency?.message}
                                                 {...params}
                                             />
                                         )}

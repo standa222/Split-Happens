@@ -1,8 +1,11 @@
-import {Stack, Box, Typography} from "@mui/material";
+import {Stack, Box, Typography, IconButton, DialogContent, Dialog} from "@mui/material";
 import {OverallBalance} from "../../components/OverallBalance";
 import {GroupList} from "./GroupList";
 import {COLORS} from "../../constants/colors";
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
+import {useState} from "react";
+import {CreateGroupForm} from "../../components/CreateGroupForm";
 
 const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
     return (
@@ -54,13 +57,47 @@ const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
 }
 
 export const GroupsPage = () => {
+    const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
+
     return (
-        <Box width="100%">
-            <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
-                <OverallBalance />
-                <CreateGroupButton />
-            </Stack>
-            <GroupList />
-        </Box>
+        <>
+            <Box width="100%">
+                <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
+                    <OverallBalance />
+                    <CreateGroupButton onClick={() => {setCreateGroupModalOpen(true)}} />
+                </Stack>
+                <GroupList />
+            </Box>
+            <Dialog
+                open={createGroupModalOpen}
+                onClose={() => setCreateGroupModalOpen(false)}
+                fullWidth
+                maxWidth="lg"
+                slotProps={{
+                    paper: {
+                        sx: {
+                            backgroundColor: COLORS.SECONDARY,
+                            borderRadius: 10,
+                            pt: 2,
+                            border: `5px solid ${COLORS.PRIMARY}`,
+                        },
+                    },
+                }}
+            >
+                <IconButton
+                    aria-label="close"
+                    onClick={() => setCreateGroupModalOpen(false)}
+                    sx={{ position: "absolute", right: 12, top: 12, color: COLORS.PRIMARY }}
+                >
+                    <CloseIcon sx={{ fontSize: 40 }} />
+                </IconButton>
+
+                <DialogContent>
+                    <CreateGroupForm
+                        onClose={() => setCreateGroupModalOpen(false)}
+                    />
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
