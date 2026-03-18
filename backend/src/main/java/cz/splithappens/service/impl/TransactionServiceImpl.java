@@ -11,6 +11,7 @@ import cz.splithappens.model.User;
 import cz.splithappens.repository.GroupRepository;
 import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
+import cz.splithappens.service.SettlementEngine;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,14 +32,12 @@ public class TransactionServiceImpl implements TransactionService {
     private final GroupRepository groupRepository;
     private final TransactionMapper transactionMapper;
     private final UserRepository userRepository;
+    private final SettlementEngine settlementEngine;
 
     @Override
     @Transactional
     public TransactionDto createTransaction(TransactionCreateDto createDto) {
-        logger.info("Creating transaction with title '{}' for group ID {}", createDto.getTitle(), createDto.getGroupId());
-        logger.info("Transaction details: totalAmount={}, transactionType={}, paidBy={}, splitBetween{}",
-                createDto.getTotalAmount(), createDto.getTransactionType(), createDto.getPaidBy(), createDto.getSplitBetween());
-
+        // TODO distinguish between expense and payment types and validate accordingly (e.g. payment must have exactly 2 splits, one positive and one negative)
         Group group = groupRepository.findById(createDto.getGroupId())
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
 
@@ -49,9 +48,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setGroup(group);
 
         Transaction response = transactionRepository.save(transaction);
-
-        // TODO recalculate group balances and debts
-
+        settlementEngine.calculateDebts(group.getId()); // TODO should only be done if type is expense, not payment
         return transactionMapper.toDto(response);
     }
 
@@ -76,16 +73,16 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionDto updateTransaction(Long transactionId, TransactionCreateDto updateDto) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
-
         transaction.setTitle(updateDto.getTitle());
+        // TODO - update items (maybe just delete all and create new ones)
 //        transaction.setItems(updateDto.getItems().stream()
 //                .map(transactionMapper::toItemEntity)
 //                .toList());
         transaction.setTotalAmount(updateDto.getTotalAmount());
 
-        // TODO recalculate group balances and debts
-
-        return transactionMapper.toDto(transactionRepository.save(transaction));
+        Transaction newTransaction = transactionRepository.save(transaction);
+        settlementEngine.calculateDebts(transaction.getGroup().getId());
+        return transactionMapper.toDto(newTransaction);
     }
 
     @Override
@@ -94,8 +91,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
         transactionRepository.delete(transaction);
-
-        // TODO recalculate group balances and debts
+        settlementEngine.calculateDebts(transaction.getGroup().getId());
     }
 
     private List<TransactionItem> createTransactionsItems(TransactionCreateDto createDto, Transaction transaction) {
