@@ -1,8 +1,10 @@
 package cz.splithappens.controller;
 
 import cz.splithappens.dto.request.GroupCreateDto;
+import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
+import cz.splithappens.dto.response.TransactionDto;
 import cz.splithappens.security.CustomUserDetails;
 import cz.splithappens.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,26 +61,19 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getGroupDetails(groupId));
     }
 
-    @PostMapping("/{groupId}/members")
-    @Operation(summary = "Add members to a group", description = "Adds one or more members to an existing group.")
+    @PutMapping("/{groupId}")
+    @Operation(summary = "Update group details", description = "Updates the details of an existing group, such as its name or members.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Members added successfully"),
+            @ApiResponse(responseCode = "200", description = "Group updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    public ResponseEntity<GroupDto> addMembers(@PathVariable Long groupId, @RequestBody List<Long> userIds) {
-        return ResponseEntity.ok(groupService.addMembers(groupId, userIds));
-    }
-
-    @DeleteMapping("/{groupId}/members/{userId}")
-    @Operation(summary = "Remove a member from a group", description = "Removes a member from an existing group.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Member removed successfully"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
-            @ApiResponse(responseCode = "404", description = "Group or user not found")
-    })
-    public ResponseEntity<GroupDto> removeMember(@PathVariable Long groupId, @PathVariable Long userId) {
-        return ResponseEntity.ok(groupService.removeMember(groupId, userId));
+    public ResponseEntity<GroupDto> updateGroup(
+            @PathVariable Long groupId,
+            @RequestBody GroupCreateDto updateDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(groupService.updateGroup(groupId, updateDto, userDetails.getUser()));
     }
 }

@@ -23,9 +23,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,22 +42,9 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public GroupDto createGroup(GroupCreateDto createDto, User user) {
         Group group = groupMapper.toEntity(createDto);
-        group.getMembers().add(user);
+        List<User> members = userRepository.findAllById(createDto.getMemberIds());
+        group.setMembers(new HashSet<>(members));
         group.setLastActivity(OffsetDateTime.now());
-        return groupMapper.toDto(groupRepository.save(group));
-    }
-
-    @Override
-    @Transactional
-    public GroupDto addMembers(Long groupId, List<Long> userIds) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
-
-        userIds.forEach(userId -> {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
-            group.getMembers().add(user);
-        });
         return groupMapper.toDto(groupRepository.save(group));
     }
 
@@ -97,13 +82,17 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    @Transactional
-    public GroupDto removeMember(Long groupId, Long userId) {
+    public GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found")); // TODO: Custom exception
-        group.getMembers().remove(user);
+        if (!group.getMembers().contains(user)) {
+            throw new RuntimeException("User is not a member of the group"); // TODO: Custom exception
+        }
+        List<User> members = userRepository.findAllById(updateDto.getMemberIds());
+        group.setName(updateDto.getName());
+        group.setDefaultCurrency(updateDto.getDefaultCurrency());
+        group.setPermissionMode(updateDto.getPermissionMode());
+        group.setMembers(new HashSet<>(members));
         return groupMapper.toDto(groupRepository.save(group));
     }
 
