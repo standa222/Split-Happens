@@ -87,7 +87,10 @@ export function BigAddExpenseButton({ variant, group }: Props) {
                 </IconButton>
 
                 <DialogContent>
-                    <AddExpenseForm initGroup={group}/>
+                    <AddExpenseForm
+                        initGroup={group}
+                        onClose={() => setOpen(false)}
+                    />
                 </DialogContent>
             </Dialog>
         </>

@@ -71,7 +71,9 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
         setParticipants(groupDetail?.members || []);
     }, [groupDetail]);
 
-    const { mutate, isPending, isError, error } = useAddExpense();
+    const { mutate, isPending, isError, error } = useAddExpense({
+        onSuccess: () => onClose?.(),
+    });
 
     const {
         control,
