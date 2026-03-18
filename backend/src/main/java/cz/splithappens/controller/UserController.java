@@ -9,10 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,5 +28,13 @@ public class UserController {
     })
     public ResponseEntity<UserDto> createUser(@RequestBody UserCreateDto createDto) {
         return ResponseEntity.ok(userService.createUser(createDto));
+    }
+
+    @GetMapping
+    @Operation(summary = "Search users", description = "Finds users by name or email matching the query string.")
+    public ResponseEntity<List<UserDto>> searchUsers(
+            @RequestParam String query,
+            @RequestParam(required = false, defaultValue = "20") int limit) {
+        return ResponseEntity.ok(userService.searchUsers(query, limit));
     }
 }

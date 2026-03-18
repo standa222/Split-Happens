@@ -8,9 +8,12 @@ import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -41,5 +44,14 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public List<UserDto> searchUsers(String query, int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<User> users = userRepository.searchUsers(query, pageable);
+        return users.stream()
+                .map(userMapper::toDto)
+                .toList();
     }
 }
