@@ -108,40 +108,81 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private List<TransactionItem> extractItems(List<TransactionSplitCreateDto> splits, Transaction transaction, boolean positiveBalance, BigDecimal totalAmount) {
-        if (splits.isEmpty()) {
+        if (splits == null || splits.isEmpty()) {
             throw new RuntimeException("Transaction must have at least one payer and at least one participant"); // TODO: Custom exception
         }
 
-        if (splits.getFirst().getFixed() != null) {
-            return splits.stream().map(split -> {
-                User user = userRepository.findById(split.getUserId())
-                        .orElseThrow(() -> new RuntimeException("User not found!")); // TODO Custom exception
-                return new TransactionItem(user, transaction, positiveBalance ? split.getFixed() : split.getFixed().negate());
-            })
-            .toList();
+        List<Long> userIds = splits.stream()
+                .map(TransactionSplitCreateDto::getUserId)
+                .distinct()
+                .toList();
+
+        java.util.Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(java.util.stream.Collectors.toMap(User::getId, u -> u));
+
+        if (usersById.size() != userIds.size()) {
+            List<Long> missing = userIds.stream()
+                    .filter(id -> !usersById.containsKey(id))
+                    .toList();
+            throw new RuntimeException("User not found: " + missing);
         }
-        if (splits.getFirst().getPartial() != null) {
-            int totalParts = splits.stream()
-                    .map(TransactionSplitCreateDto::getPartial)
-                    .reduce(0, Integer::sum);
-            return splits.stream().map(split -> {
-                User user = userRepository.findById(split.getUserId())
-                        .orElseThrow(() -> new RuntimeException("User not found!")); // TODO Custom exception
-                BigDecimal balance = totalAmount.multiply(BigDecimal.valueOf(split.getPartial())).divide(BigDecimal.valueOf(totalParts));
-                return new TransactionItem(user, transaction, positiveBalance ? balance : balance.negate());
-            })
-            .toList();
+
+        boolean fixedMode = splits.stream().allMatch(s -> s.getFixed() != null);
+        boolean partialMode = splits.stream().allMatch(s -> s.getPartial() != null);
+        boolean percentageMode = splits.stream().allMatch(s -> s.getPercentage() != null);
+
+        int modes = (fixedMode ?1 :0) + (partialMode ?1 :0) + (percentageMode ?1 :0);
+        if (modes !=1) {
+            throw new RuntimeException("Invalid splits: use exactly one split mode");
         }
-        if (splits.getFirst().getPercentage() != null) {
+
+        if (fixedMode) {
             return splits.stream()
                     .map(split -> {
-                        User user = userRepository.findById(split.getUserId())
-                                .orElseThrow(() -> new RuntimeException("User not found!")); // TODO Custom exception
-                        BigDecimal balance = totalAmount.multiply(BigDecimal.valueOf(split.getPercentage())).divide(BigDecimal.valueOf(100));
-                        return new TransactionItem(user, transaction, positiveBalance ? balance : balance.negate());
+                        BigDecimal amount = split.getFixed();
+                        return new TransactionItem(
+                                usersById.get(split.getUserId()),
+                                transaction,
+                                positiveBalance ? amount : amount.negate()
+                        );
                     })
                     .toList();
         }
-        throw new RuntimeException("invalid splits"); // TODO custom exception
+
+        if (partialMode) {
+            int totalParts = splits.stream()
+                    .map(TransactionSplitCreateDto::getPartial)
+                    .reduce(0, Integer::sum);
+
+            if (totalParts <=0) {
+                throw new RuntimeException("Total parts must be greater than0");
+            }
+
+            return splits.stream()
+                    .map(split -> {
+                        BigDecimal amount = totalAmount .multiply(BigDecimal.valueOf(split.getPartial()))
+                                .divide(BigDecimal.valueOf(totalParts),2, java.math.RoundingMode.HALF_UP);
+
+                        return new TransactionItem(
+                                usersById.get(split.getUserId()),
+                                transaction,
+                                positiveBalance ? amount : amount.negate()
+                        );
+                    })
+                    .toList();
+        }
+
+        return splits.stream()
+                .map(split -> {
+                    BigDecimal amount = totalAmount .multiply(BigDecimal.valueOf(split.getPercentage()))
+                            .divide(BigDecimal.valueOf(100),2, java.math.RoundingMode.HALF_UP);
+
+                    return new TransactionItem(
+                            usersById.get(split.getUserId()),
+                            transaction,
+                            positiveBalance ? amount : amount.negate()
+                    );
+                })
+                .toList();
     }
 }

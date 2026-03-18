@@ -2,6 +2,7 @@ package cz.splithappens.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Table(name = "transaction_item")
+@NoArgsConstructor
 public class TransactionItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
