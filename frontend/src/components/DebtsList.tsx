@@ -89,7 +89,7 @@ export const DebtsList = ({
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
     if (userDebts.length === 0) {
-        return <Typography variant="body1">{user.id === currentUserId ? "You are" : user.firstName + " is"} You are settled in this group.</Typography>;
+        return <Typography variant="body1">{user.id === currentUserId ? "You are" : user.firstName + " is"} settled in this group.</Typography>;
     } else {
         return (
             <Stack gap={1}>

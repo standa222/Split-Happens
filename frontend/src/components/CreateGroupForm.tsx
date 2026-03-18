@@ -1,6 +1,6 @@
 import {
     Autocomplete,
-    Box,
+    Box, Button,
     Checkbox,
     CircularProgress,
     FormControl,
@@ -25,29 +25,21 @@ import {TUser} from "../types/TUser";
 import {useEffect, useMemo, useState} from "react";
 import {useUsersSearchQuery} from "../hooks/useUsersSearchQuery";
 import {useAuthStore} from "../store/authStore";
+import {useCreateGroupMutation, useEditGroupMutation} from "../hooks/useGroupMutation";
 
 type Props = {
     onClose?: () => void;
     initGroup?: TGroupDetail;
 };
 
-const USERS_LIMIT = 20;
-const SEARCH_DEBOUNCE_MS = 300;
-
-function useDebouncedValue<T>(value: T, delayMs: number) {
-    const [debounced, setDebounced] = useState(value);
-    useEffect(() => {
-        const t = window.setTimeout(() => setDebounced(value), delayMs);
-        return () => window.clearTimeout(t);
-    }, [value, delayMs]);
-    return debounced;
-}
 
 export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
-    const loggedUserId = useAuthStore((s) => s.currentUser.id);
+    const currentUser = useAuthStore((s) => s.currentUser);
+    const loggedUserId = currentUser.id;
     const isEditMode = Boolean(initGroup);
 
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedUsers, setSelectedUsers] = useState<TUser[]>(initGroup?.members ?? [currentUser]);
 
     const { data: memberOptions = [], isFetching: membersLoading } = useUsersSearchQuery({
         query: searchTerm,
@@ -66,12 +58,22 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
             defaultCurrency: initGroup?.defaultCurrency ?? "",
             permissionMode: (initGroup?.permissionMode?.toUpperCase() as "SOFT" | "HARD") ?? "SOFT",
             groupType: "GROUP",
-            members: initGroup?.members?.map(m => m.id) ?? [loggedUserId],
+            memberIds: initGroup?.members?.map(m => m.id) ?? [loggedUserId],
         },
     });
 
+    const createGroup = useCreateGroupMutation({ onSuccess: onClose });
+    const editGroup = useEditGroupMutation({ onSuccess: onClose });
+
+    const isPending = isEditMode ? editGroup.isPending : createGroup.isPending;
+
     const onSubmit = (data: TCreateGroupForm) => {
-        console.log(data);
+        console.log("submitting ", data);
+        if (isEditMode) {
+            editGroup.mutate({ groupId: initGroup!.id, data });
+        } else {
+            createGroup.mutate(data);
+        }
     };
 
     return (
@@ -95,29 +97,21 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                     <Controller
                         name="defaultCurrency"
                         control={control}
-                        defaultValue={initGroup?.defaultCurrency ?? ""}
                         render={({ field }) => (
                             <Autocomplete
                                 size="small"
                                 options={favCurrencies}
-                                getOptionLabel={(o) => `${o.code}`}
-                                filterOptions={(options, state) => {
-                                    const q = state.inputValue.trim().toLowerCase();
-                                    if (!q) return options;
-                                    return options.filter(
-                                        (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
-                                    );
-                                }}
+                                value={favCurrencies.find((c) => c.code === field.value) ?? null}
+                                onChange={(_, opt) => field.onChange(opt?.code ?? "")}
+                                isOptionEqualToValue={(a, b) => a.code === b.code}
+                                getOptionLabel={(o) => o.code}
                                 renderInput={(params) => (
                                     <TextField
-                                        label="Currency"
-                                        value={field.value ?? ""}
-                                        onChange={field.onChange}
-                                        onBlur={field.onBlur}
+                                        {...params}
+                                        label="Default currency"
                                         inputRef={field.ref}
                                         error={!!errors.defaultCurrency}
                                         helperText={errors.defaultCurrency?.message}
-                                        {...params}
                                     />
                                 )}
                             />
@@ -126,15 +120,32 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                 </Stack>
 
                 <Stack flex={1}>
-                    <FormControl>
-                        <FormLabel sx={{ fontWeight: 700, fontSize: 12 }}>
-                            Permission mode
-                        </FormLabel>
-                        <RadioGroup row defaultValue="SOFT" {...register("permissionMode")}>
-                            <FormControlLabel value="SOFT" control={<Radio size="small" />} label="Soft" />
-                            <FormControlLabel value="HARD" control={<Radio size="small" />} label="Hard" />
-                        </RadioGroup>
-                    </FormControl>
+                    <Controller
+                        name="permissionMode"
+                        control={control}
+                        render={({ field }) => (
+                            <>
+                                <FormControl>
+                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
+                                        Permission mode
+                                    </FormLabel>
+                                    <RadioGroup
+                                        row
+                                        value={field.value}
+                                        onChange={(_, v) => field.onChange(v)}
+                                    >
+                                        <FormControlLabel value="SOFT" control={<Radio size="small" />} label="Soft" />
+                                        <FormControlLabel value="HARD" control={<Radio size="small" />} label="Hard" />
+                                    </RadioGroup>
+                                </FormControl>
+                                {errors.permissionMode?.message ? (
+                                    <Typography variant="caption" color="error">
+                                        {errors.permissionMode.message}
+                                    </Typography>
+                                ) : null}
+                            </>
+                        )}
+                    />
                 </Stack>
             </Box>
 
@@ -144,7 +155,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                     Members Selection
                 </Typography>
                 <Controller
-                    name="members"
+                    name="memberIds"
                     control={control}
                     render={({ field }) => (
                         <Autocomplete
@@ -152,24 +163,39 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             disableCloseOnSelect
                             options={memberOptions}
                             loading={membersLoading}
-                            value={memberOptions.filter(u => field.value?.includes(u.id))}
+                            value={selectedUsers}
                             onInputChange={(_, value) => setSearchTerm(value)}
-                            getOptionLabel={(u) => `${u.firstName} ${u.lastName}`.trim() || u.email}
+                            getOptionLabel={(u) => `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email}
                             isOptionEqualToValue={(option, value) => option.id === value.id}
-                            onChange={(_, newValue) => field.onChange(newValue.map(u => u.id))}
+                            onChange={(_, newValue) => {
+                                setSelectedUsers(newValue);
+                                field.onChange(newValue.map(u => u.id));
+                            }}
                             renderOption={(props, option, { selected }) => (
                                 <li {...props}>
-                                    <Checkbox checked={selected} sx={{ mr: 1 }} />
+                                    <Checkbox
+                                        checked={selected}
+                                        sx={{
+                                            mr: 1,
+                                            color: COLORS.PRIMARY, // Unchecked color
+                                            '&.Mui-checked': { color: COLORS.PRIMARY } // Checked color
+                                        }}
+                                    />
                                     <Stack>
-                                        <Typography variant="body2">{`${option.firstName} ${option.lastName}`}</Typography>
-                                        <Typography variant="caption" color="text.secondary">{option.email}</Typography>
+                                        <Typography variant="body2">
+                                            {`${option.firstName ?? ""} ${option.lastName ?? ""}`.trim() || "Unknown User"}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {option.email}
+                                        </Typography>
                                     </Stack>
                                 </li>
                             )}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Search"
+                                    label="Search and Add Users"
+                                    placeholder="Type to search..."
                                     slotProps={{
                                         input: {
                                             ...params.InputProps,
@@ -186,6 +212,24 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                         />
                     )}
                 />
+            </Box>
+            <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                        px: 6,
+                        py: 1.5,
+                        borderRadius: 999,
+                        textTransform: "none",
+                        fontWeight: 700,
+                        backgroundColor: COLORS.PRIMARY,
+                        color: COLORS.SECONDARY,
+                    }}
+                    disabled={isPending}
+                >
+                    {isEditMode ? (isPending ? "Saving..." : "Save Changes") : (isPending ? "Adding..." : "Add expense")}
+                </Button>
             </Box>
         </Box>
     );
