@@ -10,12 +10,13 @@ import {AppLayout} from "./components/AppLayout";
 import {ThemeProvider} from "@mui/material";
 import { theme } from "./theme/theme";
 import {IntlProvider} from "react-intl";
-import {DEFAULT_LOCALE, messages} from "./locales";
+import { messages } from "./locales";
+import { useLocaleStore } from "./store/localeStore";
 
 const queryClient = new QueryClient();
 
 export function App() {
-    const locale = DEFAULT_LOCALE;
+    const locale = useLocaleStore((s) => s.locale);
 
     return (
         <IntlProvider locale={locale} messages={messages[locale]}>
