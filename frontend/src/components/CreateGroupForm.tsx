@@ -6,9 +6,6 @@ import {
     FormControl,
     FormControlLabel,
     FormLabel,
-    List,
-    ListItem,
-    ListItemText,
     Radio,
     RadioGroup,
     Stack,
@@ -22,10 +19,11 @@ import {createGroupFormSchema, TCreateGroupForm} from "../types/form/TCreateGrou
 import {zodResolver} from "@hookform/resolvers/zod";
 import {favCurrencies} from "../utils/currencyUtils";
 import {TUser} from "../types/TUser";
-import {useEffect, useMemo, useState} from "react";
+import {useState} from "react";
 import {useUsersSearchQuery} from "../hooks/useUsersSearchQuery";
 import {useAuthStore} from "../store/authStore";
 import {useCreateGroupMutation, useEditGroupMutation} from "../hooks/useGroupMutation";
+import {FormattedMessage, useIntl} from "react-intl";
 
 type Props = {
     onClose?: () => void;
@@ -40,6 +38,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
 
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedUsers, setSelectedUsers] = useState<TUser[]>(initGroup?.members ?? [currentUser]);
+    const intl = useIntl();
 
     const { data: memberOptions = [], isFetching: membersLoading } = useUsersSearchQuery({
         query: searchTerm,
@@ -79,12 +78,16 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2 }}>
-                {isEditMode ? "Edit Group" : "Create New Group"}
+                {isEditMode ? (
+                    <FormattedMessage id="group.form.title.edit" />
+                ) : (
+                    <FormattedMessage id="group.form.title.create" />
+                )}
             </Typography>
             <Box display="flex" gap={3} alignItems="center">
                 <Stack flex={1}>
                     <TextField
-                        label="Group Name"
+                        label={<FormattedMessage id="group.form.fields.name" />}
                         size="small"
                         defaultValue={initGroup?.name ?? ""}
                         {...register("name")}
@@ -108,7 +111,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="Default currency"
+                                        label={<FormattedMessage id="group.form.fields.defaultCurrency" />}
                                         inputRef={field.ref}
                                         error={!!errors.defaultCurrency}
                                         helperText={errors.defaultCurrency?.message}
@@ -127,15 +130,23 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             <>
                                 <FormControl>
                                     <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
-                                        Permission mode
+                                        <FormattedMessage id="group.form.fields.permissionMode" />
                                     </FormLabel>
                                     <RadioGroup
                                         row
                                         value={field.value}
                                         onChange={(_, v) => field.onChange(v)}
                                     >
-                                        <FormControlLabel value="SOFT" control={<Radio size="small" />} label="Soft" />
-                                        <FormControlLabel value="HARD" control={<Radio size="small" />} label="Hard" />
+                                        <FormControlLabel
+                                            value="SOFT"
+                                            control={<Radio size="small" />}
+                                            label={<FormattedMessage id="group.form.permissionMode.soft" />}
+                                        />
+                                        <FormControlLabel
+                                            value="HARD"
+                                            control={<Radio size="small" />}
+                                            label={<FormattedMessage id="group.form.permissionMode.hard" />}
+                                        />
                                     </RadioGroup>
                                 </FormControl>
                                 {errors.permissionMode?.message ? (
@@ -152,7 +163,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
             {/* Members */}
             <Box>
                 <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 3 }}>
-                    Members Selection
+                    <FormattedMessage id="group.form.members.title" />
                 </Typography>
                 <Controller
                     name="memberIds"
@@ -183,7 +194,9 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                                     />
                                     <Stack>
                                         <Typography variant="body2">
-                                            {`${option.firstName ?? ""} ${option.lastName ?? ""}`.trim() || "Unknown User"}
+                                            {`${option.firstName ?? ""} ${option.lastName ?? ""}`.trim() || (
+                                                <FormattedMessage id="common.unknownUser" />
+                                            )}
                                         </Typography>
                                         <Typography variant="caption" color="text.secondary">
                                             {option.email}
@@ -194,8 +207,8 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
-                                    label="Search and Add Users"
-                                    placeholder="Type to search..."
+                                    label={<FormattedMessage id="group.form.members.search.label" />}
+                                    placeholder={intl.formatMessage({ id: "group.form.members.search.placeholder" })}
                                     slotProps={{
                                         input: {
                                             ...params.InputProps,
@@ -228,7 +241,19 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                     }}
                     disabled={isPending}
                 >
-                    {isEditMode ? (isPending ? "Saving..." : "Save Changes") : (isPending ? "Adding..." : "Create group")}
+                    {isEditMode ? (
+                        isPending ? (
+                            <FormattedMessage id="group.form.action.saving" />
+                        ) : (
+                            <FormattedMessage id="group.form.action.saveChanges" />
+                        )
+                    ) : (
+                        isPending ? (
+                            <FormattedMessage id="group.form.action.creating" />
+                        ) : (
+                            <FormattedMessage id="group.form.action.create" />
+                        )
+                    )}
                 </Button>
             </Box>
         </Box>

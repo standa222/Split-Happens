@@ -6,6 +6,7 @@ import {Box, Stack, IconButton, Typography} from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import LogoutIcon from '@mui/icons-material/Logout';
 import {useAuthStore} from "../store/authStore";
+import {FormattedMessage} from "react-intl";
 
 function NavLogo() {
     return (
@@ -18,11 +19,10 @@ function NavLogo() {
     );
 }
 
-function NavButton({label, path}: { label: string; path: string }) {
+function NavButton({labelId, path}: { labelId: string; path: string }) {
     return (
         <NavLink
             to={path}
-            // end
             style={({isActive}) => ({
                 padding: "10px 30px",
                 margin: "0 12px",
@@ -37,7 +37,7 @@ function NavButton({label, path}: { label: string; path: string }) {
                 whiteSpace: "nowrap",
             })}
         >
-            {label}
+            <FormattedMessage id={labelId} />
         </NavLink>
     );
 }
@@ -81,10 +81,10 @@ const LogoutButton = ({ logout }: LogoutButtonProps) => {
 }
 
 const NAV_ITEMS = [
-    {label: "Home",    path: ROUTES.HOME},
-    {label: "Groups",  path: ROUTES.GROUPS.LIST},
-    {label: "Friends", path: "/friends"},
-    {label: "Profile", path: ROUTES.USER.PROFILE},
+    {labelId: "nav.home",    path: ROUTES.HOME},
+    {labelId: "nav.groups",  path: ROUTES.GROUPS.LIST},
+    {labelId: "nav.friends", path: ROUTES.FRIENDS.LIST},
+    {labelId: "nav.profile", path: ROUTES.USER.PROFILE},
 ];
 
 export function Navigation() {
@@ -101,7 +101,7 @@ export function Navigation() {
             <NavLogo/>
             <Box>
                 {NAV_ITEMS.map((item) => (
-                    <NavButton key={item.path} label={item.label} path={item.path}/>
+                    <NavButton key={item.path} labelId={item.labelId} path={item.path}/>
                 ))}
             </Box>
             <Stack direction="row" gap={2}>

@@ -8,6 +8,7 @@ import {COLORS} from "../../constants/colors";
 import {BigAddExpenseButton} from "../../components/BigAddExpenseButton";
 import {GroupExpenses} from "./GroupExpenses";
 import {GroupMembers} from "./GroupMembers";
+import { FormattedMessage } from "react-intl";
 
 type WrapperProps = {
     group: TGroupDetail | undefined;
@@ -23,6 +24,12 @@ const GroupDetailSidebar = ({ activeTab, onTabChange, group }: {
     group: TGroupDetail;
 }) => {
     const tabs: GroupDetailState[] = ["expenses", "members", "statistics"];
+
+    const tabLabelId: Record<GroupDetailState, string> = {
+        expenses: "groupDetail.tabs.expenses",
+        members: "groupDetail.tabs.members",
+        statistics: "groupDetail.tabs.statistics",
+    };
 
     return (
         <Stack direction="column" alignItems="center" gap={6} sx={{ width: 300, flexShrink: 0 }}>
@@ -42,7 +49,7 @@ const GroupDetailSidebar = ({ activeTab, onTabChange, group }: {
                         fontWeight: 'bold',
                     }}
                 >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    <FormattedMessage id={tabLabelId[tab]} />
                 </Button>
             ))}
 
@@ -58,7 +65,11 @@ const GroupDetailTabContent = ({ activeTab, group }: { activeTab: GroupDetailSta
         case "members":
             return <GroupMembers members={group.members} debts={group.debts} />;
         case "statistics":
-            return <Typography>Statistics content for {group.name}</Typography>;
+            return (
+                <Typography>
+                    <FormattedMessage id="groupDetail.statistics.placeholder" values={{ name: group.name }} />
+                </Typography>
+            );
     }
 };
 
@@ -79,11 +90,19 @@ const GroupDetailContent = ({ group }: { group: TGroupDetail }) => {
 
 const GroupDetailWrapper = ({ group, isLoading, isError }: WrapperProps) => {
     if (isLoading) {
-        return <Typography>Loading...</Typography>;
+        return (
+            <Typography>
+                <FormattedMessage id="groupDetail.loading" />
+            </Typography>
+        );
     }
 
     if (isError || !group) {
-        return <Typography>Error loading group details.</Typography>;
+        return (
+            <Typography>
+                <FormattedMessage id="groupDetail.error" />
+            </Typography>
+        );
     }
 
     return (

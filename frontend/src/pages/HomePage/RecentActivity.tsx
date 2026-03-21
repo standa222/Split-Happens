@@ -1,6 +1,7 @@
 import {Typography, Stack, Box} from "@mui/material";
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import { COLORS } from "../../constants/colors";
+import { FormattedMessage } from "react-intl";
 
 const testActivity = [
     { user: 'John', amount: 20, group: 'Group 1' },
@@ -31,21 +32,26 @@ const ActivityItem = ({ user, action, amount, group, date }: any) => {
 
                 <Stack spacing={0.5}>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {user} {action} in {group}
+                        <FormattedMessage
+                            id="home.activity.item"
+                            values={{ user, action: action ?? "", group }}
+                        />
                     </Typography>
 
                     {amount !== undefined && (
                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                            Your split:{" "}
+                            <FormattedMessage id="home.activity.yourSplit" />{" "}
                             <Box component="span" sx={{ color: isNegative ? COLORS.RED : COLORS.PRIMARY }}>
                                 {amount.toFixed(2)} $
                             </Box>
                         </Typography>
                     )}
 
-                    <Typography variant="caption" sx={{ color: 'gray', fontWeight: 600 }}>
-                        {date}
-                    </Typography>
+                    {date ? (
+                        <Typography variant="caption" sx={{ color: 'gray', fontWeight: 600 }}>
+                            {date}
+                        </Typography>
+                    ) : null}
                 </Stack>
             </Stack>
         </Box>
@@ -59,9 +65,13 @@ export function RecentActivity() {
     const isError = false;
 
     const content = isLoading ? (
-        <Typography variant="h4">Loading...</Typography>
+        <Typography variant="h4">
+            <FormattedMessage id="home.activity.loading" />
+        </Typography>
     ) : isError ? (
-        <Typography variant="h4">Error loading recent activity.</Typography>
+        <Typography variant="h4">
+            <FormattedMessage id="home.activity.error" />
+        </Typography>
     ) : (
         testActivity.map((item) => (
             <ActivityItem key={item.amount} user={item.user} amount={item.amount} group={item.group} />
@@ -70,7 +80,7 @@ export function RecentActivity() {
     return (
         <Stack>
             <Typography variant="h4" sx={{ mb: 3}}>
-                Recent activity
+                <FormattedMessage id="home.activity.title" />
             </Typography>
             {content}
         </Stack>

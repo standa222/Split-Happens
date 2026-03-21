@@ -11,5 +11,10 @@ export const ROUTES = {
     USER: {
         PROFILE: '/profile'
     },
+    FRIENDS: {
+        LIST: '/friends',
+        DETAIL: '/friends/:friendId',
+        detail: (friendId: number) => `/friends/${friendId}`,
+    },
     HOME: '/'
 } as const;

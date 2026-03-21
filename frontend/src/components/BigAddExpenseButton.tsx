@@ -5,6 +5,7 @@ import {useState} from "react";
 import CloseIcon from '@mui/icons-material/Close';
 import {AddExpenseForm} from "./AddExpenseForm";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
     variant: TypographyVariant;
@@ -44,7 +45,7 @@ export function BigAddExpenseButton({ variant, group }: Props) {
                         textAlign: "center",
                     }}
                 >
-                    Add expense
+                    <FormattedMessage id="expense.action.add" />
                 </Typography>
                 <Box
                     sx={{

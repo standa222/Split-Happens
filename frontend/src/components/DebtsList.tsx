@@ -6,6 +6,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import {COLORS} from "../constants/colors";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
     userDebts: TDebt[],
@@ -42,7 +43,9 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                 }}
             >
                 <CheckBoxIcon fontSize="small" />
-                <Typography variant="caption">Mark Paid</Typography>
+                <Typography variant="caption">
+                    <FormattedMessage id="debts.actions.markPaid" />
+                </Typography>
             </Button>
 
             <Button
@@ -59,7 +62,9 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                 }}
             >
                 <QrCode2Icon fontSize="small" />
-                <Typography variant="caption">Generate QR</Typography>
+                <Typography variant="caption">
+                    <FormattedMessage id="debts.actions.generateQr" />
+                </Typography>
             </Button>
 
             <Button
@@ -76,7 +81,9 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                 }}
             >
                 <NotificationsIcon fontSize="small" />
-                <Typography variant="caption">Notify</Typography>
+                <Typography variant="caption">
+                    <FormattedMessage id="debts.actions.notify" />
+                </Typography>
             </Button>
         </Stack>
     );
@@ -88,24 +95,49 @@ export const DebtsList = ({
         showActionButtons = false,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
+
     if (userDebts.length === 0) {
-        return <Typography variant="body1">{user.id === currentUserId ? "You are" : user.firstName + " is"} settled in this group.</Typography>;
-    } else {
+        const isCurrentUser = user.id === currentUserId;
+        const name = `${user.firstName ?? ""}`.trim();
         return (
-            <Stack gap={1}>
-                {userDebts.map(debt => (
+            <Typography variant="body1">
+                <FormattedMessage
+                    id="debts.settled"
+                    values={{ isCurrentUser, name }}
+                />
+            </Typography>
+        );
+    }
+
+    return (
+        <Stack gap={1}>
+            {userDebts.map(debt => {
+                const debtorIsCurrent = debt.debtor.id === currentUserId;
+                const creditorIsCurrent = debt.creditor.id === currentUserId;
+
+                const debtorName = (debt.debtor.firstName ?? debt.debtor.email ?? "").trim();
+                const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
+
+                return (
                     <Stack direction="row" alignItems="center" justifyContent="space-between" key={debt.id}>
                         <Typography variant="body1">
-                            {debt.debtor.id === currentUserId ? "You owe" : debt.debtor.firstName + " owes"}{" "}
-                            {debt.amount.toFixed(2)} $ to{" "}
-                            {debt.creditor.id === currentUserId ? "you" : debt.creditor.firstName}
+                            <FormattedMessage
+                                id="debts.owesLine"
+                                values={{
+                                    debtorIsCurrent,
+                                    creditorIsCurrent,
+                                    debtorName,
+                                    creditorName,
+                                    amount: debt.amount.toFixed(2),
+                                }}
+                            />
                         </Typography>
                         {showActionButtons &&
                             <DebtActionButtons debt={debt} />
                         }
                     </Stack>
-                ))}
-            </Stack>
-        )
-    }
+                );
+            })}
+        </Stack>
+    );
 }

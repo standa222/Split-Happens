@@ -4,6 +4,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
 import {useAuthStore} from "../../store/authStore";
+import { FormattedMessage } from "react-intl";
 
 type GroupContentProps = {
     groups: TGroupLight[] | undefined,
@@ -11,7 +12,7 @@ type GroupContentProps = {
     isError: boolean,
 }
 
-const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
+const GroupCard = ({ name, userDebts }: TGroupLight) => {
     const userId = useAuthStore((s) => s.currentUser.id)
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const isNegative = balance < 0;
@@ -53,7 +54,7 @@ const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
                 variant="body1"
                 sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
             >
-                Balance{" "}
+                <FormattedMessage id="balance.label" />{" "}
                 <Box
                     component="span"
                     sx={{ color: isNegative ? COLORS.RED : COLORS.PRIMARY }}
@@ -67,10 +68,18 @@ const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
 
 const GroupGridContent = ({ groups, isLoading, isError }: GroupContentProps) => {
     if (isLoading) {
-        return <Typography>Loading...</Typography>;
+        return (
+            <Typography>
+                <FormattedMessage id="home.groups.loading" />
+            </Typography>
+        );
     }
     if (isError) {
-        return <Typography>Error loading groups.</Typography>;
+        return (
+            <Typography>
+                <FormattedMessage id="home.groups.error" />
+            </Typography>
+        );
     }
     return (
         <Grid container spacing={5}>
@@ -88,7 +97,7 @@ export function GroupGrid() {
     return (
         <Box>
             <Typography variant="h4" sx={{ mb: 3}}>
-                Groups
+                <FormattedMessage id="home.groups.title" />
             </Typography>
             <GroupGridContent
                 groups={groups}

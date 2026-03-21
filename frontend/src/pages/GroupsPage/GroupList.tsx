@@ -9,6 +9,8 @@ import {ROUTES} from "../../enums/routes";
 import {DebtsList} from "../../components/DebtsList";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
 import {useAuthStore} from "../../store/authStore";
+import { FormattedMessage, useIntl } from "react-intl";
+import { getDateFnsLocale } from "../../utils/dateFnsLocaleUtils";
 
 type Props = {
     groups: GroupsByActivity;
@@ -19,7 +21,8 @@ type Props = {
 const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
     const user = useAuthStore((s) => s.currentUser);
     const balance = userDebts.reduce((acc, debt) => user.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
-    const timeAgo = formatDistanceToNow(parseISO(lastActivity), { addSuffix: true });
+    const { locale } = useIntl();
+    const timeAgo = formatDistanceToNow(parseISO(lastActivity), { addSuffix: true, locale: getDateFnsLocale(locale) });
 
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
@@ -41,7 +44,9 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                 <Stack direction="row" flex={1} sx={{ px: 5 }}>
                     <Stack width="50%" gap={3} justifyContent="center">
                         <Typography variant="h6" sx={{fontWeight: 600 }}>{name}</Typography>
-                        <Typography variant="body1">Last activity: {timeAgo}</Typography>
+                        <Typography variant="body1">
+                            <FormattedMessage id="groups.lastActivity" />: {timeAgo}
+                        </Typography>
                     </Stack>
                     <Stack width="50%" gap={3}>
                         <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
@@ -60,7 +65,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                         transition: "background-color 0.15s, color 0.15s",
                     }}
                 >
-                    Detail
+                    <FormattedMessage id="common.detail" />
                 </NavLink>
             </Stack>
         </Box>
@@ -69,22 +74,34 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
 
 const GroupListContent = ({groups, isLoading, isError}: Props) => {
     if (isLoading) {
-        return <Typography>Loading...</Typography>;
+        return (
+            <Typography>
+                <FormattedMessage id="groups.loading" />
+            </Typography>
+        );
     }
     if (isError) {
-        return <Typography>Error loading groups.</Typography>;
+        return (
+            <Typography>
+                <FormattedMessage id="groups.error" />
+            </Typography>
+        );
     }
 
     return (
         <>
-            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>Active Groups</Typography>
+            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>
+                <FormattedMessage id="groups.active" />
+            </Typography>
             {(groups?.activeGroups || []).map((group) => (
                 <GroupListItem
                     key={group.id}
                     {...group}
                 />
             ))}
-            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>Inactive groups</Typography>
+            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>
+                <FormattedMessage id="groups.inactive" />
+            </Typography>
             {(groups?.inactiveGroups || []).map((group) => (
                 <GroupListItem
                     key={group.id}

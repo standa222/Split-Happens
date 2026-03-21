@@ -1,12 +1,11 @@
-import {Stack, Box, Typography, IconButton, DialogContent, Dialog} from "@mui/material";
+import {Stack, Box, Typography} from "@mui/material";
 import {OverallBalance} from "../../components/OverallBalance";
 import {GroupList} from "./GroupList";
 import {COLORS} from "../../constants/colors";
 import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
 import {useState} from "react";
-import {CreateGroupForm} from "../../components/CreateGroupForm";
 import {GroupFormModal} from "../../components/GroupFormModal";
+import { FormattedMessage } from "react-intl";
 
 const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
     return (
@@ -51,7 +50,7 @@ const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
                     textAlign: "center",
                 }}
             >
-                Create new group
+                <FormattedMessage id="groups.createButton" />
             </Typography>
         </Stack>
     );
