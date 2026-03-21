@@ -228,7 +228,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                     }}
                     disabled={isPending}
                 >
-                    {isEditMode ? (isPending ? "Saving..." : "Save Changes") : (isPending ? "Adding..." : "Add expense")}
+                    {isEditMode ? (isPending ? "Saving..." : "Save Changes") : (isPending ? "Adding..." : "Create group")}
                 </Button>
             </Box>
         </Box>

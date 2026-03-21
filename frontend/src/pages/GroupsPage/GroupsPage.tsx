@@ -6,6 +6,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {useState} from "react";
 import {CreateGroupForm} from "../../components/CreateGroupForm";
+import {GroupFormModal} from "../../components/GroupFormModal";
 
 const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
     return (
@@ -68,36 +69,10 @@ export const GroupsPage = () => {
                 </Stack>
                 <GroupList />
             </Box>
-            <Dialog
+            <GroupFormModal
                 open={createGroupModalOpen}
                 onClose={() => setCreateGroupModalOpen(false)}
-                fullWidth
-                maxWidth="lg"
-                slotProps={{
-                    paper: {
-                        sx: {
-                            backgroundColor: COLORS.SECONDARY,
-                            borderRadius: 10,
-                            pt: 2,
-                            border: `5px solid ${COLORS.PRIMARY}`,
-                        },
-                    },
-                }}
-            >
-                <IconButton
-                    aria-label="close"
-                    onClick={() => setCreateGroupModalOpen(false)}
-                    sx={{ position: "absolute", right: 12, top: 12, color: COLORS.PRIMARY }}
-                >
-                    <CloseIcon sx={{ fontSize: 40 }} />
-                </IconButton>
-
-                <DialogContent>
-                    <CreateGroupForm
-                        onClose={() => setCreateGroupModalOpen(false)}
-                    />
-                </DialogContent>
-            </Dialog>
+            />
         </>
     );
 }
