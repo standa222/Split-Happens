@@ -85,7 +85,7 @@ public class GroupServiceImpl implements GroupService {
     public GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
-        if (!group.getMembers().contains(user)) {
+        if (!group.getMembers().stream().map(User::getId).toList().contains(user.getId())) {
             throw new RuntimeException("User is not a member of the group"); // TODO: Custom exception
         }
         List<User> members = userRepository.findAllById(updateDto.getMemberIds());
