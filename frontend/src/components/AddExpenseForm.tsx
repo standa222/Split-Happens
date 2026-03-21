@@ -21,10 +21,11 @@ import {TGroupDetail} from "../types/dto/TGroupDetail";
 import {Controller, useForm} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
 import {zodResolver} from "@hookform/resolvers/zod";
-import currencyCodes from "currency-codes";
 import {useGroupDetail, useGroupsQuery} from "../hooks/useGroupsQuery";
 import {TUser} from "../types/TUser";
 import {useAddExpense} from "../hooks/useAddExpense";
+import {favCurrencies} from "../utils/currencyUtils";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
     onClose?: () => void;
@@ -71,7 +72,9 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
         setParticipants(groupDetail?.members || []);
     }, [groupDetail]);
 
-    const { mutate, isPending, isError, error } = useAddExpense();
+    const { mutate, isPending, isError, error } = useAddExpense({
+        onSuccess: () => onClose?.(),
+    });
 
     const {
         control,
@@ -113,31 +116,19 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
 
         console.log(payload);
         mutate(payload);
-    }
-
-    // TODO choose how to use currencies - all / or just choose few popular
-    const allCurrencies = currencyCodes.data
-        .filter((c) => c.code) // ISO 4217
-        .map((c) => ({ code: c.code, name: c.currency }));
-
-    const favCurrencies = [
-        { code: "CZK", name: "Czech Crown" },
-        { code: "USD", name: "US Dollar" },
-        { code: "EUR", name: "Euro" },
-        { code: "GBP", name: "British Pound" },
-    ]
+    };
 
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2 }}>
-                Add new expense
+                <FormattedMessage id="expense.add.title" />
             </Typography>
 
             <Stack>
                 <Box display="flex" gap={3} alignItems="center">
                     <Stack flex={1}>
                         <TextField
-                            label="Title"
+                            label={<FormattedMessage id="expense.fields.title" />}
                             size="small"
                             {...register("title")}
                             error={!!errors.title}
@@ -152,7 +143,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                             defaultValue=""
                             render={({ field }) => (
                                 <TextField
-                                    label="Category"
+                                    label={<FormattedMessage id="expense.fields.category" />}
                                     select
                                     size="small"
                                     value={field.value ?? ""}
@@ -162,10 +153,10 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                     error={!!errors.category}
                                     helperText={errors.category?.message}
                                 >
-                                    <MenuItem value="Fun">Fun</MenuItem>
-                                    <MenuItem value="Food">Food</MenuItem>
-                                    <MenuItem value="Transport">Transport</MenuItem>
-                                    <MenuItem value="Utilities">Utilities</MenuItem>
+                                    <MenuItem value="Fun"><FormattedMessage id="expense.category.fun" /></MenuItem>
+                                    <MenuItem value="Food"><FormattedMessage id="expense.category.food" /></MenuItem>
+                                    <MenuItem value="Transport"><FormattedMessage id="expense.category.transport" /></MenuItem>
+                                    <MenuItem value="Utilities"><FormattedMessage id="expense.category.utilities" /></MenuItem>
                                 </TextField>
                             )}
                         />
@@ -174,12 +165,12 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     <Stack flex={1}>
                         <FormControl>
                             <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                Paid By Mode
+                                <FormattedMessage id="expense.mode.paidBy" />
                             </FormLabel>
                             <RadioGroup row value={paidMode} onChange={(e) => setPaidMode(e.target.value as Mode)}>
-                                <FormControlLabel value="fixed" control={<Radio size="small" />} label="Fixed" />
-                                <FormControlLabel value="partial" control={<Radio size="small" />} label="Partial" />
-                                <FormControlLabel value="percentage" control={<Radio size="small" />} label="Percentage" />
+                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                             </RadioGroup>
                         </FormControl>
                     </Stack>
@@ -216,7 +207,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
-                                            label="Group"
+                                            label={<FormattedMessage id="expense.fields.group" />}
                                             inputRef={field.ref}
                                             error={!!errors.groupId}
                                             helperText={errors.groupId?.message}
@@ -230,7 +221,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     <Box display="flex" gap={3} flex={1} alignItems="center">
                         <Stack flex={1}>
                             <TextField
-                                label="Amount"
+                                label={<FormattedMessage id="expense.fields.amount" />}
                                 size="small"
                                 {...register("totalAmount", { valueAsNumber: true })}
                                 error={!!errors.totalAmount}
@@ -242,7 +233,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                             <Controller
                                 name="currency"
                                 control={control}
-                                defaultValue=""
+                                defaultValue={initGroup?.defaultCurrency ?? ""}
                                 render={({ field }) => (
                                     <Autocomplete
                                         size="small"
@@ -257,13 +248,13 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                         }}
                                         renderInput={(params) => (
                                             <TextField
-                                                label="Currency"
+                                                label={<FormattedMessage id="expense.fields.currency" />}
                                                 value={field.value ?? ""}
                                                 onChange={field.onChange}
                                                 onBlur={field.onBlur}
                                                 inputRef={field.ref}
-                                                error={!!errors.category}
-                                                helperText={errors.category?.message}
+                                                error={!!errors.currency}
+                                                helperText={errors.currency?.message}
                                                 {...params}
                                             />
                                         )}
@@ -276,12 +267,12 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     <Stack flex={1}>
                         <FormControl>
                             <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                Split Between Mode
+                                <FormattedMessage id="expense.mode.splitBetween" />
                             </FormLabel>
                             <RadioGroup row value={splitMode} onChange={(e) => setSplitMode(e.target.value as Mode)}>
-                                <FormControlLabel value="fixed" control={<Radio size="small" />} label="Fixed" />
-                                <FormControlLabel value="partial" control={<Radio size="small" />} label="Partial" />
-                                <FormControlLabel value="percentage" control={<Radio size="small" />} label="Percentage" />
+                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                             </RadioGroup>
                         </FormControl>
                     </Stack>
@@ -298,7 +289,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     {/* Header row */}
                     <Grid size={3.5}>
                         <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                            Who is involved?
+                            <FormattedMessage id="expense.whoIsInvolved" />
                         </Typography>
                     </Grid>
 
@@ -326,7 +317,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                 pointerEvents: "none",
                             }}
                         >
-                            PAID BY
+                            <FormattedMessage id="expense.paidByHeader" />
                         </Typography>
                     </Grid>
 
@@ -356,7 +347,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                 pointerEvents: "none",
                             }}
                         >
-                            SPLIT BETWEEN
+                            <FormattedMessage id="expense.splitBetweenHeader" />
                         </Typography>
                     </Grid>
 
@@ -465,7 +456,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     }}
                     disabled={isPending}
                 >
-                    {isPending ? "Adding..." : "Add expense"}
+                    {isPending ? <FormattedMessage id="expense.action.adding" /> : <FormattedMessage id="expense.action.add" />}
                 </Button>
             </Box>
         </Box>

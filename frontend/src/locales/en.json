@@ -1,0 +1,123 @@
+{
+  "nav.home": "Home",
+  "nav.groups": "Groups",
+  "nav.friends": "Friends",
+  "nav.profile": "Profile",
+  "nav.notifications": "Notifications",
+  "nav.logout": "Logout",
+
+  "login.email": "Email",
+  "login.password": "Password",
+  "login.submit": "Login",
+  "login.submitting": "Logging in...",
+  "login.noAccount": "Don't have an account?",
+  "login.signUp": "Sign up",
+
+  "expense.add.title": "Add new expense",
+  "expense.fields.title": "Title",
+  "expense.fields.category": "Category",
+  "expense.fields.group": "Group",
+  "expense.fields.amount": "Amount",
+  "expense.fields.currency": "Currency",
+
+  "expense.category.fun": "Fun",
+  "expense.category.food": "Food",
+  "expense.category.transport": "Transport",
+  "expense.category.utilities": "Utilities",
+
+  "expense.mode.paidBy": "Paid By Mode",
+  "expense.mode.splitBetween": "Split Between Mode",
+  "expense.mode.fixed": "Fixed",
+  "expense.mode.partial": "Partial",
+  "expense.mode.percentage": "Percentage",
+
+  "expense.whoIsInvolved": "Who is involved?",
+  "expense.paidByHeader": "PAID BY",
+  "expense.splitBetweenHeader": "SPLIT BETWEEN",
+
+  "expense.action.add": "Add expense",
+  "expense.action.adding": "Adding...",
+
+  "common.close": "Close",
+
+  "common.unknownUser": "Unknown User",
+
+  "group.form.title.edit": "Edit Group",
+  "group.form.title.create": "Create New Group",
+
+  "group.form.fields.name": "Group Name",
+  "group.form.fields.defaultCurrency": "Default currency",
+  "group.form.fields.permissionMode": "Permission mode",
+
+  "group.form.permissionMode.soft": "Soft",
+  "group.form.permissionMode.hard": "Hard",
+
+  "group.form.members.title": "Members Selection",
+  "group.form.members.search.label": "Search and Add Users",
+  "group.form.members.search.placeholder": "Type to search...",
+
+  "group.form.action.saving": "Saving...",
+  "group.form.action.saveChanges": "Save Changes",
+  "group.form.action.creating": "Creating...",
+  "group.form.action.create": "Create group",
+
+  "balance.label": "Balance",
+
+  "debts.actions.markPaid": "Mark Paid",
+  "debts.actions.generateQr": "Generate QR",
+  "debts.actions.notify": "Notify",
+
+  "debts.settled": "{isCurrentUser, select, true {You are} other {{name} is}} settled in this group.",
+  "debts.owesLine": "{debtorIsCurrent, select, true {You owe} other {{debtorName} owes}} {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+
+  "overallBalance.label": "Your overall balance is:",
+  "overallBalance.loading": "Your overall balance is: Loading...",
+  "overallBalance.error": "Error loading your overall balance.",
+
+  "groupDetail.loading": "Loading...",
+  "groupDetail.error": "Error loading group details.",
+
+  "groupDetail.tabs.expenses": "Expenses",
+  "groupDetail.tabs.members": "Members",
+  "groupDetail.tabs.statistics": "Statistics",
+
+  "groupDetail.statistics.placeholder": "Statistics content for {name}",
+
+  "groupDetail.members.you": "(You)",
+  "groupDetail.members.showDebts": "Show debts",
+
+  "groupDetail.expenses.paidBy": "paid by",
+  "groupDetail.expenses.yourSplit": "your split",
+  "groupDetail.expenses.totalPaid": "total paid",
+  "groupDetail.expenses.detail": "Detail",
+
+  "common.detail": "Detail",
+
+  "groups.createButton": "Create new group",
+  "groups.loading": "Loading...",
+  "groups.error": "Error loading groups.",
+  "groups.active": "Active Groups",
+  "groups.inactive": "Inactive groups",
+  "groups.lastActivity": "Last activity",
+
+  "home.groups.title": "Groups",
+  "home.groups.loading": "Loading...",
+  "home.groups.error": "Error loading groups.",
+
+  "home.activity.title": "Recent activity",
+  "home.activity.loading": "Loading...",
+  "home.activity.error": "Error loading recent activity.",
+  "home.activity.yourSplit": "Your split:",
+  "home.activity.item": "{user} {action} in {group}",
+
+  "register.firstName": "First name",
+  "register.lastName": "Last name",
+  "register.submit": "Register",
+  "register.submitting": "Registering...",
+  "register.haveAccount": "Already have an account?",
+  "register.loginCta": "Log in",
+
+  "notFound.title": "404 - Page Not Found",
+  "notFound.description": "The page you are looking for does not exist.",
+  "notFound.goHome": "Go to Home"
+}

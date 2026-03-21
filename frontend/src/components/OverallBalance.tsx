@@ -2,6 +2,7 @@ import {useOverallBalanceQuery} from "../hooks/useOverallBalanceQuery";
 import { Stack, Typography } from "@mui/material";
 import {COLORS} from "../constants/colors";
 import {useAuthStore} from "../store/authStore";
+import { FormattedMessage } from "react-intl";
 
 const Content = () => {
     const { data: groups, isLoading, isError } = useOverallBalanceQuery();
@@ -10,14 +11,14 @@ const Content = () => {
     if (isLoading) {
         return (
             <Typography variant="h3">
-                Your overall balance is: Loading...
+                <FormattedMessage id="overallBalance.loading" />
             </Typography>
         )
     }
     if (isError) {
         return (
             <Typography variant="h3">
-                Error loading your overall balance.
+                <FormattedMessage id="overallBalance.error" />
             </Typography>
         )
     }
@@ -29,7 +30,7 @@ const Content = () => {
     return (
         <Stack direction="row" spacing={2}>
             <Typography variant="h3">
-                Your overall balance is:
+                <FormattedMessage id="overallBalance.label" />
             </Typography>
             <Typography variant="h3"
                         sx = {{

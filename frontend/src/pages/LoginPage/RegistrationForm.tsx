@@ -1,28 +1,33 @@
-import { Box, Button, CircularProgress, TextField, Typography } from "@mui/material"
-import {COLORS} from "../../constants/colors";
-import {useLogin} from "../../hooks/useLogin";
-import {loginFormSchema, TLoginForm} from "../../types/form/TLoginForm";
+import {useRegisterUser} from "../../hooks/useRegisterUser";
 import {useForm} from "react-hook-form";
+import {registerFormSchema, TRegisterForm} from "../../types/form/TRegisterForm";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {FormattedMessage} from "react-intl";
+import {Box, TextField, Button, Typography} from "@mui/material";
+import {COLORS} from "../../constants/colors";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
-    onSwitchToRegister: () => void;
+    onSwitchToLogin: () => void;
 }
 
-export function LoginForm({ onSwitchToRegister }: Props) {
-    const { mutate, isPending, isError, error } = useLogin();
+export function RegistrationForm({ onSwitchToLogin }: Props) {
+    const { mutate, isPending, isError, error } = useRegisterUser({
+        onSuccess: () => {
+            console.log("Registration successful, switching to login form");
+            onSwitchToLogin();
+        }
+    });
 
     const {
         register,
         handleSubmit,
         formState: { errors }
-    } = useForm<TLoginForm>({
-        resolver: zodResolver(loginFormSchema)
+    } = useForm<TRegisterForm>({
+        resolver: zodResolver(registerFormSchema)
     })
 
-    const onSubmit = (data: TLoginForm) => {
-        console.log("Submitting login form with data:", data);
+    const onSubmit = (data: TRegisterForm) => {
+        console.log("Submitting registration form with data:", data);
         mutate(data)
     }
 
@@ -35,13 +40,26 @@ export function LoginForm({ onSwitchToRegister }: Props) {
             gap={2}
         >
             <TextField
+                label={<FormattedMessage id="register.firstName" />}
+                type="text"
+                {...register("firstName")}
+                error={!!errors.firstName}
+                helperText={errors.firstName?.message}
+            />
+            <TextField
+                label={<FormattedMessage id="register.lastName" />}
+                type="text"
+                {...register("lastName")}
+                error={!!errors.lastName}
+                helperText={errors.lastName?.message}
+            />
+            <TextField
                 label={<FormattedMessage id="login.email" />}
                 type="text"
                 {...register("email")}
                 error={!!errors.email}
                 helperText={errors.email?.message}
             />
-
             <TextField
                 label={<FormattedMessage id="login.password" />}
                 type="password"
@@ -60,20 +78,18 @@ export function LoginForm({ onSwitchToRegister }: Props) {
                     whiteSpace: "nowrap",
                 }}
                 type="submit"
-                variant="contained"
-                fullWidth
                 disabled={isPending}
-                startIcon={isPending ? <CircularProgress size={18} color="inherit" /> : null}
             >
-                {isPending
-                    ? <FormattedMessage id="login.submitting" />
-                    : <FormattedMessage id="login.submit" />
-                }
+                {isPending ? (
+                    <FormattedMessage id="register.submitting" />
+                ) : (
+                    <FormattedMessage id="register.submit" />
+                )}
             </Button>
-            <Typography sx={{ fontSize: 20, }}>
-                {<FormattedMessage id= "login.noAccount" />}{" "}
+            <Typography sx={{ fontSize: 20 }}>
+                <FormattedMessage id="register.haveAccount" />{" "}
                 <Button
-                    onClick={onSwitchToRegister}
+                    onClick={onSwitchToLogin}
                     sx={{
                         padding: 0,
                         minWidth: 0,
@@ -83,7 +99,7 @@ export function LoginForm({ onSwitchToRegister }: Props) {
                         textTransform: "none",
                     }}
                 >
-                    {<FormattedMessage id="login.signUp" />}
+                    <FormattedMessage id="register.loginCta" />
                 </Button>
             </Typography>
         </Box>

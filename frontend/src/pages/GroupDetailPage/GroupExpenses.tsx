@@ -6,6 +6,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import WifiIcon from '@mui/icons-material/Wifi';
 import {useState} from "react";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
     transactions: TTransaction[];
@@ -14,11 +15,15 @@ type Props = {
 const PaidBy = ( { payers }: { payers: string[] }) => {
     if (payers.length === 0) return null;
     if (payers.length === 1) {
-        return <Typography variant="body2" color={COLORS.PRIMARY}>paid by: {payers[0]}</Typography>;
+        return (
+            <Typography variant="body2">
+                <FormattedMessage id="groupDetail.expenses.paidBy" />: {payers[0]}
+            </Typography>
+        );
     } else {
         return (
         <Typography variant="body2" color={COLORS.PRIMARY}>
-            paid by: {payers[0]} + {payers.length - 1}
+            <FormattedMessage id="groupDetail.expenses.paidBy" />: {payers[0]} + {payers.length - 1}
         </Typography>
         );
     }
@@ -59,13 +64,13 @@ const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
                                 fontWeight="bold"
                                 color={isNegative ? COLORS.RED : COLORS.PRIMARY}
                             >
-                                your split: {isNegative ? "" : ""}{userSplit.toFixed(2)} $
+                                <FormattedMessage id="groupDetail.expenses.yourSplit" />: {userSplit.toFixed(2)} $
                             </Typography>
                         </Stack>
 
                         <Stack width="50%" gap={1}>
                             <Typography color={COLORS.PRIMARY}>
-                                total paid: {transaction.totalAmount.toFixed(2)} $
+                                <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} $
                             </Typography>
                             <PaidBy payers={paidBy} />
                         </Stack>
@@ -84,7 +89,7 @@ const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
                         minWidth: 80,
                     }}
                 >
-                    Detail
+                    <FormattedMessage id="groupDetail.expenses.detail" />
                 </Button>
             </Stack>
             <Divider />

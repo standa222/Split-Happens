@@ -3,6 +3,9 @@ import {OverallBalance} from "../../components/OverallBalance";
 import {GroupList} from "./GroupList";
 import {COLORS} from "../../constants/colors";
 import AddIcon from "@mui/icons-material/Add";
+import {useState} from "react";
+import {GroupFormModal} from "../../components/GroupFormModal";
+import { FormattedMessage } from "react-intl";
 
 const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
     return (
@@ -47,20 +50,28 @@ const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
                     textAlign: "center",
                 }}
             >
-                Create new group
+                <FormattedMessage id="groups.createButton" />
             </Typography>
         </Stack>
     );
 }
 
 export const GroupsPage = () => {
+    const [createGroupModalOpen, setCreateGroupModalOpen] = useState(false);
+
     return (
-        <Box width="100%">
-            <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
-                <OverallBalance />
-                <CreateGroupButton />
-            </Stack>
-            <GroupList />
-        </Box>
+        <>
+            <Box width="100%">
+                <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
+                    <OverallBalance />
+                    <CreateGroupButton onClick={() => {setCreateGroupModalOpen(true)}} />
+                </Stack>
+                <GroupList />
+            </Box>
+            <GroupFormModal
+                open={createGroupModalOpen}
+                onClose={() => setCreateGroupModalOpen(false)}
+            />
+        </>
     );
 }

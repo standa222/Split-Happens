@@ -1,0 +1,123 @@
+{
+  "nav.home": "Domů",
+  "nav.groups": "Skupiny",
+  "nav.friends": "Přátelé",
+  "nav.profile": "Profil",
+  "nav.notifications": "Oznámení",
+  "nav.logout": "Odhlásit se",
+
+  "login.email": "Email",
+  "login.password": "Heslo",
+  "login.submit": "Přihlásit se",
+  "login.submitting": "Přihlašování...",
+  "login.noAccount": "Nemáte účet?",
+  "login.signUp": "Zaregistrovat se",
+
+  "expense.add.title": "Přidat nový výdaj",
+  "expense.fields.title": "Název",
+  "expense.fields.category": "Kategorie",
+  "expense.fields.group": "Skupina",
+  "expense.fields.amount": "Částka",
+  "expense.fields.currency": "Měna",
+
+  "expense.category.fun": "Zábava",
+  "expense.category.food": "Jídlo",
+  "expense.category.transport": "Doprava",
+  "expense.category.utilities": "Služby",
+
+  "expense.mode.paidBy": "Režim platby",
+  "expense.mode.splitBetween": "Režim rozdělení",
+  "expense.mode.fixed": "Pevně",
+  "expense.mode.partial": "Poměrně",
+  "expense.mode.percentage": "Procenta",
+
+  "expense.whoIsInvolved": "Kdo se účastní?",
+  "expense.paidByHeader": "ZAPLACENO",
+  "expense.splitBetweenHeader": "ROZDĚLIT",
+
+  "expense.action.add": "Přidat výdaj",
+  "expense.action.adding": "Přidávám...",
+
+  "common.close": "Zavřít",
+
+  "common.unknownUser": "Neznámý uživatel",
+
+  "group.form.title.edit": "Upravit skupinu",
+  "group.form.title.create": "Vytvořit novou skupinu",
+
+  "group.form.fields.name": "Název skupiny",
+  "group.form.fields.defaultCurrency": "Výchozí měna",
+  "group.form.fields.permissionMode": "Režim oprávnění",
+
+  "group.form.permissionMode.soft": "Volný",
+  "group.form.permissionMode.hard": "Striktní",
+
+  "group.form.members.title": "Výběr členů",
+  "group.form.members.search.label": "Vyhledat a přidat uživatele",
+  "group.form.members.search.placeholder": "Pište pro vyhledávání...",
+
+  "group.form.action.saving": "Ukládám...",
+  "group.form.action.saveChanges": "Uložit změny",
+  "group.form.action.creating": "Vytvářím...",
+  "group.form.action.create": "Vytvořit skupinu",
+
+  "balance.label": "Zůstatek",
+
+  "debts.actions.markPaid": "Označit jako zaplacené",
+  "debts.actions.generateQr": "Vygenerovat QR",
+  "debts.actions.notify": "Upozornit",
+
+  "debts.settled": "{isCurrentUser, select, true {Jste} other {{name} je}} v této skupině vyrovnán/a.",
+  "debts.owesLine": "{debtorIsCurrent, select, true {Dlužíte} other {{debtorName} dluží}} {creditorIsCurrent, select, true {vám} other {{creditorName}}} {amount} $",
+
+  "overallBalance.label": "Váš celkový zůstatek je:",
+  "overallBalance.loading": "Váš celkový zůstatek je: Načítám...",
+  "overallBalance.error": "Nepodařilo se načíst váš celkový zůstatek.",
+
+  "groupDetail.loading": "Načítám...",
+  "groupDetail.error": "Chyba při načítání detailu skupiny.",
+
+  "groupDetail.tabs.expenses": "Výdaje",
+  "groupDetail.tabs.members": "Členové",
+  "groupDetail.tabs.statistics": "Statistiky",
+
+  "groupDetail.statistics.placeholder": "Obsah statistik pro {name}",
+
+  "groupDetail.members.you": "(Vy)",
+  "groupDetail.members.showDebts": "Zobrazit dluhy",
+
+  "groupDetail.expenses.paidBy": "zaplatil/a",
+  "groupDetail.expenses.yourSplit": "váš podíl",
+  "groupDetail.expenses.totalPaid": "celkem zaplaceno",
+  "groupDetail.expenses.detail": "Detail",
+
+  "common.detail": "Detail",
+
+  "groups.createButton": "Vytvořit novou skupinu",
+  "groups.loading": "Načítám...",
+  "groups.error": "Chyba při načítání skupin.",
+  "groups.active": "Aktivní skupiny",
+  "groups.inactive": "Neaktivní skupiny",
+  "groups.lastActivity": "Poslední aktivita",
+
+  "home.groups.title": "Skupiny",
+  "home.groups.loading": "Načítám...",
+  "home.groups.error": "Chyba při načítání skupin.",
+
+  "home.activity.title": "Nedávná aktivita",
+  "home.activity.loading": "Načítám...",
+  "home.activity.error": "Chyba při načítání nedávné aktivity.",
+  "home.activity.yourSplit": "Váš podíl:",
+  "home.activity.item": "{user} {action} ve skupině {group}",
+
+  "register.firstName": "Jméno",
+  "register.lastName": "Příjmení",
+  "register.submit": "Zaregistrovat se",
+  "register.submitting": "Registruji...",
+  "register.haveAccount": "Už máte účet?",
+  "register.loginCta": "Přihlásit se",
+
+  "notFound.title": "404 - Stránka nenalezena",
+  "notFound.description": "Požadovaná stránka neexistuje.",
+  "notFound.goHome": "Přejít na úvod"
+}

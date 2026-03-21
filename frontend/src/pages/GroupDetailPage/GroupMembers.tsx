@@ -7,6 +7,7 @@ import {BalanceDisplay} from "../../components/BalanceDisplay";
 import {useAuthStore} from "../../store/authStore";
 import {useState} from "react";
 import {DebtsList} from "../../components/DebtsList";
+import { FormattedMessage } from "react-intl";
 
 type Props = {
     members: TUser[];
@@ -43,7 +44,7 @@ const MemberItem = ({member, memberDebts}: MemberProps) => {
                 <Stack direction="row" sx={{ width: "100%", pl: 3, alignItems: 'center',}}>
                     <Stack flex={1} gap={3}>
                         <Typography variant="h6" sx={{fontWeight: 600 }}>
-                            {member.firstName} {member.lastName} {member.id === userId ? "(You)" : ""}
+                            {member.firstName} {member.lastName} {member.id === userId ? (<FormattedMessage id="groupDetail.members.you" />) : ""}
                         </Typography>
                         <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
                     </Stack>
@@ -63,7 +64,7 @@ const MemberItem = ({member, memberDebts}: MemberProps) => {
                             padding: "12px 20px"
                         }}
                     >
-                        Show debts
+                        <FormattedMessage id="groupDetail.members.showDebts" />
                     </Button>
                 )}
                 </Stack>
