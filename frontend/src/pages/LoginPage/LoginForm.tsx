@@ -4,12 +4,14 @@ import {useLogin} from "../../hooks/useLogin";
 import {loginFormSchema, TLoginForm} from "../../types/form/TLoginForm";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {useIntl} from "react-intl";
 
 type Props = {
     onSwitchToRegister: () => void;
 }
 
 export function LoginForm({ onSwitchToRegister }: Props) {
+    const intl = useIntl();
     const { mutate, isPending, isError, error } = useLogin();
 
     const {
@@ -34,7 +36,7 @@ export function LoginForm({ onSwitchToRegister }: Props) {
             gap={2}
         >
             <TextField
-                label="Email"
+                label={intl.formatMessage({ id: "login.email" })}
                 type="text"
                 {...register("email")}
                 error={!!errors.email}
@@ -42,7 +44,7 @@ export function LoginForm({ onSwitchToRegister }: Props) {
             />
 
             <TextField
-                label="Password"
+                label={intl.formatMessage({ id: "login.password" })}
                 type="password"
                 {...register("password")}
                 error={!!errors.password}
@@ -64,10 +66,13 @@ export function LoginForm({ onSwitchToRegister }: Props) {
                 disabled={isPending}
                 startIcon={isPending ? <CircularProgress size={18} color="inherit" /> : null}
             >
-                {isPending ? "Logging in..." : "Login"}
+                {isPending
+                    ? intl.formatMessage({ id: "login.submitting" })
+                    : intl.formatMessage({ id: "login.submit" })
+                }
             </Button>
             <Typography sx={{ fontSize: 20, }}>
-                Don't have an account?{" "}
+                {intl.formatMessage({ id: "login.noAccount" })}{" "}
                 <Button
                     onClick={onSwitchToRegister}
                     sx={{
@@ -79,7 +84,7 @@ export function LoginForm({ onSwitchToRegister }: Props) {
                         textTransform: "none",
                     }}
                 >
-                    Sign up
+                    {intl.formatMessage({ id: "login.signUp" })}
                 </Button>
             </Typography>
         </Box>

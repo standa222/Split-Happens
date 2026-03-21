@@ -1,0 +1,15 @@
+{
+  "nav.home": "Home",
+  "nav.groups": "Groups",
+  "nav.friends": "Friends",
+  "nav.profile": "Profile",
+  "nav.notifications": "Notifications",
+  "nav.logout": "Logout",
+
+  "login.email": "Email",
+  "login.password": "Password",
+  "login.submit": "Login",
+  "login.submitting": "Logging in...",
+  "login.noAccount": "Don't have an account?",
+  "login.signUp": "Sign up"
+}

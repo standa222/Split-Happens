@@ -9,30 +9,36 @@ import {Page404} from "./pages/Page404";
 import {AppLayout} from "./components/AppLayout";
 import {ThemeProvider} from "@mui/material";
 import { theme } from "./theme/theme";
+import {IntlProvider} from "react-intl";
+import {DEFAULT_LOCALE, messages} from "./locales";
 
 const queryClient = new QueryClient();
 
 export function App() {
-    return (
-        <ThemeProvider theme={theme}>
-            <QueryClientProvider client={queryClient}>
-                <Router>
-                    <Routes>
-                        {/* Public Route */}
-                        <Route path="/login" element={<LoginPage />} />
+    const locale = DEFAULT_LOCALE;
 
-                        {/* Authenticated Wrapper */}
-                        <Route element={<AppLayout />}>
-                            <Route element={<ProtectedRoute />}>
-                                {generateRoutes(navigations)}
-                                {/* 404 */}
-                                <Route path="*" element={<Page404 />} />
+    return (
+        <IntlProvider locale={locale} messages={messages[locale]}>
+            <ThemeProvider theme={theme}>
+                <QueryClientProvider client={queryClient}>
+                    <Router>
+                        <Routes>
+                            {/* Public Route */}
+                            <Route path="/login" element={<LoginPage />} />
+
+                            {/* Authenticated Wrapper */}
+                            <Route element={<AppLayout />}>
+                                <Route element={<ProtectedRoute />}>
+                                    {generateRoutes(navigations)}
+                                    {/* 404 */}
+                                    <Route path="*" element={<Page404 />} />
+                                </Route>
                             </Route>
-                        </Route>
-                    </Routes>
-                </Router>
-                {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-            </QueryClientProvider>
-        </ThemeProvider>
+                        </Routes>
+                    </Router>
+                    {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+                </QueryClientProvider>
+            </ThemeProvider>
+        </IntlProvider>
     );
 }
