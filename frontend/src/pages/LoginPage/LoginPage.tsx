@@ -1,27 +1,13 @@
-import { useForm } from "react-hook-form"
-import {useLogin} from "../../hooks/useLogin";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {loginFormSchema, TLoginForm} from "../../types/form/TLoginForm";
 import { LoginForm } from "./LoginForm";
-import { Stack} from "@mui/material";
+import {Stack} from "@mui/material";
 import {COLORS} from "../../constants/colors";
+import {useState} from "react";
+import {RegistrationForm} from "./RegistrationForm";
 
+type ShowForm = "login" | "register";
 
 export const LoginPage = () => {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<TLoginForm>({
-        resolver: zodResolver(loginFormSchema)
-    })
-
-    const { mutate, isPending, isError, error } = useLogin();
-
-    const onSubmit = (data: TLoginForm) => {
-        console.log("Submitting login form with data:", data);
-        mutate(data)
-    }
+    const [showForm, setShowForm] = useState<ShowForm>("login");
 
     return (
         <Stack
@@ -34,13 +20,15 @@ export const LoginPage = () => {
             justifyContent="center"
         >
             <Stack maxWidth="50%">
-                <LoginForm
-                    onSubmit={handleSubmit(onSubmit)}
-                    register={register}
-                    errors={errors}
-                    isPending={isPending}
-                    isError={isError}
-                />
+                {showForm === "login" ? (
+                    <LoginForm
+                        onSwitchToRegister={() => setShowForm("register")}
+                    />
+                ) : (
+                    <RegistrationForm
+                        onSwitchToLogin={() => setShowForm("login")}
+                    />
+                )}
             </Stack>
         </Stack>
   );
