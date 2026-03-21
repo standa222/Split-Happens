@@ -2,7 +2,9 @@ package cz.splithappens.security;
 
 import cz.splithappens.model.User;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -12,9 +14,18 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
+
+    @Value("${jwt.secret}")
+    private String secret;
+
     @Getter
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long jwtExpirationInMs = 86400000; // 1 day
+    private Key key;
+    private final long jwtExpirationInMs = 86400000;
+
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    }
 
     public String generateToken(User user) {
         Date now = new Date();
@@ -28,5 +39,4 @@ public class JwtUtil {
                 .signWith(key)
                 .compact();
     }
-
 }

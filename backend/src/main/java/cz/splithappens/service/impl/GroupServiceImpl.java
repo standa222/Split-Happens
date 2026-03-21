@@ -82,6 +82,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
