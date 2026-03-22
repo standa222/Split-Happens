@@ -119,5 +119,21 @@
 
   "notFound.title": "404 - Stránka nenalezena",
   "notFound.description": "Požadovaná stránka neexistuje.",
-  "notFound.goHome": "Přejít na úvod"
+  "notFound.goHome": "Přejít na úvod",
+
+  "expense.detail.title": "Detail výdaje",
+  "expense.detail.empty": "Není vybrána žádná transakce.",
+  "expense.detail.createdAt": "Vytvořeno",
+  "expense.detail.total": "Celkem",
+  "expense.detail.yourSplit": "Váš podíl",
+  "expense.detail.type": "Typ",
+  "expense.detail.type.expense": "Výdaj",
+  "expense.detail.type.payment": "Platba",
+  "expense.detail.paidBy": "Zaplatil/a",
+  "expense.detail.splitBetween": "Rozděleno mezi",
+  "expense.detail.none": "—",
+
+  "expense.edit.title": "Upravit výdaj",
+  "expense.action.save": "Uložit změny",
+  "expense.action.saving": "Ukládám..."
 }

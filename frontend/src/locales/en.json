@@ -119,5 +119,21 @@
 
   "notFound.title": "404 - Page Not Found",
   "notFound.description": "The page you are looking for does not exist.",
-  "notFound.goHome": "Go to Home"
+  "notFound.goHome": "Go to Home",
+
+  "expense.detail.title": "Expense detail",
+  "expense.detail.empty": "No transaction selected.",
+  "expense.detail.createdAt": "Created",
+  "expense.detail.total": "Total",
+  "expense.detail.yourSplit": "Your split",
+  "expense.detail.type": "Type",
+  "expense.detail.type.expense": "Expense",
+  "expense.detail.type.payment": "Payment",
+  "expense.detail.paidBy": "Paid by",
+  "expense.detail.splitBetween": "Split between",
+  "expense.detail.none": "—",
+
+  "expense.edit.title": "Edit expense",
+  "expense.action.save": "Save changes",
+  "expense.action.saving": "Saving..."
 }

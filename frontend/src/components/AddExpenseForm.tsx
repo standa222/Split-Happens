@@ -24,12 +24,15 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useGroupDetail, useGroupsQuery} from "../hooks/useGroupsQuery";
 import {TUser} from "../types/TUser";
 import {useAddExpense} from "../hooks/useAddExpense";
+import {useEditExpense} from "../hooks/useEditExpense";
 import {favCurrencies} from "../utils/currencyUtils";
 import { FormattedMessage } from "react-intl";
+import {TTransaction} from "../types/TTransaction";
 
 type Props = {
     onClose?: () => void;
     initGroup?: TGroupDetail;
+    initTransaction?: TTransaction;
 };
 
 type Mode = "fixed" | "partial" | "percentage";
@@ -55,7 +58,9 @@ const unitAdornment = (mode: Mode) => {
     return null;
 }
 
-export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
+export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) => {
+    const isEditMode = Boolean(initTransaction);
+
     const [paidMode, setPaidMode] = useState<Mode>("fixed");
     const [splitMode, setSplitMode] = useState<Mode>("fixed");
     const [groupId, setGroupId] = useState<number>(initGroup?.id ?? 0);
@@ -72,23 +77,62 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
         setParticipants(groupDetail?.members || []);
     }, [groupDetail]);
 
-    const { mutate, isPending, isError, error } = useAddExpense({
+    const { mutate: createMutate, isPending: isCreatePending } = useAddExpense({
         onSuccess: () => onClose?.(),
     });
+
+    const { mutate: editMutate, isPending: isEditPending } = useEditExpense({
+        onSuccess: () => onClose?.(),
+    });
+
+    const isPending = isEditMode ? isEditPending : isCreatePending;
 
     const {
         control,
         register,
         handleSubmit,
-        formState: { errors }
+        formState: { errors },
+        reset,
     } = useForm<TAddExpenseForm>({
         resolver: zodResolver(addExpenseFormSchema),
         defaultValues: {
+            title: initTransaction?.title ?? "",
+            category: "",
+            groupId: initGroup?.id ?? 0,
+            totalAmount: initTransaction?.totalAmount ?? 0,
+            currency: initGroup?.defaultCurrency ?? "",
             paidBy: [],
             splitBetween: [],
             transactionType: "EXPENSE",
-        }
+        },
     });
+
+    useEffect(() => {
+        if (!initTransaction) return;
+
+        // Force group context for edit mode.
+        setGroupId(initGroup?.id ?? 0);
+        reset((prev) => ({
+            ...prev,
+            groupId: initGroup?.id ?? prev.groupId,
+            currency: initGroup?.defaultCurrency ?? prev.currency,
+            title: initTransaction.title,
+            totalAmount: initTransaction.totalAmount,
+            transactionType: initTransaction.transactionType === "payment" ? "PAYMENT" : "EXPENSE",
+        }));
+
+        // Build rowState from balance changes: positive -> paidBy enabled, negative -> split enabled.
+        const nextRowState: Record<number, RowState> = {};
+        for (const item of initTransaction.items) {
+            nextRowState[item.user.id] = {
+                paidEnabled: item.balanceChange > 0,
+                paidValue: item.balanceChange > 0 ? item.balanceChange : 0,
+                splitEnabled: item.balanceChange < 0,
+                splitValue: item.balanceChange < 0 ? Math.abs(item.balanceChange) : 0,
+            };
+        }
+        setRowState(nextRowState);
+    }, [initTransaction, initGroup?.id, initGroup?.defaultCurrency, reset]);
 
     const onSubmit = (data: TAddExpenseForm) => {
         const paidBy: TAddExpenseForm["paidBy"] = (participants as unknown as TUser[])
@@ -114,14 +158,17 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
             transactionType: "EXPENSE",
         };
 
-        console.log(payload);
-        mutate(payload);
+        if (isEditMode) {
+            editMutate({ transactionId: initTransaction!.id, data: payload });
+        } else {
+            createMutate(payload);
+        }
     };
 
     return (
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2 }}>
-                <FormattedMessage id="expense.add.title" />
+                <FormattedMessage id={isEditMode ? "expense.edit.title" : "expense.add.title"} />
             </Typography>
 
             <Stack>
@@ -190,6 +237,7 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                                     isOptionEqualToValue={(option, value) => option.id === value.id}
                                     value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
                                     onChange={(_, selected) => {
+                                        if (isEditMode) return;
                                         field.onChange(selected?.id ?? 0);
                                         setGroupId(selected?.id ?? 0);
                                     }}
@@ -456,7 +504,11 @@ export const AddExpenseForm = ({ onClose, initGroup }: Props) => {
                     }}
                     disabled={isPending}
                 >
-                    {isPending ? <FormattedMessage id="expense.action.adding" /> : <FormattedMessage id="expense.action.add" />}
+                    {isPending ? (
+                        <FormattedMessage id={isEditMode ? "expense.action.saving" : "expense.action.adding"} />
+                    ) : (
+                        <FormattedMessage id={isEditMode ? "expense.action.save" : "expense.action.add"} />
+                    )}
                 </Button>
             </Box>
         </Box>
