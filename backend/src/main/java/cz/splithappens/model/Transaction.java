@@ -34,6 +34,6 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransactionItem> items = new ArrayList<>();
 }

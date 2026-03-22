@@ -75,11 +75,9 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
         transaction.setTitle(updateDto.getTitle());
-        // TODO - update items (maybe just delete all and create new ones)
-//        transaction.setItems(updateDto.getItems().stream()
-//                .map(transactionMapper::toItemEntity)
-//                .toList());
         transaction.setTotalAmount(updateDto.getTotalAmount());
+        transaction.getItems().clear();
+        transaction.getItems().addAll(createTransactionsItems(updateDto, transaction));
 
         Transaction newTransaction = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(transaction.getGroup().getId());
