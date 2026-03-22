@@ -7,6 +7,7 @@ import cz.splithappens.security.JwtUtil;
 import cz.splithappens.security.TokenBlacklist;
 import cz.splithappens.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +28,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -36,6 +39,8 @@ public class WebSecurityConfig {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final TokenBlacklist tokenBlacklist;
+    @Value("${APP_CORS_ALLOWED_ORIGINS:}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -75,21 +80,18 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        List<String> originsList = new ArrayList<>();
 
-        // **Allowed Origin Patterns:** Allow any localhost with any port
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:*", "https://localhost:*"));
+        if (allowedOrigins != null && !allowedOrigins.trim().isEmpty()) {
+            originsList.addAll(Arrays.asList(allowedOrigins.split(",")));
+        }
+        originsList.add("http://localhost:*");
+        originsList.add("https://localhost:*");
 
-        // **Allowed Methods:** Specify only the necessary HTTP methods
+        configuration.setAllowedOriginPatterns(originsList);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // **Allowed Headers:** Specify necessary headers
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
-
-        // **Exposed Headers:** Headers exposed to the client
         configuration.setExposedHeaders(List.of(HttpHeaders.LOCATION));
-
-        // **Allow Credentials:** Set to true if your application requires credentials
-        // (e.g., cookies)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
