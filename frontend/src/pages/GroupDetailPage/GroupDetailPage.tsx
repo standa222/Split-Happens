@@ -61,7 +61,7 @@ const GroupDetailSidebar = ({ activeTab, onTabChange, group }: {
 const GroupDetailTabContent = ({ activeTab, group }: { activeTab: GroupDetailState; group: TGroupDetail }) => {
     switch (activeTab) {
         case "expenses":
-            return <GroupExpenses transactions={group.transactions} />;
+            return <GroupExpenses transactions={group.transactions} group={group} />;
         case "members":
             return <GroupMembers members={group.members} debts={group.debts} />;
         case "statistics":

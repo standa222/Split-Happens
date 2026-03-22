@@ -11,6 +11,10 @@ import {BalanceDisplay} from "../../components/BalanceDisplay";
 import {useAuthStore} from "../../store/authStore";
 import { FormattedMessage, useIntl } from "react-intl";
 import { getDateFnsLocale } from "../../utils/dateFnsLocaleUtils";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import {Collapse, Divider} from "@mui/material";
+import {useState} from "react";
 
 type Props = {
     groups: GroupsByActivity;
@@ -72,6 +76,42 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
     )
 }
 
+const GroupSection = ({
+    titleId,
+    groups,
+    defaultOpen = true,
+}: {
+    titleId: string;
+    groups: TGroupLight[];
+    defaultOpen?: boolean;
+}) => {
+    const [open, setOpen] = useState(defaultOpen);
+
+    return (
+        <Box>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                onClick={() => setOpen(!open)}
+                sx={{ cursor: "pointer", py: 1, px: 1 }}
+            >
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    <Typography variant="subtitle2" sx={{ fontSize: 20 }}>
+                        <FormattedMessage id={titleId} />
+                    </Typography>
+                </Stack>
+            </Stack>
+            <Collapse in={open}>
+                {groups.map((group) => (
+                    <GroupListItem key={group.id} {...group} />
+                ))}
+            </Collapse>
+        </Box>
+    );
+};
+
 const GroupListContent = ({groups, isLoading, isError}: Props) => {
     if (isLoading) {
         return (
@@ -90,24 +130,17 @@ const GroupListContent = ({groups, isLoading, isError}: Props) => {
 
     return (
         <>
-            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>
-                <FormattedMessage id="groups.active" />
-            </Typography>
-            {(groups?.activeGroups || []).map((group) => (
-                <GroupListItem
-                    key={group.id}
-                    {...group}
-                />
-            ))}
-            <Typography variant="subtitle2" sx={{ fontSize: 20, padding: 1 }}>
-                <FormattedMessage id="groups.inactive" />
-            </Typography>
-            {(groups?.inactiveGroups || []).map((group) => (
-                <GroupListItem
-                    key={group.id}
-                    {...group}
-                />
-            ))}
+            <GroupSection
+                titleId="groups.active"
+                groups={groups?.activeGroups || []}
+                defaultOpen
+            />
+
+            <GroupSection
+                titleId="groups.inactive"
+                groups={groups?.inactiveGroups || []}
+                defaultOpen={false}
+            />
         </>
     );
 }

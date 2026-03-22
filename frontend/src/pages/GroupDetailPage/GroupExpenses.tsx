@@ -7,9 +7,12 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import WifiIcon from '@mui/icons-material/Wifi';
 import {useState} from "react";
 import { FormattedMessage } from "react-intl";
+import {ExpenseDetailModal} from "./ExpenseDetailModal";
+import {TGroupDetail} from "../../types/dto/TGroupDetail";
 
 type Props = {
     transactions: TTransaction[];
+    group: TGroupDetail;
 }
 
 const PaidBy = ( { payers }: { payers: string[] }) => {
@@ -29,7 +32,7 @@ const PaidBy = ( { payers }: { payers: string[] }) => {
     }
 }
 
-const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
+const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransaction; onOpenDetail?: (t: TTransaction) => void }) => {
     const userId = useAuthStore((s) => s.currentUser.id)
     const userSplit = transaction.items
         .filter(item => item.user.id === userId)
@@ -80,6 +83,7 @@ const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
                 <Button
                     variant="contained"
                     size="small"
+                    onClick={() => onOpenDetail?.(transaction)}
                     sx={{
                         borderRadius: 5,
                         backgroundColor: COLORS.PRIMARY,
@@ -97,7 +101,7 @@ const TransactionRow= ({ transaction }: { transaction: TTransaction }) => {
     );
 };
 
-const MonthSection = ({ month, transactions }: { month: string; transactions: TTransaction[] }) => {
+const MonthSection = ({ month, transactions, onOpenDetail }: { month: string; transactions: TTransaction[]; onOpenDetail?: (t: TTransaction) => void }) => {
     const [open, setOpen] = useState(true);
 
     return (
@@ -119,7 +123,7 @@ const MonthSection = ({ month, transactions }: { month: string; transactions: TT
             <Divider />
             <Collapse in={open}>
                 {transactions.map((t) => (
-                    <TransactionRow key={t.id} transaction={t} />
+                    <TransactionRow key={t.id} transaction={t} onOpenDetail={onOpenDetail} />
                 ))}
             </Collapse>
         </Box>
@@ -133,7 +137,10 @@ function getCategoryIcon(transaction: TTransaction) {
     )
 }
 
-export const GroupExpenses = ({ transactions }: Props) => {
+export const GroupExpenses = ({ transactions, group }: Props) => {
+    const [detailOpen, setDetailOpen] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState<TTransaction | null>(null);
+
     const groupTransactionsByMonth = transactions.reduce((acc, transaction) => {
         const month = new Date(transaction.createdAt).toLocaleString("default", {
             month: "long",
@@ -144,11 +151,23 @@ export const GroupExpenses = ({ transactions }: Props) => {
         return acc;
     }, {} as Record<string, TTransaction[]>);
 
+    const onOpenDetail = (t: TTransaction) => {
+        setSelectedTransaction(t);
+        setDetailOpen(true);
+    };
+
     return (
         <Box>
             {Object.entries(groupTransactionsByMonth).map(([month, txs]) => (
-                <MonthSection key={month} month={month} transactions={txs} />
+                <MonthSection key={month} month={month} transactions={txs} onOpenDetail={onOpenDetail} />
             ))}
+
+            <ExpenseDetailModal
+                open={detailOpen}
+                onClose={() => setDetailOpen(false)}
+                transaction={selectedTransaction}
+                group={group}
+            />
         </Box>
     );
 };

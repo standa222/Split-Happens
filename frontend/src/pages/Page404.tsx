@@ -10,16 +10,9 @@ export const Page404 = () => {
         <Typography variant="h2" fontWeight={800}>
           <FormattedMessage id="notFound.title" />
         </Typography>
-        <Typography variant="h6" color="text.secondary" textAlign="center">
+        <Typography variant="h6" textAlign="center">
           <FormattedMessage id="notFound.description" />
         </Typography>
-        <Button
-          component={RouterLink}
-          to={ROUTES.HOME}
-          variant="contained"
-        >
-          <FormattedMessage id="notFound.goHome" />
-        </Button>
       </Stack>
     </Box>
   );
