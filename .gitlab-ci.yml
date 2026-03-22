@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - publish
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -51,5 +52,13 @@ publish_backend:
   script:
     - docker build -t $DOCKER_HUB_USER/splithappens-backend:latest ./backend
     - docker push $DOCKER_HUB_USER/splithappens-backend:latest
+  only:
+    - main
+
+deploy_to_render:
+  stage: deploy
+  image: curlimages/curl:latest
+  script:
+    - curl -X POST $RENDER_DEPLOY_HOOK
   only:
     - main
