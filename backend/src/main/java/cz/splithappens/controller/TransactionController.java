@@ -2,7 +2,6 @@ package cz.splithappens.controller;
 
 import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.response.TransactionDto;
-import cz.splithappens.model.Transaction;
 import cz.splithappens.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
