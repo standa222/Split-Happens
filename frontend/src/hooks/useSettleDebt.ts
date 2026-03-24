@@ -1,13 +1,17 @@
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {api} from "../axios/axios";
-import {TDebt} from "../types/TDebt";
+
+type SettleDebtVariables = {
+    groupId: number;
+    debtId: number;
+};
 
 export function useSettleDebt() {
     const queryClient = useQueryClient();
 
-    return useMutation<void, Error, TDebt>({
-        mutationFn: (debt) => api.delete(`/debts/${debt.id}/`),
-        onSuccess: (data, variables) => {
+    return useMutation<void, Error, SettleDebtVariables>({
+        mutationFn: ({debtId}) => api.delete(`/debts/${debtId}`).then(() => undefined),
+        onSuccess: (_data, variables) => {
             console.log('Debt settled successfully');
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
         },
