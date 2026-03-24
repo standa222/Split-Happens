@@ -8,18 +8,19 @@ import {useAuthStore} from "../../store/authStore";
 import {useState} from "react";
 import {DebtsList} from "../../components/DebtsList";
 import { FormattedMessage } from "react-intl";
+import {TGroupDetail} from "../../types/dto/TGroupDetail";
 
 type Props = {
-    members: TUser[];
-    debts: TDebt[];
+    group: TGroupDetail;
 }
 
 type MemberProps = {
     member: TUser;
     memberDebts: TDebt[];
+    groupId: number;
 }
 
-const MemberItem = ({member, memberDebts}: MemberProps) => {
+const MemberItem = ({member, memberDebts, groupId}: MemberProps) => {
     const userId = useAuthStore((s) => s.currentUser.id);
     const [ showDebts, setShowDebts ] = useState(member.id === userId);
     const balance = memberDebts.reduce((acc, debt) => member.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
@@ -50,7 +51,7 @@ const MemberItem = ({member, memberDebts}: MemberProps) => {
                     </Stack>
                 {showDebts ? (
                     <Stack flex={1}>
-                        <DebtsList userDebts={memberDebts} user={member} showActionButtons={true} />
+                        <DebtsList userDebts={memberDebts} user={member} showActionButtons={true} groupId={groupId} />
                     </Stack>
                 ) : (
                     <Button
@@ -73,19 +74,20 @@ const MemberItem = ({member, memberDebts}: MemberProps) => {
     )
 }
 
-export const GroupMembers = ({members, debts}: Props) => {
-    const debtsByMemberId = members.reduce<Record<string, TDebt[]>>((acc, member) => {
-        acc[member.id] = debts.filter((d) => d.creditor.id === member.id || d.debtor.id === member.id);
+export const GroupMembers = ({group}: Props) => {
+    const debtsByMemberId = group.members.reduce<Record<string, TDebt[]>>((acc, member) => {
+        acc[member.id] = group.debts.filter((d) => d.creditor.id === member.id || d.debtor.id === member.id);
         return acc;
     }, {});
 
     return (
         <>
-            {members.map((member) => (
+            {group.members.map((member) => (
                 <MemberItem
                     key={member.id}
                     member={member}
                     memberDebts={debtsByMemberId[member.id]}
+                    groupId={group.id}
                 />
             ))}
         </>

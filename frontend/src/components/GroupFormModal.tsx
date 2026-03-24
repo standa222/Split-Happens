@@ -15,18 +15,6 @@ export const GroupFormModal = ({ open, onClose, initGroup }: Props) => {
         <Dialog
             open={open}
             onClose={onClose}
-            fullWidth
-            maxWidth="lg"
-            slotProps={{
-                paper: {
-                    sx: {
-                        backgroundColor: COLORS.SECONDARY,
-                        borderRadius: 10,
-                        pt: 2,
-                        border: `5px solid ${COLORS.PRIMARY}`,
-                    },
-                },
-            }}
         >
             <IconButton
                 aria-label="close"

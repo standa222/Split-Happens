@@ -38,4 +38,8 @@ public class Group {
 
     @Column(name = "last_activity", nullable = false)
     private OffsetDateTime lastActivity = OffsetDateTime.now();
+
+    public void updateLastActivity() {
+        this.lastActivity = OffsetDateTime.now();
+    }
 }

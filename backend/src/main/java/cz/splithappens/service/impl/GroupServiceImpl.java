@@ -94,6 +94,7 @@ public class GroupServiceImpl implements GroupService {
         group.setDefaultCurrency(updateDto.getDefaultCurrency());
         group.setPermissionMode(updateDto.getPermissionMode());
         group.setMembers(new HashSet<>(members));
+        group.updateLastActivity();
         return groupMapper.toDto(groupRepository.save(group));
     }
 

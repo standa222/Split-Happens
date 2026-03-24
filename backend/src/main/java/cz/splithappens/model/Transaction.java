@@ -2,8 +2,7 @@ package cz.splithappens.model;
 
 import cz.splithappens.model.enums.TransactionType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -14,6 +13,9 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "\"transaction\"")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

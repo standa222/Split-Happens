@@ -7,16 +7,20 @@ import QrCode2Icon from '@mui/icons-material/QrCode2';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import {COLORS} from "../constants/colors";
 import { FormattedMessage } from "react-intl";
+import {useSettleDebt} from "../hooks/useSettleDebt";
 
 type Props = {
     userDebts: TDebt[],
     user: TUser,
     showActionButtons?: boolean,
+    groupId: number,
 }
 
-const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
+const DebtActionButtons = ({ debt, groupId }: { debt: TDebt, groupId: number }) => {
+    const {mutate: settleDebt, isPending: isSettleDebtPending} = useSettleDebt();
+
     const onMarkPaid = () => {
-        console.log("mark paid", debt.id);
+        settleDebt({ groupId, debtId: debt.id });
     };
 
     const onGenerateQr = () => {
@@ -33,6 +37,7 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                 variant="text"
                 size="small"
                 onClick={onMarkPaid}
+                disabled={isSettleDebtPending}
                 sx={{
                     minWidth: 0,
                     p: 0,
@@ -93,6 +98,7 @@ export const DebtsList = ({
         userDebts,
         user,
         showActionButtons = false,
+        groupId,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
 
@@ -133,7 +139,7 @@ export const DebtsList = ({
                             />
                         </Typography>
                         {showActionButtons &&
-                            <DebtActionButtons debt={debt} />
+                            <DebtActionButtons debt={debt} groupId={groupId}/>
                         }
                     </Stack>
                 );

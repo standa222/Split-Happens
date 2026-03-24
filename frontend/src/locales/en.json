@@ -63,8 +63,8 @@
 
   "balance.label": "Balance",
 
-  "debts.actions.markPaid": "Mark Paid",
-  "debts.actions.generateQr": "Generate QR",
+  "debts.actions.markPaid": "Settle",
+  "debts.actions.generateQr": "QR",
   "debts.actions.notify": "Notify",
 
   "debts.settled": "{isCurrentUser, select, true {You are} other {{name} is}} settled in this group.",
@@ -90,6 +90,7 @@
   "groupDetail.expenses.yourSplit": "your split",
   "groupDetail.expenses.totalPaid": "total paid",
   "groupDetail.expenses.detail": "Detail",
+  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
   "common.detail": "Detail",
 

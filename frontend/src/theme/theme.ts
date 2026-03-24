@@ -9,6 +9,38 @@ export const theme = createTheme({
         }
     },
     components: {
+        MuiDialog: {
+            defaultProps: {
+                fullWidth: true,
+                maxWidth: "lg",
+            },
+            styleOverrides: {
+                paper: {
+                    backgroundColor: COLORS.SECONDARY,
+                    borderRadius: 10,
+                    paddingTop: 16, // ~= theme.spacing(2)
+                    border: `5px solid ${COLORS.PRIMARY}`,
+                },
+            },
+        },
+
+        MuiDialogContent: {
+            styleOverrides: {
+                root: {
+                    // keeps existing layouts predictable when switching to themed dialogs
+                    paddingTop: 16,
+                },
+            },
+        },
+
+        MuiDialogActions: {
+            styleOverrides: {
+                root: {
+                    padding: 16,
+                },
+            },
+        },
+
         // 1. Styling the container and the label position
         MuiTextField: {
             defaultProps: {
