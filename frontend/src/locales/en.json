@@ -90,6 +90,7 @@
   "groupDetail.expenses.yourSplit": "your split",
   "groupDetail.expenses.totalPaid": "total paid",
   "groupDetail.expenses.detail": "Detail",
+  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
   "common.detail": "Detail",
 

@@ -9,6 +9,7 @@ import {useState} from "react";
 import { FormattedMessage } from "react-intl";
 import {ExpenseDetailModal} from "./ExpenseDetailModal";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
+import logo from "../../assets/logo_dark.png";
 
 type Props = {
     transactions: TTransaction[];
@@ -32,6 +33,37 @@ const PaidBy = ( { payers }: { payers: string[] }) => {
     }
 }
 
+const PaymentMessage = ({ transaction }: { transaction: TTransaction }) => {
+    const currentUserId = useAuthStore((s) => s.currentUser.id);
+
+    // In PAYMENT transactions, one side is positive (creditor receiving), the other negative (debtor paying).
+    const creditorItem = transaction.items
+        .filter((i) => i.balanceChange > 0)[0];
+    const debtorItem = transaction.items
+        .filter((i) => i.balanceChange < 0)[0];
+
+    const amount = Math.abs(debtorItem?.balanceChange ?? transaction.totalAmount ?? 0);
+    const debtorName = debtorItem?.user.firstName ?? "";
+    const creditorName = creditorItem?.user.firstName ?? "";
+    const debtorIsCurrent = (debtorItem?.user.id ?? -1) === currentUserId;
+    const creditorIsCurrent = (creditorItem?.user.id ?? -1) === currentUserId;
+
+    return (
+        <Typography fontWeight="bold" color={COLORS.PRIMARY}>
+            <FormattedMessage
+                id="groupDetail.expenses.paymentLine"
+                values={{
+                    debtorIsCurrent,
+                    debtorName,
+                    creditorIsCurrent,
+                    creditorName,
+                    amount: amount.toFixed(2),
+                }}
+            />
+        </Typography>
+    )
+}
+
 const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransaction; onOpenDetail?: (t: TTransaction) => void }) => {
     const userId = useAuthStore((s) => s.currentUser.id)
     const userSplit = transaction.items
@@ -50,51 +82,50 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                     {getCategoryIcon(transaction)}
                 </Box>
 
-                {transaction.transactionType === 'payment' ? (
-                    <Box flex={1}>
-                        <Typography fontWeight="bold" color={COLORS.PRIMARY}>
-                            {transaction.title}
-                        </Typography>
+                {transaction.transactionType === 'PAYMENT' ? (
+                    <Box flex={1} sx={{ px: 5}}>
+                        <PaymentMessage transaction={transaction} />
                     </Box>
                 ) : (
-                    <Stack direction="row" flex={1} sx={{ px: 5 }}>
-                        <Stack width="50%" gap={1}>
-                            <Typography fontWeight="bold" color={COLORS.PRIMARY}>
-                                {transaction.title}
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                fontWeight="bold"
-                                color={isNegative ? COLORS.RED : COLORS.PRIMARY}
-                            >
-                                <FormattedMessage id="groupDetail.expenses.yourSplit" />: {userSplit.toFixed(2)} $
-                            </Typography>
-                        </Stack>
+                    <>
+                        <Stack direction="row" flex={1} sx={{ px: 5 }}>
+                            <Stack width="50%" gap={1}>
+                                <Typography fontWeight="bold" color={COLORS.PRIMARY}>
+                                    {transaction.title}
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    fontWeight="bold"
+                                    color={isNegative ? COLORS.RED : COLORS.PRIMARY}
+                                >
+                                    <FormattedMessage id="groupDetail.expenses.yourSplit" />: {userSplit.toFixed(2)} $
+                                </Typography>
+                            </Stack>
 
-                        <Stack width="50%" gap={1}>
-                            <Typography color={COLORS.PRIMARY}>
-                                <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} $
-                            </Typography>
-                            <PaidBy payers={paidBy} />
+                            <Stack width="50%" gap={1}>
+                                <Typography color={COLORS.PRIMARY}>
+                                    <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} $
+                                </Typography>
+                                <PaidBy payers={paidBy} />
+                            </Stack>
                         </Stack>
-                    </Stack>
+                        <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => onOpenDetail?.(transaction)}
+                            sx={{
+                                borderRadius: 5,
+                                backgroundColor: COLORS.PRIMARY,
+                                color: COLORS.SECONDARY,
+                                fontWeight: "bold",
+                                textTransform: "none",
+                                minWidth: 80,
+                            }}
+                        >
+                            <FormattedMessage id="groupDetail.expenses.detail" />
+                        </Button>
+                    </>
                 )}
-
-                <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => onOpenDetail?.(transaction)}
-                    sx={{
-                        borderRadius: 5,
-                        backgroundColor: COLORS.PRIMARY,
-                        color: COLORS.SECONDARY,
-                        fontWeight: "bold",
-                        textTransform: "none",
-                        minWidth: 80,
-                    }}
-                >
-                    <FormattedMessage id="groupDetail.expenses.detail" />
-                </Button>
             </Stack>
             <Divider />
         </>
@@ -132,7 +163,9 @@ const MonthSection = ({ month, transactions, onOpenDetail }: { month: string; tr
 
 function getCategoryIcon(transaction: TTransaction) {
     // TODO show icon based on transaction category
-    return (
+    return transaction.transactionType === "PAYMENT" ? (
+        <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
+    ) : (
         <WifiIcon sx={{fontSize: 40}}/>
     )
 }
