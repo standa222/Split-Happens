@@ -29,7 +29,6 @@ public class DebtServiceImpl implements DebtService {
     @Override
     @Transactional
     public void settleDebt(Long debtId) {
-        logger.info("Settling debt with id {}", debtId);
         Debt debt = debtRepository.findById(debtId)
                 .orElseThrow(() -> new RuntimeException("Debt not found")); // TODO: Custom exception
 
@@ -38,7 +37,6 @@ public class DebtServiceImpl implements DebtService {
         User creditor = userRepository.findById(debt.getCreditor().getId())
                 .orElseThrow(() -> new RuntimeException("Creditor not found")); // TODO: Custom exception
 
-        logger.info("Creating payment transaction for debt settlement between debtor {} and creditor {}", debtor.getId(), creditor.getId());
 
         Transaction paymentTransaction = Transaction.builder()
                 .group(debt.getGroup())
@@ -59,8 +57,6 @@ public class DebtServiceImpl implements DebtService {
                         .balanceChange(debt.getAmount())
                         .build()
         ));
-
-        logger.info("Creating payment transaction for debt settlement: {}", paymentTransaction);
 
         transactionRepository.save(paymentTransaction);
         debtRepository.delete(debt);
