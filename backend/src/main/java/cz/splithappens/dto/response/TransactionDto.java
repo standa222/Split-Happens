@@ -1,5 +1,6 @@
 package cz.splithappens.dto.response;
 
+import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.TransactionType;
 import lombok.Data;
 
@@ -15,4 +16,5 @@ public class TransactionDto {
     private OffsetDateTime createdAt;
     private TransactionType transactionType;
     private List<TransactionItemDto> items;
+    private Currency currency;
 }

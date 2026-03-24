@@ -78,6 +78,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setTotalAmount(updateDto.getTotalAmount());
         transaction.getItems().clear();
         transaction.getItems().addAll(createTransactionsItems(updateDto, transaction));
+        transaction.setCurrency(updateDto.getCurrency());
 
         Transaction newTransaction = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(transaction.getGroup().getId());
@@ -96,6 +97,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private List<TransactionItem> createTransactionsItems(TransactionCreateDto createDto, Transaction transaction) {
+        // TODO calculate exchange rates if transaction currency is different from group default currency
         List<TransactionItem> result = new ArrayList<>();
 
         result.addAll(extractItems(createDto.getPaidBy(), transaction, true, createDto.getTotalAmount()));
@@ -140,7 +142,8 @@ public class TransactionServiceImpl implements TransactionService {
                         return new TransactionItem(
                                 usersById.get(split.getUserId()),
                                 transaction,
-                                positiveBalance ? amount : amount.negate()
+                                positiveBalance ? amount : amount.negate(),
+                                positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
                         );
                     })
                     .toList();
@@ -163,7 +166,8 @@ public class TransactionServiceImpl implements TransactionService {
                         return new TransactionItem(
                                 usersById.get(split.getUserId()),
                                 transaction,
-                                positiveBalance ? amount : amount.negate()
+                                positiveBalance ? amount : amount.negate(),
+                                positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
                         );
                     })
                     .toList();
@@ -177,7 +181,8 @@ public class TransactionServiceImpl implements TransactionService {
                     return new TransactionItem(
                             usersById.get(split.getUserId()),
                             transaction,
-                            positiveBalance ? amount : amount.negate()
+                            positiveBalance ? amount : amount.negate(),
+                            positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
                     );
                 })
                 .toList();

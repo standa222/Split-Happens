@@ -41,7 +41,7 @@ public class SettlementEngineImpl implements SettlementEngine {
             for (TransactionItem item : transaction.getItems()) {
                 User user = item.getUser();
                 BigDecimal currentBalance = balances.getOrDefault(user, BigDecimal.ZERO);
-                balances.put(user, currentBalance.add(item.getBalanceChange()));
+                balances.put(user, currentBalance.add(item.getDefaultCurrencyBalanceChange()));
             }
         }
 

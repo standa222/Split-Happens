@@ -42,6 +42,7 @@ public class DebtServiceImpl implements DebtService {
                 .title("Payment")
                 .totalAmount(debt.getAmount())
                 .transactionType(TransactionType.PAYMENT)
+                .currency(debt.getGroup().getDefaultCurrency())
                 .build();
 
         paymentTransaction.setItems(List.of(

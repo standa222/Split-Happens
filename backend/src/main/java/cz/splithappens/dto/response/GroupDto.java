@@ -1,5 +1,6 @@
 package cz.splithappens.dto.response;
 
+import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.GroupType;
 import cz.splithappens.model.enums.PermissionMode;
 import lombok.Data;
@@ -10,7 +11,7 @@ import java.util.List;
 public class GroupDto {
     private Long id;
     private String name;
-    private String defaultCurrency;
+    private Currency defaultCurrency;
     private PermissionMode permissionMode;
     private GroupType groupType;
     private List<DebtDto> debts;

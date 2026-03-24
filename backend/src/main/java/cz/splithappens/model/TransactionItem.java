@@ -28,9 +28,13 @@ public class TransactionItem {
     @Column(nullable = false)
     private BigDecimal balanceChange; // Positive for payers, negative for participants
 
-    public TransactionItem(User user, Transaction transaction, BigDecimal balanceChange) {
+    @Column(nullable = false)
+    private BigDecimal defaultCurrencyBalanceChange; // Balance change converted to group's default currency, used for easier balance calculations
+
+    public TransactionItem(User user, Transaction transaction, BigDecimal balanceChange, BigDecimal defaultCurrencyBalanceChange) {
         this.user = user;
         this.transaction = transaction;
         this.balanceChange = balanceChange;
+        this.defaultCurrencyBalanceChange = defaultCurrencyBalanceChange;
     }
 }

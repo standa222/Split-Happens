@@ -20,7 +20,9 @@ public class Group {
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
-    private String defaultCurrency = "CZK";
+
+    @Enumerated(EnumType.STRING)
+    private Currency defaultCurrency = Currency.CZK;
 
     @Enumerated(EnumType.STRING)
     private PermissionMode permissionMode = PermissionMode.SOFT;
