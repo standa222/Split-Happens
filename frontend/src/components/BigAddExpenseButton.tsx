@@ -66,18 +66,6 @@ export function BigAddExpenseButton({ variant, group }: Props) {
             <Dialog
                 open={open}
                 onClose={() => setOpen(false)}
-                fullWidth
-                maxWidth="lg"
-                slotProps={{
-                    paper: {
-                        sx: {
-                            backgroundColor: COLORS.SECONDARY,
-                            borderRadius: 10,
-                            pt: 2,
-                            border: `5px solid ${COLORS.PRIMARY}`,
-                        },
-                    },
-                }}
             >
                 <IconButton
                     aria-label="close"
