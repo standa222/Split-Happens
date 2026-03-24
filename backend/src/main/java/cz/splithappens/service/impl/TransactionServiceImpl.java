@@ -49,13 +49,14 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction response = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(group.getId()); // TODO should only be done if type is expense, not payment
+        group.updateLastActivity();
         return transactionMapper.toDto(response);
     }
 
     @Override
     @Transactional
     public List<TransactionDto> getGroupTransactions(Long groupId) {
-        return transactionRepository.findByGroupId(groupId).stream()
+        return transactionRepository.findByGroupIdOrderByCreatedAtDesc(groupId).stream()
                 .map(transactionMapper::toDto)
                 .toList();
     }
@@ -82,6 +83,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction newTransaction = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(transaction.getGroup().getId());
+        transaction.getGroup().updateLastActivity();
         return transactionMapper.toDto(newTransaction);
     }
 
@@ -91,6 +93,7 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
         transactionRepository.delete(transaction);
+        transaction.getGroup().updateLastActivity();
         settlementEngine.calculateDebts(transaction.getGroup().getId());
     }
 

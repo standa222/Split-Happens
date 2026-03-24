@@ -37,7 +37,6 @@ public class DebtServiceImpl implements DebtService {
         User creditor = userRepository.findById(debt.getCreditor().getId())
                 .orElseThrow(() -> new RuntimeException("Creditor not found")); // TODO: Custom exception
 
-
         Transaction paymentTransaction = Transaction.builder()
                 .group(debt.getGroup())
                 .title("Payment")
@@ -57,6 +56,8 @@ public class DebtServiceImpl implements DebtService {
                         .balanceChange(debt.getAmount().negate())
                         .build()
         ));
+
+        debt.getGroup().updateLastActivity();
 
         transactionRepository.save(paymentTransaction);
         debtRepository.delete(debt);
