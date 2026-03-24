@@ -63,7 +63,7 @@ const GroupDetailTabContent = ({ activeTab, group }: { activeTab: GroupDetailSta
         case "expenses":
             return <GroupExpenses transactions={group.transactions} group={group} />;
         case "members":
-            return <GroupMembers members={group.members} debts={group.debts} />;
+            return <GroupMembers group={group} />;
         case "statistics":
             return (
                 <Typography>

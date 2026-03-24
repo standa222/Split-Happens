@@ -54,7 +54,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                     </Stack>
                     <Stack width="50%" gap={3}>
                         <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
-                        <DebtsList userDebts={userDebts} user={user}/>
+                        <DebtsList userDebts={userDebts} user={user} groupId={id}/>
                     </Stack>
                 </Stack>
                 <NavLink

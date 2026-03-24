@@ -63,8 +63,8 @@
 
   "balance.label": "Zůstatek",
 
-  "debts.actions.markPaid": "Označit jako zaplacené",
-  "debts.actions.generateQr": "Vygenerovat QR",
+  "debts.actions.markPaid": "Urovnat",
+  "debts.actions.generateQr": "QR",
   "debts.actions.notify": "Upozornit",
 
   "debts.settled": "{isCurrentUser, select, true {Jste} other {{name} je}} v této skupině vyrovnán/a.",

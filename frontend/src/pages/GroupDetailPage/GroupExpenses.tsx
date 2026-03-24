@@ -38,9 +38,9 @@ const PaymentMessage = ({ transaction }: { transaction: TTransaction }) => {
 
     // In PAYMENT transactions, one side is positive (creditor receiving), the other negative (debtor paying).
     const creditorItem = transaction.items
-        .filter((i) => i.balanceChange > 0)[0];
-    const debtorItem = transaction.items
         .filter((i) => i.balanceChange < 0)[0];
+    const debtorItem = transaction.items
+        .filter((i) => i.balanceChange > 0)[0];
 
     const amount = Math.abs(debtorItem?.balanceChange ?? transaction.totalAmount ?? 0);
     const debtorName = debtorItem?.user.firstName ?? "";

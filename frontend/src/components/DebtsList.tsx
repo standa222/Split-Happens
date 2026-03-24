@@ -12,9 +12,10 @@ type Props = {
     userDebts: TDebt[],
     user: TUser,
     showActionButtons?: boolean,
+    groupId: number,
 }
 
-const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
+const DebtActionButtons = ({ debt, groupId }: { debt: TDebt, groupId: number }) => {
     const onMarkPaid = () => {
         console.log("mark paid", debt.id);
     };
@@ -93,6 +94,7 @@ export const DebtsList = ({
         userDebts,
         user,
         showActionButtons = false,
+        groupId,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
 
@@ -133,7 +135,7 @@ export const DebtsList = ({
                             />
                         </Typography>
                         {showActionButtons &&
-                            <DebtActionButtons debt={debt} />
+                            <DebtActionButtons debt={debt} groupId={groupId}/>
                         }
                     </Stack>
                 );

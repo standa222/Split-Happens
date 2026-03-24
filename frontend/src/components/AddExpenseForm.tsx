@@ -118,7 +118,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
             currency: initGroup?.defaultCurrency ?? prev.currency,
             title: initTransaction.title,
             totalAmount: initTransaction.totalAmount,
-            transactionType: initTransaction.transactionType === "payment" ? "PAYMENT" : "EXPENSE",
+            transactionType: initTransaction.transactionType === "PAYMENT" ? "PAYMENT" : "EXPENSE",
         }));
 
         // Build rowState from balance changes: positive -> paidBy enabled, negative -> split enabled.

@@ -63,8 +63,8 @@
 
   "balance.label": "Balance",
 
-  "debts.actions.markPaid": "Mark Paid",
-  "debts.actions.generateQr": "Generate QR",
+  "debts.actions.markPaid": "Settle",
+  "debts.actions.generateQr": "QR",
   "debts.actions.notify": "Notify",
 
   "debts.settled": "{isCurrentUser, select, true {You are} other {{name} is}} settled in this group.",
