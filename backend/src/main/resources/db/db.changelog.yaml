@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/updates/002-add-debt-table.sql
   - include:
       file: db/updates/003-add-group-last-activity.sql
+  - include:
+      file: db/updates/004-add-transaction-currency.sql

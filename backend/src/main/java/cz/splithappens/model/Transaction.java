@@ -1,5 +1,6 @@
 package cz.splithappens.model;
 
+import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +35,9 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
 
-    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL)
-    private List<TransactionItem> items = new ArrayList<>();
+    @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TransactionItem> items;
+
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
 }
