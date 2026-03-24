@@ -49,12 +49,12 @@ public class DebtServiceImpl implements DebtService {
                 TransactionItem.builder()
                         .transaction(paymentTransaction)
                         .user(debtor)
-                        .balanceChange(debt.getAmount().negate())
+                        .balanceChange(debt.getAmount())
                         .build(),
                 TransactionItem.builder()
                         .transaction(paymentTransaction)
                         .user(creditor)
-                        .balanceChange(debt.getAmount())
+                        .balanceChange(debt.getAmount().negate())
                         .build()
         ));
 
