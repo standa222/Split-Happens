@@ -8,12 +8,16 @@ import {TGroupDetail} from "../types/dto/TGroupDetail";
 import { FormattedMessage } from "react-intl";
 
 type Props = {
-    variant: TypographyVariant;
+    variant: TypographyVariant | Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', TypographyVariant>>;
     group?: TGroupDetail;
 }
 
 export function BigAddExpenseButton({ variant, group }: Props) {
     const [open, setOpen] = useState(false);
+
+    const resolvedVariant: TypographyVariant = typeof variant === 'string'
+        ? variant
+        : (variant.md ?? variant.sm ?? variant.xs ?? 'h4');
 
     return (
         <>
@@ -38,7 +42,7 @@ export function BigAddExpenseButton({ variant, group }: Props) {
                 }}
             >
                 <Typography
-                    variant={variant}
+                    variant={resolvedVariant}
                     sx={{
                         color: COLORS.PRIMARY,
                         fontWeight: 500,
