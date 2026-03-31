@@ -1,4 +1,4 @@
-import {Typography, Box, TypographyVariant} from "@mui/material";
+import {Typography, Box, TypographyVariant, Stack} from "@mui/material";
 import {COLORS} from "../constants/colors";
 import { FormattedMessage } from "react-intl";
 

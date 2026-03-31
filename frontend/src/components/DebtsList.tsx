@@ -1,4 +1,4 @@
-import {Stack, Typography, Button} from "@mui/material";
+import {Stack, Typography, Button, StackProps} from "@mui/material";
 import {TDebt} from "../types/TDebt";
 import {useAuthStore} from "../store/authStore";
 import {TUser} from "../types/TUser";
@@ -14,6 +14,7 @@ type Props = {
     user: TUser,
     showActionButtons?: boolean,
     groupId: number,
+    display?: StackProps["display"],
 }
 
 const DebtActionButtons = ({ debt, groupId }: { debt: TDebt, groupId: number }) => {
@@ -99,6 +100,7 @@ export const DebtsList = ({
         user,
         showActionButtons = false,
         groupId,
+        display,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
 
@@ -106,7 +108,7 @@ export const DebtsList = ({
         const isCurrentUser = user.id === currentUserId;
         const name = `${user.firstName ?? ""}`.trim();
         return (
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{display}}>
                 <FormattedMessage
                     id="debts.settled"
                     values={{ isCurrentUser, name }}
@@ -116,7 +118,7 @@ export const DebtsList = ({
     }
 
     return (
-        <Stack gap={1}>
+        <Stack gap={1} sx={{display}}>
             {userDebts.map(debt => {
                 const debtorIsCurrent = debt.debtor.id === currentUserId;
                 const creditorIsCurrent = debt.creditor.id === currentUserId;
