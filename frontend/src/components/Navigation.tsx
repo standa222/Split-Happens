@@ -1,19 +1,45 @@
+import React, {useState} from "react";
 import {NavLink} from "react-router-dom";
 import {COLORS} from "../constants/colors";
 import {ROUTES} from "../enums/routes";
 import logo from "../assets/logo_dark.png";
-import {Box, Stack, IconButton, Typography} from "@mui/material";
+import {
+    Box,
+    Stack,
+    IconButton,
+    Typography,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    Avatar
+} from "@mui/material";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import {useAuthStore} from "../store/authStore";
 import {FormattedMessage} from "react-intl";
-import { useLocaleStore } from "../store/localeStore";
+import {useLocaleStore} from "../store/localeStore";
 
 function NavLogo() {
     return (
         <Stack direction="row" alignItems="center" gap={2}>
             <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
-            <Typography variant="h4" fontWeight={700} color={COLORS.PRIMARY}>
+            <Typography
+                sx={{
+                    color: COLORS.PRIMARY,
+                    typography: {
+                        xs: 'h5',
+                        md: 'h4'
+                    },
+                    fontWeight: {
+                        xs: 700,
+                        md: 700
+                    }
+                }}
+            >
                 SplitHappens
             </Typography>
         </Stack>
@@ -62,25 +88,6 @@ function BellIcon() {
     );
 }
 
-interface LogoutButtonProps {
-    logout?: () => void
-}
-
-const LogoutButton = ({ logout }: LogoutButtonProps) => {
-    return (
-        <IconButton
-            aria-label="Logout"
-            sx={{
-                color: COLORS.RED,
-                padding: 0,
-            }}
-            onClick={logout}
-        >
-            <LogoutIcon sx={{fontSize: 40}}/>
-        </IconButton>
-    );
-}
-
 function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChange: (v: "en" | "cs") => void }) {
     const options: Array<{ value: "en" | "cs"; label: string }> = [
         { value: "en", label: "EN" },
@@ -88,10 +95,7 @@ function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChange: (v:
     ];
 
     const selectedIndex = options.findIndex((o) => o.value === value);
-    // Keep pill fully inside border and perfectly symmetric.
-    const PILL_EXTRA_WIDTH_PX = 16; // makes it wider than 50% segment
-
-    // Center of selected segment: 25% for EN, 75% for CS.
+    const PILL_EXTRA_WIDTH_PX = 16;
     const pillCenter = selectedIndex <= 0 ? "25%" : "75%";
 
     return (
@@ -161,29 +165,131 @@ const NAV_ITEMS = [
 ];
 
 export function Navigation() {
-    const {logout} = useAuthStore();
+    const {logout, currentUser} = useAuthStore();
     const locale = useLocaleStore((s) => s.locale);
     const setLocale = useLocaleStore((s) => s.setLocale);
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
 
     return (
-        <Stack
-            direction={{ xs: "column", md: "row" }}
-            alignItems="center"
-            justifyContent="space-between"
-            paddingY={4}
-            gap={10}
-        >
-            <NavLogo/>
-            <Box>
-                {NAV_ITEMS.map((item) => (
-                    <NavButton key={item.path} labelId={item.labelId} path={item.path}/>
-                ))}
-            </Box>
-            <Stack direction="row" gap={2} alignItems="center">
-                <LanguageSwitch value={locale} onChange={setLocale} />
-                <BellIcon/>
-                <LogoutButton logout={logout}/>
+        <>
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                paddingY={4}
+                sx={{display: {xs: "none", md: "flex"}}}
+            >
+                <NavLogo/>
+                <Box>
+                    {NAV_ITEMS.map((item) => (
+                        <NavButton key={item.path} labelId={item.labelId} path={item.path}/>
+                    ))}
+                </Box>
+                <Stack direction="row" gap={2} alignItems="center">
+                    <LanguageSwitch value={locale} onChange={setLocale}/>
+                    <BellIcon/>
+                    <IconButton sx={{color: COLORS.RED}} onClick={logout}>
+                        <LogoutIcon sx={{fontSize: 40}}/>
+                    </IconButton>
+                </Stack>
             </Stack>
-        </Stack>
+
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                paddingY={2}
+                sx={{display: {xs: "flex", md: "none"}}}
+            >
+                <IconButton onClick={handleDrawerToggle} sx={{color: COLORS.PRIMARY}}>
+                    <MenuIcon sx={{fontSize: 35}}/>
+                </IconButton>
+                <NavLogo/>
+                <BellIcon/>
+            </Stack>
+
+            <Drawer
+                anchor="left"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            width: "80%",
+                            maxWidth: 300,
+                            backgroundColor: COLORS.PRIMARY,
+                            color: COLORS.SECONDARY,
+                            display: "flex",
+                            flexDirection: "column"
+                        }
+                    }
+                }}
+            >
+                <Box sx={{p: 2, display: "flex", justifyContent: "flex-end"}}>
+                    <IconButton onClick={handleDrawerToggle} sx={{color: COLORS.SECONDARY}}>
+                        <CloseIcon sx={{fontSize: 30}}/>
+                    </IconButton>
+                </Box>
+
+                <Stack direction="row" alignItems="center" gap={2} sx={{px: 3, pb: 4}}>
+                    <Avatar sx={{bgcolor: "transparent", border: `2px dashed ${COLORS.SECONDARY}`, width: 50, height: 50}}>
+                        <PhotoCameraIcon sx={{color: COLORS.SECONDARY}}/>
+                    </Avatar>
+                    <Typography variant="h6" fontWeight={600}>{currentUser.firstName} {currentUser.lastName}</Typography>
+                </Stack>
+
+                <List sx={{flexGrow: 1, p: 0}}>
+                    {NAV_ITEMS.map((item) => (
+                        <ListItem key={item.path} disablePadding>
+                            <ListItemButton
+                                component={NavLink}
+                                to={item.path}
+                                onClick={handleDrawerToggle}
+                                sx={{
+                                    py: 2,
+                                    px: 3,
+                                    "&.active": {
+                                        backgroundColor: COLORS.SECONDARY,
+                                        color: COLORS.PRIMARY
+                                    }
+                                }}
+                            >
+                                <Typography variant="h6" fontWeight={500}>
+                                    <FormattedMessage id={item.labelId}/>
+                                </Typography>
+                            </ListItemButton>
+                        </ListItem>
+                    ))}
+                    <ListItem sx={{px: 3, mt: 2}}>
+                        <LanguageSwitch value={locale} onChange={setLocale}/>
+                    </ListItem>
+                </List>
+
+                <Box
+                    component="button"
+                    onClick={() => {
+                        logout();
+                        handleDrawerToggle();
+                    }}
+                    sx={{
+                        width: "100%",
+                        backgroundColor: COLORS.RED,
+                        color: "white",
+                        border: "none",
+                        py: 3,
+                        textAlign: "left",
+                        px: 3,
+                        cursor: "pointer",
+                        fontSize: "1.25rem",
+                    }}
+                >
+                    <FormattedMessage id={"nav.logout"}/>
+                </Box>
+            </Drawer>
+        </>
     );
 }
