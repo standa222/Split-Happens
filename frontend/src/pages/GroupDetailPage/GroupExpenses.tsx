@@ -10,6 +10,7 @@ import { FormattedMessage } from "react-intl";
 import {ExpenseDetailModal} from "./ExpenseDetailModal";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
 import logo from "../../assets/logo_dark.png";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 type Props = {
     transactions: TTransaction[];
@@ -20,13 +21,13 @@ const PaidBy = ( { payers }: { payers: string[] }) => {
     if (payers.length === 0) return null;
     if (payers.length === 1) {
         return (
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
                 <FormattedMessage id="groupDetail.expenses.paidBy" />: {payers[0]}
             </Typography>
         );
     } else {
         return (
-        <Typography variant="body2" color={COLORS.PRIMARY}>
+        <Typography variant="body2" color={COLORS.PRIMARY} sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
             <FormattedMessage id="groupDetail.expenses.paidBy" />: {payers[0]} + {payers.length - 1}
         </Typography>
         );
@@ -77,8 +78,8 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
 
     return (
         <>
-            <Stack direction="row" alignItems="center" py={1.5} spacing={2}>
-                <Box sx={{ color: COLORS.PRIMARY, width: 40, display: "flex", justifyContent: "center" }}>
+            <Stack direction="row" alignItems="center" py={1.5} gap={2}>
+                <Box sx={{ color: COLORS.PRIMARY, display: "flex", justifyContent: "center" }}>
                     {getCategoryIcon(transaction)}
                 </Box>
 
@@ -88,22 +89,23 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                     </Box>
                 ) : (
                     <>
-                        <Stack direction="row" flex={1} sx={{ px: 5 }}>
-                            <Stack width="50%" gap={1}>
-                                <Typography fontWeight="bold" color={COLORS.PRIMARY}>
+                        <Stack direction="row" flex={1} sx={{ px: { md: 5 } }} gap={1}>
+                            <Stack width="55%" gap={1}>
+                                <Typography fontWeight="bold" color={COLORS.PRIMARY} sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
                                     {transaction.title}
                                 </Typography>
                                 <Typography
                                     variant="body2"
                                     fontWeight="bold"
                                     color={isNegative ? COLORS.RED : COLORS.PRIMARY}
+                                    sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}
                                 >
                                     <FormattedMessage id="groupDetail.expenses.yourSplit" />: {userSplit.toFixed(2)} $
                                 </Typography>
                             </Stack>
 
-                            <Stack width="50%" gap={1}>
-                                <Typography color={COLORS.PRIMARY}>
+                            <Stack width="45%" gap={1}>
+                                <Typography color={COLORS.PRIMARY} sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
                                     <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} $
                                 </Typography>
                                 <PaidBy payers={paidBy} />
@@ -111,18 +113,21 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                         </Stack>
                         <Button
                             variant="contained"
-                            size="small"
                             onClick={() => onOpenDetail?.(transaction)}
                             sx={{
-                                borderRadius: 5,
+                                borderRadius: { xs: "50%", md: 5 },
+                                width: { xs: 30, md: "auto" },
+                                height: { xs: 30, md: "auto" },
+                                minWidth: { xs: 30, md: "auto" },
                                 backgroundColor: COLORS.PRIMARY,
                                 color: COLORS.SECONDARY,
-                                fontWeight: "bold",
                                 textTransform: "none",
-                                minWidth: 80,
                             }}
                         >
-                            <FormattedMessage id="groupDetail.expenses.detail" />
+                            <Box component="span" sx={{ display: { xs: "none", md: "inline" }, mx: 1 }}>
+                                <FormattedMessage id="groupDetail.expenses.detail" />
+                            </Box>
+                            <MoreHorizIcon sx={{ display: { xs: "block", md: "none" } }} />
                         </Button>
                     </>
                 )}
@@ -166,7 +171,7 @@ function getCategoryIcon(transaction: TTransaction) {
     return transaction.transactionType === "PAYMENT" ? (
         <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
     ) : (
-        <WifiIcon sx={{fontSize: 40}}/>
+        <WifiIcon sx={{fontSize: {xs: 30, md: 40}}}/>
     )
 }
 

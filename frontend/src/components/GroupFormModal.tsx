@@ -15,6 +15,11 @@ export const GroupFormModal = ({ open, onClose, initGroup }: Props) => {
         <Dialog
             open={open}
             onClose={onClose}
+            sx={{
+                '& .MuiDialog-paper': {
+                    borderRadius: { xs: 0, md: 10 },
+                },
+            }}
         >
             <IconButton
                 aria-label="close"

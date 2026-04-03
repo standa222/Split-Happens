@@ -11,13 +11,17 @@ export function AppLayout() {
                 minHeight: "100vh",
                 background: COLORS.SECONDARY,
                 color: COLORS.PRIMARY,
+                px: { xs: 2, sm: 3, md: 4 },
             }}
         >
             <Stack
-                width="80%"
+                sx={{
+                    width: "100%",
+                    maxWidth: { xs: 720, md: 1200, lg: 1400 },
+                }}
             >
                 <Navigation />
-                <Box>
+                <Box sx={{ width: "100%" }}>
                     <Outlet />
                 </Box>
             </Stack>

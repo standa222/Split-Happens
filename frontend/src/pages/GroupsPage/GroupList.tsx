@@ -13,7 +13,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { getDateFnsLocale } from "../../utils/dateFnsLocaleUtils";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import {Collapse, Divider} from "@mui/material";
+import {Collapse} from "@mui/material";
 import {useState} from "react";
 
 type Props = {
@@ -30,11 +30,11 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
 
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ px: 3}}>
+            <Stack direction="row" gap={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px:{md: 3, xs: 1} }}>
                 <Box
                     sx={{
-                        width: 120,
-                        height: 120,
+                        width: {md: 120, xs: 60},
+                        height: {md: 120, xs: 60},
                         borderRadius: '50%',
                         border: `2px dashed ${COLORS.PRIMARY}`,
                         display: 'flex',
@@ -45,32 +45,66 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                 >
                     <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
                 </Box>
-                <Stack direction="row" flex={1} sx={{ px: 5 }}>
-                    <Stack width="50%" gap={3} justifyContent="center">
-                        <Typography variant="h6" sx={{fontWeight: 600 }}>{name}</Typography>
-                        <Typography variant="body1">
+                <Stack direction={{md: 'row', xs: 'column'}} gap={{md: 0, xs: 1}} flex={1} sx={{ px: {md: 5, xs: 1} }}>
+                    <Stack width={{md: '50%', xs: '100%'}} gap={3} justifyContent="center">
+                        <Typography
+                            sx={{
+                                typography: {
+                                    xs: 'body1',
+                                    md: 'h6',
+                                },
+                                fontWeight: {
+                                    xs: 600,
+                                    md: 600,
+                                },
+                            }}
+                        >
+                            {name}
+                        </Typography>
+                        <Typography variant="body1" display={{xs: 'none', md: 'block'}}>
                             <FormattedMessage id="groups.lastActivity" />: {timeAgo}
                         </Typography>
                     </Stack>
-                    <Stack width="50%" gap={3}>
-                        <BalanceDisplay variant={"h6"} sx={{ fontWeight: 600 }} balance={balance}/>
-                        <DebtsList userDebts={userDebts} user={user} groupId={id}/>
+                    <Stack width={{md: '50%', xs: '100%'}} gap={3}>
+                        <BalanceDisplay
+                            sx={{
+                                typography: {
+                                    xs: 'body1',
+                                    md: 'h6',
+                                },
+                                fontWeight: {
+                                    xs: 600,
+                                    md: 600,
+                                },
+                            }}
+                            balance={balance}
+                        />
+                        <DebtsList userDebts={userDebts} user={user} groupId={id} display={{xs: 'none', md: 'block'}} />
                     </Stack>
                 </Stack>
-                <NavLink
+                <Box
+                    component={NavLink}
                     to={ROUTES.GROUPS.detail(id)}
-                    style={{
-                        padding: "12px 32px",
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: {
+                            xs: "8px 20px",
+                            md: "12px 32px"
+                        },
+                        fontSize: {
+                            xs: 14,
+                            md: 20
+                        },
                         borderRadius: 9999,
                         backgroundColor: COLORS.PRIMARY,
                         color: COLORS.SECONDARY,
-                        fontSize: 20,
                         textDecoration: "none",
-                        transition: "background-color 0.15s, color 0.15s",
                     }}
                 >
                     <FormattedMessage id="common.detail" />
-                </NavLink>
+                </Box>
             </Stack>
         </Box>
     )

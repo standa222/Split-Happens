@@ -30,8 +30,8 @@ const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
         >
             <Box
                 sx={{
-                    width: 40,
-                    height: 40,
+                    width: {xs: 30, md: 40},
+                    height: {xs: 30, md: 40},
                     backgroundColor: COLORS.PRIMARY,
                     borderRadius: "50%",
                     display: "flex",
@@ -40,13 +40,20 @@ const CreateGroupButton = ({ onClick }: { onClick?: () => void }) => {
                     boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
                 }}
             >
-                <AddIcon sx={{ color: COLORS.SECONDARY, fontSize: 30 }} />
+                <AddIcon sx={{ color: COLORS.SECONDARY, fontSize: {xs: 25, md: 30} }} />
             </Box>
             <Typography
                 variant="h4"
                 sx={{
                     color: COLORS.PRIMARY,
-                    fontWeight: 500,
+                    typography: {
+                        xs: 'h6',
+                        md: 'h5',
+                    },
+                    fontWeight: {
+                        xs: 500,
+                        md: 500,
+                    },
                     textAlign: "center",
                 }}
             >
@@ -62,7 +69,17 @@ export const GroupsPage = () => {
     return (
         <>
             <Box width="100%">
-                <Stack sx = {{padding: '20px 0px 40px 0px'}} direction="row" justifyContent="space-between">
+                <Stack
+                    sx = {{
+                        padding: {
+                            md: '20px 0px 40px 0px',
+                            xs: '10px 0px 20px 0px',
+                        }
+                    }}
+                    direction={{ xs: "column", md: "row" }}
+                    justifyContent="space-between"
+                    gap={{xs: 2, md: 0}}
+                >
                     <OverallBalance />
                     <CreateGroupButton onClick={() => {setCreateGroupModalOpen(true)}} />
                 </Stack>

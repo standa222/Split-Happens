@@ -8,16 +8,20 @@ const Content = () => {
     const { data: groups, isLoading, isError } = useOverallBalanceQuery();
     const userId = useAuthStore((s) => s.currentUser.id)
 
+    const responsiveTypography = {
+        typography: { xs: 'h6', md: 'h3' }
+    };
+
     if (isLoading) {
         return (
-            <Typography variant="h3">
+            <Typography sx={responsiveTypography}>
                 <FormattedMessage id="overallBalance.loading" />
             </Typography>
         )
     }
     if (isError) {
         return (
-            <Typography variant="h3">
+            <Typography sx={responsiveTypography}>
                 <FormattedMessage id="overallBalance.error" />
             </Typography>
         )
@@ -29,14 +33,14 @@ const Content = () => {
 
     return (
         <Stack direction="row" spacing={2}>
-            <Typography variant="h3">
+            <Typography sx={responsiveTypography}>
                 <FormattedMessage id="overallBalance.label" />
             </Typography>
-            <Typography variant="h3"
-                        sx = {{
-                            // fontWeight: 700,
-                            color: balance < 0 ? COLORS.RED : "inherit",
-                        }}
+            <Typography
+                sx = {{
+                    color: balance < 0 ? COLORS.RED : "inherit",
+                    ...responsiveTypography,
+                }}
             >
                 {balance.toFixed(2)} $
             </Typography>

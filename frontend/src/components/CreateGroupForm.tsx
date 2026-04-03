@@ -76,17 +76,32 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
     };
 
     return (
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2 }}>
+        <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+            sx={{
+                px: { xs: 0, md: 2 },
+                pb: 2,
+                backgroundColor: COLORS.SECONDARY,
+            }}
+        >
+            <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2, }}>
                 {isEditMode ? (
                     <FormattedMessage id="group.form.title.edit" />
                 ) : (
                     <FormattedMessage id="group.form.title.create" />
                 )}
             </Typography>
-            <Box display="flex" gap={3} alignItems="center">
+
+            <Box
+                display="flex"
+                gap={{ xs: 2, md: 3 }}
+                alignItems={{ xs: 'stretch', md: 'center' }}
+                flexDirection={{ xs: 'column', md: 'row' }}
+            >
                 <Stack flex={1}>
                     <TextField
+                        fullWidth
                         label={<FormattedMessage id="group.form.fields.name" />}
                         size="small"
                         defaultValue={initGroup?.name ?? ""}
@@ -111,6 +126,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
+                                        fullWidth
                                         label={<FormattedMessage id="group.form.fields.defaultCurrency" />}
                                         inputRef={field.ref}
                                         error={!!errors.defaultCurrency}
@@ -136,16 +152,19 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                                         row
                                         value={field.value}
                                         onChange={(_, v) => field.onChange(v)}
+                                        sx={{ gap: 2 }}
                                     >
                                         <FormControlLabel
                                             value="SOFT"
                                             control={<Radio size="small" />}
                                             label={<FormattedMessage id="group.form.permissionMode.soft" />}
+                                            sx={{ mr: { xs: 0, md: 2 } }}
                                         />
                                         <FormControlLabel
                                             value="HARD"
                                             control={<Radio size="small" />}
                                             label={<FormattedMessage id="group.form.permissionMode.hard" />}
+                                            sx={{ mr: { xs: 0, md: 0 } }}
                                         />
                                     </RadioGroup>
                                 </FormControl>
@@ -161,10 +180,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
             </Box>
 
             {/* Members */}
-            <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 3 }}>
-                    <FormattedMessage id="group.form.members.title" />
-                </Typography>
+            <Box mt={2}>
                 <Controller
                     name="memberIds"
                     control={control}
@@ -188,8 +204,8 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                                         checked={selected}
                                         sx={{
                                             mr: 1,
-                                            color: COLORS.PRIMARY, // Unchecked color
-                                            '&.Mui-checked': { color: COLORS.PRIMARY } // Checked color
+                                            color: COLORS.PRIMARY,
+                                            '&.Mui-checked': { color: COLORS.PRIMARY }
                                         }}
                                     />
                                     <Stack>
@@ -207,6 +223,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
+                                    fullWidth
                                     label={<FormattedMessage id="group.form.members.search.label" />}
                                     placeholder={intl.formatMessage({ id: "group.form.members.search.placeholder" })}
                                     slotProps={{
@@ -226,6 +243,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                     )}
                 />
             </Box>
+
             <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
                 <Button
                     type="submit"

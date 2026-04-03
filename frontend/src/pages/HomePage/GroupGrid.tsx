@@ -1,4 +1,4 @@
-import {Box, Grid, Typography } from "@mui/material";
+import {Box, Grid, Typography, Stack } from "@mui/material";
 import { COLORS } from "../../constants/colors";
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import {TGroupLight} from "../../types/dto/TGroupLight";
@@ -18,51 +18,74 @@ const GroupCard = ({ name, userDebts }: TGroupLight) => {
     const isNegative = balance < 0;
 
     return (
-        <Box
+        <Stack
             sx={{
                 border: `4px solid ${COLORS.PRIMARY}`,
-                borderRadius: '40px', // Matches your prototype's heavy rounding
+                borderRadius: { xs: 9999, md: 10 },
                 padding: '16px',
-                backgroundColor: 'transparent',
-                display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
-                gap: 2,
-                minHeight: '250px',
+                gap: { xs: 3, md: 2 },
+                minHeight: { md: '250px' },
+                flexDirection: { xs: 'row', md: 'column' },
             }}
         >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                {name}
-            </Typography>
-
-            {/* The Dotted Placeholder for the Image */}
             <Box
                 sx={{
-                    width: '100%',
-                    flex: 1,
+                    order: 1,
+                    width: { xs: '60px', md: '100%' },
+                    height: { xs: '60px', md: 'auto' },
+                    flex: { md: 1 },
+                    aspectRatio: { xs: '1/1', md: 'unset' },
                     border: `2px dashed ${COLORS.PRIMARY}`,
-                    borderRadius: '20px',
+                    borderRadius: { xs: '50%', md: '20px' },
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                 }}
             >
-                <PhotoCameraIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
+                <PhotoCameraIcon sx={{ fontSize: { xs: 24, md: 40 }, color: COLORS.PRIMARY }} />
             </Box>
 
-            <Typography
-                variant="body1"
-                sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+            <Box
+                sx={{
+                    display: { xs: 'flex', md: 'contents' },
+                    flexDirection: 'column',
+                    alignItems: { xs: 'flex-start', md: 'center' },
+                    flex: 1,
+                    order: 2,
+                }}
             >
-                <FormattedMessage id="balance.label" />{" "}
-                <Box
-                    component="span"
-                    sx={{ color: isNegative ? COLORS.RED : COLORS.PRIMARY }}
-                >{/*> TODO need to change the hardcoded currency */}
-                    {balance.toFixed(2)} $
-                </Box>
-            </Typography>
-        </Box>
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
+                        color: COLORS.PRIMARY,
+                        order: 0,
+                        fontSize: { xs: '1.1rem', md: '1.25rem' }
+                    }}
+                >
+                    {name}
+                </Typography>
+
+                <Typography
+                    variant="body1"
+                    sx={{
+                        fontWeight: 600,
+                        color: COLORS.PRIMARY,
+                        order: 2,
+                    }}
+                >
+                    <FormattedMessage id="balance.label" />{" "}
+                    <Box
+                        component="span"
+                        sx={{ color: isNegative ? COLORS.RED : COLORS.PRIMARY }}
+                    >
+                        {balance.toFixed(2)} $
+                    </Box>
+                </Typography>
+            </Box>
+        </Stack>
     );
 };
 

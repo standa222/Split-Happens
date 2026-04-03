@@ -1,4 +1,4 @@
-import {Typography, Box, TypographyVariant} from "@mui/material";
+import {Typography, Box, TypographyVariant, Stack} from "@mui/material";
 import {COLORS} from "../constants/colors";
 import { FormattedMessage } from "react-intl";
 
@@ -12,7 +12,7 @@ export const BalanceDisplay = ({ balance, variant, sx }: Props) => {
     const isNegative = balance < 0;
 
     return (
-        <Typography variant={variant} sx={sx}>
+        <Typography variant={variant} sx={{ color: COLORS.PRIMARY, ...sx}}>
             <FormattedMessage id="balance.label" />
             <Box
                 component="span"
