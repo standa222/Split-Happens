@@ -7,7 +7,7 @@ import {BalanceDisplay} from "../../components/BalanceDisplay";
 import SettingsIcon from '@mui/icons-material/Settings';
 import {useState} from "react";
 import {GroupFormModal} from "../../components/GroupFormModal";
-import {BigAddExpenseButton} from "../../components/BigAddExpenseButton";
+import {AddExpenseButton} from "../../components/AddExpenseButton";
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
     const [editGroupModalOpen, setEditGroupModalOpen] = useState(false);
@@ -71,7 +71,12 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
 
                 <Stack direction="row" alignItems="center" gap={0.5}>
                     <Stack sx={{ width: 120 }}>
-                        <BigAddExpenseButton variant={{ xs: 'body2', sm: 'body2' }} group={group} direction={"row"}/>
+                        <AddExpenseButton
+                            variant={{ xs: 'body2', sm: 'body2' }}
+                            group={group}
+                            direction="row"
+                            size={{ xs: 'small', md: 'large' }}
+                        />
                     </Stack>
                     <IconButton onClick={() => setEditGroupModalOpen(true)}>
                         <SettingsIcon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />

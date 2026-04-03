@@ -5,7 +5,7 @@ import {Box, Typography, Stack, Button } from "@mui/material";
 import {GroupDetailOverview} from "./GroupDetailOverview";
 import { useState } from "react";
 import {COLORS} from "../../constants/colors";
-import {BigAddExpenseButton} from "../../components/BigAddExpenseButton";
+import {AddExpenseButton} from "../../components/AddExpenseButton";
 import {GroupExpenses} from "./GroupExpenses";
 import {GroupMembers} from "./GroupMembers";
 import { FormattedMessage } from "react-intl";
@@ -115,7 +115,7 @@ const GroupDetailSidebar = ({ activeTab, onTabChange, group }: {
                 </Button>
             ))}
 
-            <BigAddExpenseButton variant={"h4"} group={group} />
+            <AddExpenseButton variant={"h4"} group={group} />
         </Stack>
     );
 };

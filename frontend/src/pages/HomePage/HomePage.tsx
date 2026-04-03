@@ -2,7 +2,7 @@ import { Stack, Box } from "@mui/material";
 import {OverallBalance} from "../../components/OverallBalance";
 import {GroupGrid} from "./GroupGrid";
 import {RecentActivity} from "./RecentActivity";
-import {BigAddExpenseButton} from "../../components/BigAddExpenseButton";
+import {AddExpenseButton} from "../../components/AddExpenseButton";
 
 export function HomePage() {
 
@@ -30,7 +30,7 @@ export function HomePage() {
 
                 <Stack sx={{ flex: 1 }} gap={{ xs: 3, md: 4 }}>
                     <RecentActivity />
-                    <BigAddExpenseButton variant={{ xs: "h5", sm: "h4", md: "h3" }} />
+                    <AddExpenseButton variant={{ xs: "h5", sm: "h4", md: "h3" }} />
                 </Stack>
             </Stack>
         </Box>
