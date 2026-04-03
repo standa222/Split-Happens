@@ -50,11 +50,13 @@ public class DebtServiceImpl implements DebtService {
                         .transaction(paymentTransaction)
                         .user(debtor)
                         .balanceChange(debt.getAmount())
+                        .defaultCurrencyBalanceChange(debt.getAmount()) // TODO: Handle currency conversion if needed
                         .build(),
                 TransactionItem.builder()
                         .transaction(paymentTransaction)
                         .user(creditor)
                         .balanceChange(debt.getAmount().negate())
+                        .defaultCurrencyBalanceChange(debt.getAmount().negate()) // TODO: Handle currency conversion if needed
                         .build()
         ));
 
