@@ -7,6 +7,7 @@ import {BalanceDisplay} from "../../components/BalanceDisplay";
 import SettingsIcon from '@mui/icons-material/Settings';
 import {useState} from "react";
 import {GroupFormModal} from "../../components/GroupFormModal";
+import {AddExpenseButton} from "../../components/AddExpenseButton";
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
     const [editGroupModalOpen, setEditGroupModalOpen] = useState(false);
@@ -17,7 +18,8 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
 
     return (
         <>
-            <Stack direction="row" gap={6} alignItems="center">
+            {/* Desktop header */}
+            <Stack direction="row" gap={6} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
                 <Box
                     sx={{
                         minWidth: 296,
@@ -35,12 +37,53 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
                     <Typography variant="h5" fontWeight={600}>{group.name}</Typography>
                     <BalanceDisplay variant="h6" balance={balance} />
                 </Stack>
-                <IconButton
-                    onClick={() => setEditGroupModalOpen(true)}
-                >
+                <IconButton onClick={() => setEditGroupModalOpen(true)}>
                     <SettingsIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
                 </IconButton>
             </Stack>
+
+            {/* Mobile header */}
+            <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{
+                    display: { xs: 'flex', md: 'none' },
+                    gap: 1.5,
+                    pb: 1,
+                }}
+            >
+                <Stack gap={0.25} flex={1} minWidth={0}>
+                    <Typography
+                        variant="subtitle1"
+                        fontWeight={700}
+                        sx={{
+                            color: COLORS.PRIMARY,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                    >
+                        {group.name}
+                    </Typography>
+                    <BalanceDisplay variant="body2" balance={balance} />
+                </Stack>
+
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                    <Stack sx={{ width: 120 }}>
+                        <AddExpenseButton
+                            variant={{ xs: 'body2', sm: 'body2' }}
+                            group={group}
+                            direction="row"
+                            size={{ xs: 'small', md: 'large' }}
+                        />
+                    </Stack>
+                    <IconButton onClick={() => setEditGroupModalOpen(true)}>
+                        <SettingsIcon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
+                    </IconButton>
+                </Stack>
+            </Stack>
+
             <GroupFormModal
                 open={editGroupModalOpen}
                 onClose={() => setEditGroupModalOpen(false)}

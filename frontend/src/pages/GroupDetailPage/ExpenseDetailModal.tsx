@@ -23,18 +23,6 @@ export const ExpenseDetailModal = ({ open, onClose, transaction, group }: Props)
             <Dialog
                 open={open}
                 onClose={onClose}
-                fullWidth
-                maxWidth="lg"
-                slotProps={{
-                    paper: {
-                        sx: {
-                            backgroundColor: COLORS.SECONDARY,
-                            borderRadius: 10,
-                            pt: 2,
-                            border: `5px solid ${COLORS.PRIMARY}`,
-                        },
-                    },
-                }}
             >
                 <Stack
                     direction="row"
@@ -68,18 +56,6 @@ export const ExpenseDetailModal = ({ open, onClose, transaction, group }: Props)
             <Dialog
                 open={editOpen}
                 onClose={() => setEditOpen(false)}
-                fullWidth
-                maxWidth="lg"
-                slotProps={{
-                    paper: {
-                        sx: {
-                            backgroundColor: COLORS.SECONDARY,
-                            borderRadius: 10,
-                            pt: 2,
-                            border: `5px solid ${COLORS.PRIMARY}`,
-                        },
-                    },
-                }}
             >
                 <IconButton
                     aria-label="close"

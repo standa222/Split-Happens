@@ -5,7 +5,7 @@ export type TTransaction = {
     title: string;
     totalAmount: number;
     createdAt: string;
-    transactionType: 'expense' | 'payment';
+    transactionType: 'EXPENSE' | 'PAYMENT';
     items: {
         id: number;
         user: TUser;

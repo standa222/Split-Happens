@@ -1,9 +1,7 @@
 package cz.splithappens.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -12,6 +10,8 @@ import java.math.BigDecimal;
 @Setter
 @Table(name = "transaction_item")
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class TransactionItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +28,13 @@ public class TransactionItem {
     @Column(nullable = false)
     private BigDecimal balanceChange; // Positive for payers, negative for participants
 
-    public TransactionItem(User user, Transaction transaction, BigDecimal balanceChange) {
+    @Column(nullable = false)
+    private BigDecimal defaultCurrencyBalanceChange; // Balance change converted to group's default currency, used for easier balance calculations
+
+    public TransactionItem(User user, Transaction transaction, BigDecimal balanceChange, BigDecimal defaultCurrencyBalanceChange) {
         this.user = user;
         this.transaction = transaction;
         this.balanceChange = balanceChange;
+        this.defaultCurrencyBalanceChange = defaultCurrencyBalanceChange;
     }
 }

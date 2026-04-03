@@ -41,6 +41,10 @@ public class TransactionServiceImpl implements TransactionService {
         Group group = groupRepository.findById(createDto.getGroupId())
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
 
+        if (!group.getDefaultCurrency().equals(createDto.getCurrency())) { // TODO: allow different currency but calculate exchange rate
+            throw new RuntimeException("Transaction currency must be different from group default currency"); // TODO: Custom exception
+        }
+
         Transaction transaction = transactionMapper.toEntity(createDto);
         List<TransactionItem> items = createTransactionsItems(createDto, transaction);
 
@@ -49,13 +53,14 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction response = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(group.getId()); // TODO should only be done if type is expense, not payment
+        group.updateLastActivity();
         return transactionMapper.toDto(response);
     }
 
     @Override
     @Transactional
     public List<TransactionDto> getGroupTransactions(Long groupId) {
-        return transactionRepository.findByGroupId(groupId).stream()
+        return transactionRepository.findByGroupIdOrderByCreatedAtDesc(groupId).stream()
                 .map(transactionMapper::toDto)
                 .toList();
     }
@@ -74,14 +79,14 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
         transaction.setTitle(updateDto.getTitle());
-        // TODO - update items (maybe just delete all and create new ones)
-//        transaction.setItems(updateDto.getItems().stream()
-//                .map(transactionMapper::toItemEntity)
-//                .toList());
         transaction.setTotalAmount(updateDto.getTotalAmount());
+        transaction.getItems().clear();
+        transaction.getItems().addAll(createTransactionsItems(updateDto, transaction));
+        transaction.setCurrency(updateDto.getCurrency());
 
         Transaction newTransaction = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(transaction.getGroup().getId());
+        transaction.getGroup().updateLastActivity();
         return transactionMapper.toDto(newTransaction);
     }
 
@@ -91,10 +96,12 @@ public class TransactionServiceImpl implements TransactionService {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
         transactionRepository.delete(transaction);
+        transaction.getGroup().updateLastActivity();
         settlementEngine.calculateDebts(transaction.getGroup().getId());
     }
 
     private List<TransactionItem> createTransactionsItems(TransactionCreateDto createDto, Transaction transaction) {
+        // TODO calculate exchange rates if transaction currency is different from group default currency
         List<TransactionItem> result = new ArrayList<>();
 
         result.addAll(extractItems(createDto.getPaidBy(), transaction, true, createDto.getTotalAmount()));
@@ -139,7 +146,8 @@ public class TransactionServiceImpl implements TransactionService {
                         return new TransactionItem(
                                 usersById.get(split.getUserId()),
                                 transaction,
-                                positiveBalance ? amount : amount.negate()
+                                positiveBalance ? amount : amount.negate(),
+                                positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
                         );
                     })
                     .toList();
@@ -162,7 +170,8 @@ public class TransactionServiceImpl implements TransactionService {
                         return new TransactionItem(
                                 usersById.get(split.getUserId()),
                                 transaction,
-                                positiveBalance ? amount : amount.negate()
+                                positiveBalance ? amount : amount.negate(),
+                                positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
                         );
                     })
                     .toList();
@@ -176,7 +185,8 @@ public class TransactionServiceImpl implements TransactionService {
                     return new TransactionItem(
                             usersById.get(split.getUserId()),
                             transaction,
-                            positiveBalance ? amount : amount.negate()
+                            positiveBalance ? amount : amount.negate(),
+                            positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
                     );
                 })
                 .toList();

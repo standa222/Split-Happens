@@ -15,16 +15,9 @@ export const GroupFormModal = ({ open, onClose, initGroup }: Props) => {
         <Dialog
             open={open}
             onClose={onClose}
-            fullWidth
-            maxWidth="lg"
-            slotProps={{
-                paper: {
-                    sx: {
-                        backgroundColor: COLORS.SECONDARY,
-                        borderRadius: 10,
-                        pt: 2,
-                        border: `5px solid ${COLORS.PRIMARY}`,
-                    },
+            sx={{
+                '& .MuiDialog-paper': {
+                    borderRadius: { xs: 0, md: 10 },
                 },
             }}
         >

@@ -74,7 +74,7 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                         </Typography>
                         <Typography sx={{ color: COLORS.PRIMARY }}>
                             <FormattedMessage
-                                id={transaction.transactionType === "payment" ? "expense.detail.type.payment" : "expense.detail.type.expense"}
+                                id={transaction.transactionType === "PAYMENT" ? "expense.detail.type.payment" : "expense.detail.type.expense"}
                             />
                         </Typography>
                     </Stack>
@@ -135,4 +135,3 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
         </Box>
     );
 };
-

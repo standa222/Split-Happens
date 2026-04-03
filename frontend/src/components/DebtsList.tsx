@@ -1,4 +1,4 @@
-import {Stack, Typography, Button} from "@mui/material";
+import {Stack, Typography, Button, StackProps, Divider} from "@mui/material";
 import {TDebt} from "../types/TDebt";
 import {useAuthStore} from "../store/authStore";
 import {TUser} from "../types/TUser";
@@ -7,16 +7,22 @@ import QrCode2Icon from '@mui/icons-material/QrCode2';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import {COLORS} from "../constants/colors";
 import { FormattedMessage } from "react-intl";
+import {useSettleDebt} from "../hooks/useSettleDebt";
 
 type Props = {
     userDebts: TDebt[],
     user: TUser,
     showActionButtons?: boolean,
+    groupId: number,
+    display?: StackProps["display"],
+    showDividers?: boolean,
 }
 
-const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
+const DebtActionButtons = ({ debt, groupId }: { debt: TDebt, groupId: number }) => {
+    const {mutate: settleDebt, isPending: isSettleDebtPending} = useSettleDebt();
+
     const onMarkPaid = () => {
-        console.log("mark paid", debt.id);
+        settleDebt({ groupId, debtId: debt.id });
     };
 
     const onGenerateQr = () => {
@@ -28,11 +34,18 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
     };
 
     return (
-        <Stack direction="row" gap={2} alignItems="center">
+        <Stack
+            direction="row"
+            gap={2}
+            alignItems="center"
+            width={{xs: "100%", md: "auto"}}
+            justifyContent="space-around"
+        >
             <Button
                 variant="text"
                 size="small"
                 onClick={onMarkPaid}
+                disabled={isSettleDebtPending}
                 sx={{
                     minWidth: 0,
                     p: 0,
@@ -42,7 +55,7 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                     color: COLORS.PRIMARY
                 }}
             >
-                <CheckBoxIcon fontSize="small" />
+                <CheckBoxIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
                 <Typography variant="caption">
                     <FormattedMessage id="debts.actions.markPaid" />
                 </Typography>
@@ -61,7 +74,7 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                     color: COLORS.PRIMARY
                 }}
             >
-                <QrCode2Icon fontSize="small" />
+                <QrCode2Icon sx={{ fontSize: { xs: 32, md: 20 } }} />
                 <Typography variant="caption">
                     <FormattedMessage id="debts.actions.generateQr" />
                 </Typography>
@@ -80,7 +93,7 @@ const DebtActionButtons = ({ debt }: { debt: TDebt }) => {
                     color: COLORS.PRIMARY
                 }}
             >
-                <NotificationsIcon fontSize="small" />
+                <NotificationsIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
                 <Typography variant="caption">
                     <FormattedMessage id="debts.actions.notify" />
                 </Typography>
@@ -93,6 +106,8 @@ export const DebtsList = ({
         userDebts,
         user,
         showActionButtons = false,
+        groupId,
+        display,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
 
@@ -100,7 +115,7 @@ export const DebtsList = ({
         const isCurrentUser = user.id === currentUserId;
         const name = `${user.firstName ?? ""}`.trim();
         return (
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{display}}>
                 <FormattedMessage
                     id="debts.settled"
                     values={{ isCurrentUser, name }}
@@ -110,7 +125,7 @@ export const DebtsList = ({
     }
 
     return (
-        <Stack gap={1}>
+        <Stack gap={1} sx={{display}}>
             {userDebts.map(debt => {
                 const debtorIsCurrent = debt.debtor.id === currentUserId;
                 const creditorIsCurrent = debt.creditor.id === currentUserId;
@@ -119,8 +134,14 @@ export const DebtsList = ({
                 const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
 
                 return (
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" key={debt.id}>
-                        <Typography variant="body1">
+                    <Stack
+                        direction={{xs: "column", md: "row"}}
+                        alignItems={{xs: "start", md: "center"}}
+                        justifyContent={{xs: "space-between", md: "space-between"}}
+                        key={debt.id}
+                        gap={2}
+                    >
+                        <Typography variant="body1" color={COLORS.PRIMARY}>
                             <FormattedMessage
                                 id="debts.owesLine"
                                 values={{
@@ -133,7 +154,7 @@ export const DebtsList = ({
                             />
                         </Typography>
                         {showActionButtons &&
-                            <DebtActionButtons debt={debt} />
+                            <DebtActionButtons debt={debt} groupId={groupId}/>
                         }
                     </Stack>
                 );

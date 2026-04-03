@@ -1,5 +1,6 @@
 package cz.splithappens.dto.request;
 
+import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.TransactionType;
 import lombok.Data;
 
@@ -12,7 +13,7 @@ public class TransactionCreateDto {
 //    private Category category; TODO categories
     private Long groupId;
     private BigDecimal totalAmount;
-    private String currency; // Code of the currency, e.g. "USD", "EUR"
+    private Currency currency;
     private TransactionType transactionType;
     private List<TransactionSplitCreateDto> paidBy;
     private List<TransactionSplitCreateDto> splitBetween;
