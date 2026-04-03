@@ -41,6 +41,10 @@ public class TransactionServiceImpl implements TransactionService {
         Group group = groupRepository.findById(createDto.getGroupId())
                 .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
 
+        if (!group.getDefaultCurrency().equals(createDto.getCurrency())) { // TODO: allow different currency but calculate exchange rate
+            throw new RuntimeException("Transaction currency must be different from group default currency"); // TODO: Custom exception
+        }
+
         Transaction transaction = transactionMapper.toEntity(createDto);
         List<TransactionItem> items = createTransactionsItems(createDto, transaction);
 
