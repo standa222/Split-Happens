@@ -191,16 +191,23 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                 <FormattedMessage id={isEditMode ? "expense.edit.title" : "expense.add.title"} />
             </Typography>
 
+            {/* Desktop layout */}
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <Stack>
                     <Box display="flex" gap={3} alignItems="center">
                         <Stack flex={1}>
-                            <TextField
-                                label={<FormattedMessage id="expense.fields.title" />}
-                                size="small"
-                                {...register("title")}
-                                error={!!errors.title}
-                                helperText={errors.title?.message}
+                            <Controller
+                                name="title"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        label={<FormattedMessage id="expense.fields.title" />}
+                                        size="small"
+                                        error={!!errors.title}
+                                        helperText={errors.title?.message}
+                                    />
+                                )}
                             />
                         </Stack>
 
@@ -289,12 +296,21 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
 
                         <Box display="flex" gap={3} flex={1} alignItems="center">
                             <Stack flex={1}>
-                                <TextField
-                                    label={<FormattedMessage id="expense.fields.amount" />}
-                                    size="small"
-                                    {...register("totalAmount", { valueAsNumber: true })}
-                                    error={!!errors.totalAmount}
-                                    helperText={errors.totalAmount?.message}
+                                <Controller
+                                    name="totalAmount"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label={<FormattedMessage id="expense.fields.amount" />}
+                                            size="small"
+                                            inputMode="decimal"
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                            error={!!errors.totalAmount}
+                                            helperText={errors.totalAmount?.message}
+                                        />
+                                    )}
                                 />
                             </Stack>
 
@@ -526,16 +542,22 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                 </Box>
             </Box>
 
-            {/* Mobile layout (xs-sm): matches mock ordering + segmented toggle */}
+            {/* Mobile layout (xs-sm) */}
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
                 <Stack gap={1.5}>
-                    <TextField
-                        fullWidth
-                        label={<FormattedMessage id="expense.fields.title" />}
-                        size="small"
-                        {...register("title")}
-                        error={!!errors.title}
-                        helperText={errors.title?.message}
+                    <Controller
+                        name="title"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                fullWidth
+                                label={<FormattedMessage id="expense.fields.title" />}
+                                size="small"
+                                error={!!errors.title}
+                                helperText={errors.title?.message}
+                            />
+                        )}
                     />
 
                     <Box
@@ -606,13 +628,22 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                             )}
                         />
 
-                        <TextField
-                            fullWidth
-                            label={<FormattedMessage id="expense.fields.amount" />}
-                            size="small"
-                            {...register("totalAmount", { valueAsNumber: true })}
-                            error={!!errors.totalAmount}
-                            helperText={errors.totalAmount?.message}
+                        <Controller
+                            name="totalAmount"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    fullWidth
+                                    label={<FormattedMessage id="expense.fields.amount" />}
+                                    size="small"
+                                    inputMode="decimal"
+                                    value={field.value ?? ""}
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    error={!!errors.totalAmount}
+                                    helperText={errors.totalAmount?.message}
+                                />
+                            )}
                         />
 
                         <Controller
