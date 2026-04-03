@@ -278,7 +278,7 @@ export function Navigation() {
                     sx={{
                         width: "100%",
                         backgroundColor: COLORS.RED,
-                        color: "white",
+                        color: COLORS.SECONDARY,
                         border: "none",
                         py: 3,
                         textAlign: "left",

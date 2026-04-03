@@ -187,7 +187,7 @@ export const GroupDetailPage = () => {
     const { data: group, isLoading, isError } = useGroupDetail(groupId ? parseInt(groupId) : 0);
 
     return (
-        <Box mt={{ xs: 2, md: 4 }} px={{ xs: 1.5, md: 0 }}>
+        <Box mt={{ xs: 2, md: 4 }} px={0}>
             <GroupDetailWrapper
                 group={group}
                 isLoading={isLoading}

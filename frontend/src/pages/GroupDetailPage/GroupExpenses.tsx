@@ -90,7 +90,7 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                 ) : (
                     <>
                         <Stack direction="row" flex={1} sx={{ px: { md: 5 } }} gap={1}>
-                            <Stack width="50%" gap={1}>
+                            <Stack width="55%" gap={1}>
                                 <Typography fontWeight="bold" color={COLORS.PRIMARY} sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
                                     {transaction.title}
                                 </Typography>
@@ -104,7 +104,7 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                                 </Typography>
                             </Stack>
 
-                            <Stack width="50%" gap={1}>
+                            <Stack width="45%" gap={1}>
                                 <Typography color={COLORS.PRIMARY} sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
                                     <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} $
                                 </Typography>

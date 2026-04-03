@@ -30,7 +30,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
 
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
-            <Stack direction="row" spacing={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px:{md: 3, xs: 1} }}>
+            <Stack direction="row" gap={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px:{md: 3, xs: 1} }}>
                 <Box
                     sx={{
                         width: {md: 120, xs: 60},
