@@ -10,9 +10,14 @@ import { FormattedMessage } from "react-intl";
 type Props = {
     variant: TypographyVariant | Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', TypographyVariant>>;
     group?: TGroupDetail;
+    direction?: "row" | "column";
 }
 
-export function BigAddExpenseButton({ variant, group }: Props) {
+export function BigAddExpenseButton({
+    variant,
+    group,
+    direction = "column",
+}: Props) {
     const [open, setOpen] = useState(false);
 
     const resolvedVariant: TypographyVariant = typeof variant === 'string'
@@ -25,6 +30,7 @@ export function BigAddExpenseButton({ variant, group }: Props) {
                 component="button" // Makes the whole Stack semantically a button
                 onClick={() => setOpen(true)}
                 alignItems="center"
+                direction={direction}
                 spacing={2}
                 sx={{
                     background: "none",
@@ -47,14 +53,15 @@ export function BigAddExpenseButton({ variant, group }: Props) {
                         color: COLORS.PRIMARY,
                         fontWeight: 500,
                         textAlign: "center",
+                        display: { xs: "none", md: "block" }, // Hide text on small screens
                     }}
                 >
                     <FormattedMessage id="expense.action.add" />
                 </Typography>
                 <Box
                     sx={{
-                        width: 80,
-                        height: 80,
+                        width: { xs: 25, md: 80 },
+                        height: { xs: 25, md: 80 },
                         backgroundColor: COLORS.PRIMARY,
                         borderRadius: "50%",
                         display: "flex",
@@ -63,7 +70,7 @@ export function BigAddExpenseButton({ variant, group }: Props) {
                         boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
                     }}
                 >
-                    <AddIcon sx={{ color: COLORS.SECONDARY, fontSize: 50 }} />
+                    <AddIcon sx={{ color: COLORS.SECONDARY, fontSize: {xs: 15, md: 50} }} />
                 </Box>
             </Stack>
 
