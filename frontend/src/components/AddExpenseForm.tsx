@@ -162,6 +162,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
             transactionType: "EXPENSE",
         };
 
+        console.log("payload", payload);
+        console.log("currency", payload.currency);
+
         if (isEditMode) {
             editMutate({ transactionId: initTransaction!.id, data: payload });
         } else {
@@ -331,16 +334,16 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                                                     (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
                                                 );
                                             }}
+                                            value={favCurrencies.find((c) => c.code === (field.value ?? "")) ?? null}
+                                            onChange={(_, selected) => field.onChange(selected?.code ?? "")}
+                                            onBlur={field.onBlur}
                                             renderInput={(params) => (
                                                 <TextField
+                                                    {...params}
                                                     label={<FormattedMessage id="expense.fields.currency" />}
-                                                    value={field.value ?? ""}
-                                                    onChange={field.onChange}
-                                                    onBlur={field.onBlur}
                                                     inputRef={field.ref}
                                                     error={!!errors.currency}
                                                     helperText={errors.currency?.message}
-                                                    {...params}
                                                 />
                                             )}
                                         />
@@ -662,14 +665,14 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                                             (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
                                         );
                                     }}
+                                    value={favCurrencies.find((c) => c.code === (field.value ?? "")) ?? null}
+                                    onChange={(_, selected) => field.onChange(selected?.code ?? "")}
+                                    onBlur={field.onBlur}
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
                                             fullWidth
                                             label={<FormattedMessage id="expense.fields.currency" />}
-                                            value={field.value ?? ""}
-                                            onChange={field.onChange}
-                                            onBlur={field.onBlur}
                                             inputRef={field.ref}
                                             error={!!errors.currency}
                                             helperText={errors.currency?.message}
