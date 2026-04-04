@@ -1,8 +1,11 @@
 package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.request.UserCreateDto;
+import cz.splithappens.dto.response.BankAccountDto;
 import cz.splithappens.dto.response.UserDto;
+import cz.splithappens.mapper.BankAccountMapper;
 import cz.splithappens.mapper.UserMapper;
+import cz.splithappens.model.BankAccount;
 import cz.splithappens.model.User;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.UserService;
@@ -21,6 +24,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final BankAccountMapper bankAccountMapper;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -30,6 +34,8 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Email already exists"); // TODO custom exception
         }
         User user = userMapper.toEntity(createDto);
+        BankAccount account = bankAccountMapper.toEntity(createDto.getBankAccount());
+        user.assignBankAccount(account);
         user.setPasswordHash(passwordEncoder.encode(createDto.getPassword()));
         return userMapper.toDto(userRepository.save(user));
     }
@@ -38,6 +44,18 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    public UserDto updateProfile(Long id, UserCreateDto updateDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found")); // TODO custom exception
+        user.setFirstName(updateDto.getFirstName());
+        user.setLastName(updateDto.getLastName());
+        // TODO: think about updating email and password
+        BankAccount account = bankAccountMapper.toEntity(updateDto.getBankAccount());
+        user.assignBankAccount(account);
+        return userMapper.toDto(userRepository.save(user));
     }
 
     @Override

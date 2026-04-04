@@ -12,6 +12,7 @@ public interface UserMapper {
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "friends", ignore = true)
     @Mapping(target = "authorities", ignore = true)
+    @Mapping(target = "bankAccount", ignore = true)
     User toEntity(UserCreateDto createDto);
 
     UserDto toDto(User user);
