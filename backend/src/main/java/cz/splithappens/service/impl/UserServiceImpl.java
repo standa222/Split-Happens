@@ -47,6 +47,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDto updateProfile(Long id, UserCreateDto updateDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found")); // TODO custom exception
+        user.setFirstName(updateDto.getFirstName());
+        user.setLastName(updateDto.getLastName());
+        // TODO: think about updating email and password
+        BankAccount account = bankAccountMapper.toEntity(updateDto.getBankAccount());
+        user.assignBankAccount(account);
+        return userMapper.toDto(userRepository.save(user));
+    }
+
+    @Override
     @Transactional
     public Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
