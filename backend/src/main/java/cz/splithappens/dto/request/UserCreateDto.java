@@ -8,4 +8,5 @@ public class UserCreateDto {
     private String lastName;
     private String email;
     private String password;
+    private BankAccountCreateDto bankAccount;
 }
