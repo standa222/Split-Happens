@@ -1,5 +1,6 @@
 package cz.splithappens.service.impl;
 
+import cz.splithappens.dto.request.BankAccountCreateDto;
 import cz.splithappens.dto.request.UserCreateDto;
 import cz.splithappens.dto.response.BankAccountDto;
 import cz.splithappens.dto.response.UserDto;
@@ -53,8 +54,7 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(updateDto.getFirstName());
         user.setLastName(updateDto.getLastName());
         // TODO: think about updating email and password
-        BankAccount account = bankAccountMapper.toEntity(updateDto.getBankAccount());
-        user.assignBankAccount(account);
+        updateBankAccount(user, updateDto.getBankAccount());
         return userMapper.toDto(userRepository.save(user));
     }
 
@@ -71,5 +71,17 @@ public class UserServiceImpl implements UserService {
         return users.stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    private void updateBankAccount(User user, BankAccountCreateDto bankAccountDto) {
+        BankAccount account = user.getBankAccount();
+        if (account == null) {
+            account = bankAccountMapper.toEntity(bankAccountDto);
+            user.assignBankAccount(account);
+        } else {
+            account.setPrefix(bankAccountDto.getPrefix());
+            account.setAccountNumber(bankAccountDto.getAccountNumber());
+            account.setBankCode(bankAccountDto.getBankCode());
+        }
     }
 }
