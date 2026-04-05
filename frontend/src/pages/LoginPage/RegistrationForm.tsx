@@ -11,7 +11,7 @@ type Props = {
 }
 
 export function RegistrationForm({ onSwitchToLogin }: Props) {
-    const { mutate, isPending, isError, error } = useRegisterUser({
+    const { mutate, isPending } = useRegisterUser({
         onSuccess: () => {
             console.log("Registration successful, switching to login form");
             onSwitchToLogin();
@@ -23,12 +23,21 @@ export function RegistrationForm({ onSwitchToLogin }: Props) {
         handleSubmit,
         formState: { errors }
     } = useForm<TRegisterForm>({
-        resolver: zodResolver(registerFormSchema)
+        resolver: zodResolver(registerFormSchema),
+        defaultValues: {
+            bankAccount: {
+                prefix: "",
+                accountNumber: "",
+                bankCode: "",
+            },
+        },
     })
 
     const onSubmit = (data: TRegisterForm) => {
-        console.log("Submitting registration form with data:", data);
-        mutate(data)
+        // Ensure Zod transforms ran (e.g., drop empty bankAccount)
+        const parsed = registerFormSchema.parse(data);
+        console.log("Submitting registration form with data:", parsed);
+        mutate(parsed)
     }
 
     return (
@@ -66,6 +75,27 @@ export function RegistrationForm({ onSwitchToLogin }: Props) {
                 {...register("password")}
                 error={!!errors.password}
                 helperText={errors.password?.message}
+            />
+            <TextField
+                label={<FormattedMessage id="register.bankAccountPrefix" />}
+                type="text"
+                {...register("bankAccount.prefix")}
+                error={!!errors.bankAccount?.prefix}
+                helperText={errors.bankAccount?.prefix?.message}
+            />
+            <TextField
+                label={<FormattedMessage id="register.bankAccountNumber" />}
+                type="text"
+                {...register("bankAccount.accountNumber")}
+                error={!!errors.bankAccount?.accountNumber || !!(errors.bankAccount as any)?.message}
+                helperText={errors.bankAccount?.accountNumber?.message ?? (errors.bankAccount as any)?.message}
+            />
+            <TextField
+                label={<FormattedMessage id="register.bankCode" />}
+                type="text"
+                {...register("bankAccount.bankCode")}
+                error={!!errors.bankAccount?.bankCode || !!(errors.bankAccount as any)?.message}
+                helperText={errors.bankAccount?.bankCode?.message ?? (errors.bankAccount as any)?.message}
             />
             <Button
                 sx={{

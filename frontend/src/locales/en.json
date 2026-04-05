@@ -113,6 +113,9 @@
 
   "register.firstName": "First name",
   "register.lastName": "Last name",
+  "register.bankAccountPrefix": "Prefix",
+  "register.bankAccountNumber": "Account number",
+  "register.bankCode": "Bank code",
   "register.submit": "Register",
   "register.submitting": "Registering...",
   "register.haveAccount": "Already have an account?",

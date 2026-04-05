@@ -113,6 +113,9 @@
 
   "register.firstName": "Jméno",
   "register.lastName": "Příjmení",
+  "register.bankAccountPrefix": "Předčíslí",
+  "register.bankAccountNumber": "Číslo účtu",
+  "register.bankCode": "Kód banky",
   "register.submit": "Zaregistrovat se",
   "register.submitting": "Registruji...",
   "register.haveAccount": "Už máte účet?",
