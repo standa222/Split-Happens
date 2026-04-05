@@ -39,6 +39,7 @@
   "expense.action.adding": "Přidávám...",
 
   "common.close": "Zavřít",
+  "common.cancel": "Zrušit",
 
   "common.unknownUser": "Neznámý uživatel",
 
@@ -139,5 +140,18 @@
 
   "expense.edit.title": "Upravit výdaj",
   "expense.action.save": "Uložit změny",
-  "expense.action.saving": "Ukládám..."
+  "expense.action.saving": "Ukládám...",
+
+  "profile.title": "Profil",
+  "profile.firstName": "Jméno",
+  "profile.lastName": "Příjmení",
+  "profile.email": "Email",
+  "profile.bankAccount": "Bankovní účet",
+  "profile.bankAccount.notSet": "Není nastaven",
+  "profile.unknown": "—",
+
+  "profile.edit": "Upravit profil",
+  "profile.edit.title": "Upravit profil",
+  "profile.edit.save": "Uložit",
+  "profile.edit.saving": "Ukládám..."
 }

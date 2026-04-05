@@ -39,6 +39,7 @@
   "expense.action.adding": "Adding...",
 
   "common.close": "Close",
+  "common.cancel": "Cancel",
 
   "common.unknownUser": "Unknown User",
 
@@ -139,5 +140,16 @@
 
   "expense.edit.title": "Edit expense",
   "expense.action.save": "Save changes",
-  "expense.action.saving": "Saving..."
+  "expense.action.saving": "Saving...",
+
+  "profile.title": "Profile",
+  "profile.firstName": "First name",
+  "profile.lastName": "Last name",
+  "profile.email": "Email",
+  "profile.bankAccount": "Bank account",
+  "profile.unknown": "—",
+  "profile.edit": "Edit profile",
+  "profile.edit.title": "Edit profile",
+  "profile.edit.save": "Save",
+  "profile.edit.saving": "Saving..."
 }
