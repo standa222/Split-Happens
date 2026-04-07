@@ -74,6 +74,7 @@
   "overallBalance.label": "Your overall balance is:",
   "overallBalance.loading": "Your overall balance is: Loading...",
   "overallBalance.error": "Error loading your overall balance.",
+  "overallBalance.settled": "You are settled with all groups.",
 
   "groupDetail.loading": "Loading...",
   "groupDetail.error": "Error loading group details.",

@@ -74,6 +74,7 @@
   "overallBalance.label": "Váš celkový zůstatek je:",
   "overallBalance.loading": "Váš celkový zůstatek je: Načítám...",
   "overallBalance.error": "Nepodařilo se načíst váš celkový zůstatek.",
+  "overallBalance.settled": "Jste ve všech skupinách vyrovnán/a.",
 
   "groupDetail.loading": "Načítám...",
   "groupDetail.error": "Chyba při načítání detailu skupiny.",
