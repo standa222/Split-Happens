@@ -69,7 +69,7 @@
   "debts.actions.notify": "Upozornit",
 
   "debts.settled": "{isCurrentUser, select, true {Jste} other {{name} je}} v této skupině vyrovnán/a.",
-  "debts.owesLine": "{debtorIsCurrent, select, true {Dlužíte} other {{debtorName} dluží}} {creditorIsCurrent, select, true {vám} other {{creditorName}}} {amount} $",
+  "debts.owesLine": "{debtorIsCurrent, select, true {Dlužíte} other {{debtorName} dluží}} {creditorIsCurrent, select, true {vám} other {{creditorName}}} {amount} {currencySymbol}",
 
   "overallBalance.label": "Váš celkový zůstatek je:",
   "overallBalance.loading": "Váš celkový zůstatek je: Načítám...",
@@ -91,7 +91,7 @@
   "groupDetail.expenses.yourSplit": "váš podíl",
   "groupDetail.expenses.totalPaid": "celkem zaplaceno",
   "groupDetail.expenses.detail": "Detail",
-  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {Vy} other {{debtorName}}} jste zaplatil/a {amount} $ {creditorIsCurrent, select, true {Vám} other {uživateli {creditorName}}}",
+  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {Vy} other {{debtorName}}} jste zaplatil/a {amount} {currencySymbol} {creditorIsCurrent, select, true {Vám} other {uživateli {creditorName}}}",
 
   "common.detail": "Detail",
 

@@ -22,7 +22,7 @@ type Props = {
     isError: boolean;
 }
 
-const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
+const GroupListItem = ({ id, name, userDebts, lastActivity, defaultCurrency }: TGroupLight) => {
     const user = useAuthStore((s) => s.currentUser);
     const balance = userDebts.reduce((acc, debt) => user.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const { locale } = useIntl();
@@ -78,12 +78,13 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                                 },
                             }}
                             balance={balance}
+                            currency={defaultCurrency}
                         />
                         <DebtsList
                             userDebts={userDebts}
                             user={user}
                             groupId={id}
-                            groupCurrency={"CZK"}
+                            groupCurrency={defaultCurrency}
                             display={{xs: 'none', md: 'block'}}
                         />
                     </Stack>

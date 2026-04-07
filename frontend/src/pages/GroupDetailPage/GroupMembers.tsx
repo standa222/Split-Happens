@@ -83,6 +83,7 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
                                     },
                                 }}
                                 balance={balance}
+                                currency={defaultCurrency}
                             />
                         </Stack>
                         {showDebts ? (
@@ -126,7 +127,7 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
                             <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY} noWrap>
                                 {memberFullName}
                             </Typography>
-                            <BalanceDisplay variant="body2" balance={balance} />
+                            <BalanceDisplay variant="body2" balance={balance} currency={defaultCurrency} />
                         </Stack>
                         <IconButton onClick={() => setShowDebts(false)} sx={{ mt: -0.5, mr: -0.5 }}>
                             <CloseIcon sx={{color: COLORS.PRIMARY}} />

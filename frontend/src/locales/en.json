@@ -69,7 +69,7 @@
   "debts.actions.notify": "Notify",
 
   "debts.settled": "{isCurrentUser, select, true {You are} other {{name} is}} settled in this group.",
-  "debts.owesLine": "{debtorIsCurrent, select, true {You owe} other {{debtorName} owes}} {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+  "debts.owesLine": "{debtorIsCurrent, select, true {You owe} other {{debtorName} owes}} {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
   "overallBalance.label": "Your overall balance is:",
   "overallBalance.loading": "Your overall balance is: Loading...",
@@ -91,7 +91,7 @@
   "groupDetail.expenses.yourSplit": "your split",
   "groupDetail.expenses.totalPaid": "total paid",
   "groupDetail.expenses.detail": "Detail",
-  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
   "common.detail": "Detail",
 

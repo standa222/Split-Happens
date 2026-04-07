@@ -3,6 +3,7 @@ import {FormattedMessage} from "react-intl";
 import {TTransaction} from "../../types/TTransaction";
 import {COLORS} from "../../constants/colors";
 import {useAuthStore} from "../../store/authStore";
+import { formatMoneyWithSymbol } from "../../utils/currencyUtils";
 
 type Props = {
     transaction: TTransaction | null;
@@ -55,7 +56,7 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                             <FormattedMessage id="expense.detail.total" />
                         </Typography>
                         <Typography sx={{ color: COLORS.PRIMARY }}>
-                            {transaction.totalAmount.toFixed(2)} $
+                            {formatMoneyWithSymbol(transaction.totalAmount, transaction.currency)}
                         </Typography>
                     </Stack>
 
@@ -64,7 +65,7 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                             <FormattedMessage id="expense.detail.yourSplit" />
                         </Typography>
                         <Typography sx={{ fontWeight: 800, color: isNegative ? COLORS.RED : COLORS.PRIMARY }}>
-                            {userSplit.toFixed(2)} $
+                            {formatMoneyWithSymbol(userSplit, transaction.currency)}
                         </Typography>
                     </Stack>
 
@@ -99,7 +100,7 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                                             {p.name}
                                         </Typography>
                                         <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 800 }}>
-                                            {p.amount.toFixed(2)} $
+                                            {formatMoneyWithSymbol(p.amount, transaction.currency)}
                                         </Typography>
                                     </Stack>
                                 ))}
@@ -123,7 +124,7 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                                             {s.name}
                                         </Typography>
                                         <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 800 }}>
-                                            {s.amount.toFixed(2)} $
+                                            {formatMoneyWithSymbol(s.amount, transaction.currency)}
                                         </Typography>
                                     </Stack>
                                 ))}

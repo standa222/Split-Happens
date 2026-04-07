@@ -35,7 +35,7 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
                 </Box>
                 <Stack gap={2} flexGrow={1}>
                     <Typography variant="h5" fontWeight={600}>{group.name}</Typography>
-                    <BalanceDisplay variant="h6" balance={balance} />
+                    <BalanceDisplay variant="h6" balance={balance} currency={group.defaultCurrency} />
                 </Stack>
                 <IconButton onClick={() => setEditGroupModalOpen(true)}>
                     <SettingsIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
@@ -66,7 +66,7 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
                     >
                         {group.name}
                     </Typography>
-                    <BalanceDisplay variant="body2" balance={balance} />
+                    <BalanceDisplay variant="body2" balance={balance} currency={group.defaultCurrency} />
                 </Stack>
 
                 <Stack direction="row" alignItems="center" gap={0.5}>

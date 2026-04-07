@@ -10,6 +10,7 @@ import { FormattedMessage } from "react-intl";
 import {useSettleDebt} from "../hooks/useSettleDebt";
 import {QRPaymentDialog} from "./QRPaymentDialog";
 import {useState} from "react";
+import {getCurrencySymbol} from "../utils/currencyUtils";
 
 type Props = {
     userDebts: TDebt[],
@@ -122,6 +123,7 @@ export const DebtsList = ({
         display,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
+    const currencySymbol = getCurrencySymbol(groupCurrency);
 
     if (userDebts.length === 0) {
         const isCurrentUser = user.id === currentUserId;
@@ -162,6 +164,7 @@ export const DebtsList = ({
                                     debtorName,
                                     creditorName,
                                     amount: debt.amount.toFixed(2),
+                                    currencySymbol,
                                 }}
                             />
                         </Typography>
