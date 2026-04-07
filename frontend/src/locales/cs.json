@@ -153,5 +153,19 @@
   "profile.edit": "Upravit profil",
   "profile.edit.title": "Upravit profil",
   "profile.edit.save": "Uložit",
-  "profile.edit.saving": "Ukládám..."
+  "profile.edit.saving": "Ukládám...",
+
+  "qrPayment.title": "QR platba",
+  "qrPayment.subtitle": "Zaplaťte {amount} uživateli {creditorName}",
+  "qrPayment.from": "Od",
+  "qrPayment.to": "Komu",
+  "qrPayment.amount": "Částka",
+  "qrPayment.bankAccount": "Bankovní účet",
+  "qrPayment.noBankAccount": "Příjemce nemá nastavený bankovní účet, takže QR platbu nelze vygenerovat.",
+  "qrPayment.qrPlaceholder.title": "QR kód",
+  "qrPayment.qrPlaceholder.text": "Generování QR bude doplněno později.",
+  "qrPayment.loading": "Načítám QR...",
+  "qrPayment.error": "Nepodařilo se načíst QR obrázek.",
+  "qrPayment.qrAlt": "QR platba",
+  "qrPayment.currencyNotSupported": "QR platba je aktuálně implementovaná pouze pro CZK. (Aktuální měna: {currency})"
 }

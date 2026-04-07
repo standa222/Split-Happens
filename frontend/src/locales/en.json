@@ -151,5 +151,19 @@
   "profile.edit": "Edit profile",
   "profile.edit.title": "Edit profile",
   "profile.edit.save": "Save",
-  "profile.edit.saving": "Saving..."
+  "profile.edit.saving": "Saving...",
+
+  "qrPayment.title": "QR payment",
+  "qrPayment.subtitle": "Pay {amount} to {creditorName}",
+  "qrPayment.from": "From",
+  "qrPayment.to": "To",
+  "qrPayment.amount": "Amount",
+  "qrPayment.bankAccount": "Bank account",
+  "qrPayment.noBankAccount": "The creditor doesn’t have a bank account set, so a QR payment can’t be generated.",
+  "qrPayment.qrPlaceholder.title": "QR code",
+  "qrPayment.qrPlaceholder.text": "QR generation will be implemented later.",
+  "qrPayment.loading": "Loading QR...",
+  "qrPayment.error": "Failed to load QR image.",
+  "qrPayment.qrAlt": "QR payment",
+  "qrPayment.currencyNotSupported": "QR payment is currently implemented only for CZK. (Current currency: {currency})"
 }

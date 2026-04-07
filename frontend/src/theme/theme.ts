@@ -14,7 +14,7 @@ export const theme = createTheme({
             styleOverrides: {
                 paper: {
                     backgroundColor: COLORS.SECONDARY,
-                    borderRadius: 10,
+                    borderRadius: 40,
                     paddingTop: 16, // ~= theme.spacing(2)
                     border: `5px solid ${COLORS.PRIMARY}`,
                 },

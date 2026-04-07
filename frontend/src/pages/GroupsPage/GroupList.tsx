@@ -79,7 +79,13 @@ const GroupListItem = ({ id, name, userDebts, lastActivity }: TGroupLight) => {
                             }}
                             balance={balance}
                         />
-                        <DebtsList userDebts={userDebts} user={user} groupId={id} display={{xs: 'none', md: 'block'}} />
+                        <DebtsList
+                            userDebts={userDebts}
+                            user={user}
+                            groupId={id}
+                            groupCurrency={"CZK"}
+                            display={{xs: 'none', md: 'block'}}
+                        />
                     </Stack>
                 </Stack>
                 <Box

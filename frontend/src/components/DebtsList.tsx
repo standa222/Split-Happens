@@ -1,4 +1,4 @@
-import {Stack, Typography, Button, StackProps, Divider} from "@mui/material";
+import {Stack, Typography, Button, StackProps} from "@mui/material";
 import {TDebt} from "../types/TDebt";
 import {useAuthStore} from "../store/authStore";
 import {TUser} from "../types/TUser";
@@ -8,25 +8,26 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import {COLORS} from "../constants/colors";
 import { FormattedMessage } from "react-intl";
 import {useSettleDebt} from "../hooks/useSettleDebt";
+import {QRPaymentDialog} from "./QRPaymentDialog";
+import {useState} from "react";
 
 type Props = {
     userDebts: TDebt[],
     user: TUser,
     showActionButtons?: boolean,
     groupId: number,
+    /** Group default currency (QR payments are currently supported only for CZK). */
+    groupCurrency?: string,
     display?: StackProps["display"],
     showDividers?: boolean,
 }
 
-const DebtActionButtons = ({ debt, groupId }: { debt: TDebt, groupId: number }) => {
+const DebtActionButtons = ({ debt, groupId, groupCurrency }: { debt: TDebt, groupId: number, groupCurrency?: string }) => {
     const {mutate: settleDebt, isPending: isSettleDebtPending} = useSettleDebt();
+    const [ qrModalOpen, setQrModalOpen ] = useState(false);
 
     const onMarkPaid = () => {
         settleDebt({ groupId, debtId: debt.id });
-    };
-
-    const onGenerateQr = () => {
-        console.log("generate qr", debt.id);
     };
 
     const onNotify = () => {
@@ -34,71 +35,81 @@ const DebtActionButtons = ({ debt, groupId }: { debt: TDebt, groupId: number }) 
     };
 
     return (
-        <Stack
-            direction="row"
-            gap={2}
-            alignItems="center"
-            width={{xs: "100%", md: "auto"}}
-            justifyContent="space-around"
-        >
-            <Button
-                variant="text"
-                size="small"
-                onClick={onMarkPaid}
-                disabled={isSettleDebtPending}
-                sx={{
-                    minWidth: 0,
-                    p: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    textTransform: "none",
-                    color: COLORS.PRIMARY
-                }}
+        <>
+            <Stack
+                direction="row"
+                gap={2}
+                alignItems="center"
+                width={{xs: "100%", md: "auto"}}
+                justifyContent="space-around"
             >
-                <CheckBoxIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
-                <Typography variant="caption">
-                    <FormattedMessage id="debts.actions.markPaid" />
-                </Typography>
-            </Button>
+                <Button
+                    variant="text"
+                    size="small"
+                    onClick={onMarkPaid}
+                    disabled={isSettleDebtPending}
+                    sx={{
+                        minWidth: 0,
+                        p: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        textTransform: "none",
+                        color: COLORS.PRIMARY
+                    }}
+                >
+                    <CheckBoxIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
+                    <Typography variant="caption">
+                        <FormattedMessage id="debts.actions.markPaid" />
+                    </Typography>
+                </Button>
 
-            <Button
-                variant="text"
-                size="small"
-                onClick={onGenerateQr}
-                sx={{
-                    minWidth: 0,
-                    p: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    textTransform: "none",
-                    color: COLORS.PRIMARY
-                }}
-            >
-                <QrCode2Icon sx={{ fontSize: { xs: 32, md: 20 } }} />
-                <Typography variant="caption">
-                    <FormattedMessage id="debts.actions.generateQr" />
-                </Typography>
-            </Button>
+                <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setQrModalOpen(true)}
+                    sx={{
+                        minWidth: 0,
+                        p: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        textTransform: "none",
+                        color: COLORS.PRIMARY
+                    }}
+                >
+                    <QrCode2Icon sx={{ fontSize: { xs: 32, md: 20 } }} />
+                    <Typography variant="caption">
+                        <FormattedMessage id="debts.actions.generateQr" />
+                    </Typography>
+                </Button>
 
-            <Button
-                variant="text"
-                size="small"
-                onClick={onNotify}
-                sx={{
-                    minWidth: 0,
-                    p: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    textTransform: "none",
-                    color: COLORS.PRIMARY
-                }}
-            >
-                <NotificationsIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
-                <Typography variant="caption">
-                    <FormattedMessage id="debts.actions.notify" />
-                </Typography>
-            </Button>
-        </Stack>
+                <Button
+                    variant="text"
+                    size="small"
+                    onClick={onNotify}
+                    sx={{
+                        minWidth: 0,
+                        p: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        textTransform: "none",
+                        color: COLORS.PRIMARY
+                    }}
+                >
+                    <NotificationsIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
+                    <Typography variant="caption">
+                        <FormattedMessage id="debts.actions.notify" />
+                    </Typography>
+                </Button>
+            </Stack>
+            <QRPaymentDialog
+                open={qrModalOpen}
+                onClose={() => setQrModalOpen(false)}
+                debt={debt}
+                groupCurrency={groupCurrency}
+                onSettle={onMarkPaid}
+                isSettlePending={isSettleDebtPending}
+            />
+        </>
     );
 };
 
@@ -107,6 +118,7 @@ export const DebtsList = ({
         user,
         showActionButtons = false,
         groupId,
+        groupCurrency,
         display,
     }: Props) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
@@ -154,7 +166,7 @@ export const DebtsList = ({
                             />
                         </Typography>
                         {showActionButtons &&
-                            <DebtActionButtons debt={debt} groupId={groupId}/>
+                            <DebtActionButtons debt={debt} groupId={groupId} groupCurrency={groupCurrency}/>
                         }
                     </Stack>
                 );
