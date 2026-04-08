@@ -2,8 +2,9 @@ package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.request.BankAccountCreateDto;
 import cz.splithappens.dto.request.UserCreateDto;
-import cz.splithappens.dto.response.BankAccountDto;
 import cz.splithappens.dto.response.UserDto;
+import cz.splithappens.exception.EmailAlreadyExistsException;
+import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.mapper.BankAccountMapper;
 import cz.splithappens.mapper.UserMapper;
 import cz.splithappens.model.BankAccount;
@@ -32,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto createUser(UserCreateDto createDto) {
         if (userRepository.findByEmail(createDto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists"); // TODO custom exception
+            throw new EmailAlreadyExistsException(createDto.getEmail());
         }
         User user = userMapper.toEntity(createDto);
         BankAccount account = bankAccountMapper.toEntity(createDto.getBankAccount());
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateProfile(Long id, UserCreateDto updateDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found")); // TODO custom exception
+                .orElseThrow(() -> new UserNotFoundException(id));
         user.setFirstName(updateDto.getFirstName());
         user.setLastName(updateDto.getLastName());
         // TODO: think about updating email and password

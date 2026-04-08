@@ -5,6 +5,8 @@ import cz.splithappens.dto.response.DebtDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.exception.GroupNotFoundException;
+import cz.splithappens.exception.NotGroupMemberException;
 import cz.splithappens.mapper.DebtMapper;
 import cz.splithappens.mapper.GroupMapper;
 import cz.splithappens.model.Debt;
@@ -74,7 +76,7 @@ public class GroupServiceImpl implements GroupService {
         List<TransactionDto> transactions = transactionService.getGroupTransactions(groupId);
         List<DebtDto> debts = debtMapper.toDtoList(debtRepository.findByGroupId(groupId));
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
         GroupDto groupDto = groupMapper.toDto(group);
         groupDto.setTransactions(transactions);
         groupDto.setDebts(debts);
@@ -85,9 +87,9 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user) {
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
         if (!group.getMembers().stream().map(User::getId).toList().contains(user.getId())) {
-            throw new RuntimeException("User is not a member of the group"); // TODO: Custom exception
+            throw new NotGroupMemberException(groupId);
         }
         List<User> members = userRepository.findAllById(updateDto.getMemberIds());
         group.setName(updateDto.getName());
@@ -102,9 +104,9 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public void leaveGroup(Long groupId, User user) {
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
         if (!group.getMembers().stream().map(User::getId).toList().contains(user.getId())) {
-            throw new RuntimeException("User is not a member of the group"); // TODO: Custom exception
+            throw new NotGroupMemberException(groupId);
         }
         group.getMembers().removeIf(member -> member.getId().equals(user.getId()));
         group.updateLastActivity();

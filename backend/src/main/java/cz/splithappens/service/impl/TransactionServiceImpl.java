@@ -3,6 +3,10 @@ package cz.splithappens.service.impl;
 import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.request.TransactionSplitCreateDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.exception.BadRequestException;
+import cz.splithappens.exception.GroupNotFoundException;
+import cz.splithappens.exception.TransactionNotFoundException;
+import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.mapper.TransactionMapper;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Transaction;
@@ -15,8 +19,6 @@ import cz.splithappens.service.SettlementEngine;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,8 +28,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
-    private static final Logger logger = LoggerFactory.getLogger(TransactionServiceImpl.class);
-
     private final TransactionRepository transactionRepository;
     private final GroupRepository groupRepository;
     private final TransactionMapper transactionMapper;
@@ -39,10 +39,10 @@ public class TransactionServiceImpl implements TransactionService {
     public TransactionDto createTransaction(TransactionCreateDto createDto) {
         // TODO distinguish between expense and payment types and validate accordingly (e.g. payment must have exactly 2 splits, one positive and one negative)
         Group group = groupRepository.findById(createDto.getGroupId())
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+                .orElseThrow(() -> new GroupNotFoundException(createDto.getGroupId()));
 
         if (!group.getDefaultCurrency().equals(createDto.getCurrency())) { // TODO: allow different currency but calculate exchange rate
-            throw new RuntimeException("Transaction currency must be different from group default currency"); // TODO: Custom exception
+            throw new BadRequestException("INVALID_TRANSACTION_CURRENCY", "Transaction currency must match group default currency");
         }
 
         Transaction transaction = transactionMapper.toEntity(createDto);
@@ -69,7 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public TransactionDto getTransactionById(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
         return transactionMapper.toDto(transaction);
     }
 
@@ -77,7 +77,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public TransactionDto updateTransaction(Long transactionId, TransactionCreateDto updateDto) {
         Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
         transaction.setTitle(updateDto.getTitle());
         transaction.setTotalAmount(updateDto.getTotalAmount());
         transaction.getItems().clear();
@@ -94,7 +94,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional
     public void deleteTransaction(Long transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found")); // TODO: Custom exception
+                .orElseThrow(() -> new TransactionNotFoundException(transactionId));
         transactionRepository.delete(transaction);
         transaction.getGroup().updateLastActivity();
         settlementEngine.calculateDebts(transaction.getGroup().getId());
@@ -112,7 +112,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     private List<TransactionItem> extractItems(List<TransactionSplitCreateDto> splits, Transaction transaction, boolean positiveBalance, BigDecimal totalAmount) {
         if (splits == null || splits.isEmpty()) {
-            throw new RuntimeException("Transaction must have at least one payer and at least one participant"); // TODO: Custom exception
+            throw new BadRequestException("EMPTY_SPLITS", "Transaction must have at least one payer and at least one participant");
         }
 
         List<Long> userIds = splits.stream()
@@ -127,17 +127,11 @@ public class TransactionServiceImpl implements TransactionService {
             List<Long> missing = userIds.stream()
                     .filter(id -> !usersById.containsKey(id))
                     .toList();
-            throw new RuntimeException("User not found: " + missing);
+            throw new UserNotFoundException("User not found: " + missing);
         }
 
         boolean fixedMode = splits.stream().allMatch(s -> s.getFixed() != null);
         boolean partialMode = splits.stream().allMatch(s -> s.getPartial() != null);
-        boolean percentageMode = splits.stream().allMatch(s -> s.getPercentage() != null);
-
-        int modes = (fixedMode ?1 :0) + (partialMode ?1 :0) + (percentageMode ?1 :0);
-        if (modes !=1) {
-            throw new RuntimeException("Invalid splits: use exactly one split mode");
-        }
 
         if (fixedMode) {
             return splits.stream()
@@ -159,7 +153,7 @@ public class TransactionServiceImpl implements TransactionService {
                     .reduce(0, Integer::sum);
 
             if (totalParts <=0) {
-                throw new RuntimeException("Total parts must be greater than0");
+                throw new BadRequestException("INVALID_PARTIAL_SPLIT", "Total parts must be greater than 0");
             }
 
             return splits.stream()
