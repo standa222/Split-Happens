@@ -168,5 +168,11 @@
   "qrPayment.loading": "Načítám QR...",
   "qrPayment.error": "Nepodařilo se načíst QR obrázek.",
   "qrPayment.qrAlt": "QR platba",
-  "qrPayment.currencyNotSupported": "QR platba je aktuálně implementovaná pouze pro CZK. (Aktuální měna: {currency})"
+  "qrPayment.currencyNotSupported": "QR platba je aktuálně implementovaná pouze pro CZK. (Aktuální měna: {currency})",
+
+  "group.leave.title": "Opustit skupinu {name}?",
+  "group.leave.confirm": "Opravdu chcete opustit skupinu {name}? Můžete ztratit přístup k jejím výdajům a zůstatkům.",
+  "group.leave.action": "Opustit skupinu",
+  "group.leave.leaving": "Opouštím...",
+  "group.leave.error": "Skupinu se nepodařilo opustit. Zkuste to prosím znovu."
 }

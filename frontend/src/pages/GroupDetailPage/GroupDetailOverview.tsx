@@ -8,9 +8,12 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import {useState} from "react";
 import {GroupFormModal} from "../../components/GroupFormModal";
 import {AddExpenseButton} from "../../components/AddExpenseButton";
+import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import {LeaveGroupModal} from "../../components/LeaveGroupModal";
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
     const [editGroupModalOpen, setEditGroupModalOpen] = useState(false);
+    const [leaveGroupModalOpen, setLeaveGroupModalOpen] = useState(false);
     const userId = useAuthStore((s) => s.currentUser.id)
     const userDebts = group.debts.filter((debt) =>
     debt.debtor.id === userId || debt.creditor.id === userId);
@@ -37,9 +40,14 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
                     <Typography variant="h5" fontWeight={600}>{group.name}</Typography>
                     <BalanceDisplay variant="h6" balance={balance} currency={group.defaultCurrency} />
                 </Stack>
-                <IconButton onClick={() => setEditGroupModalOpen(true)}>
-                    <SettingsIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
-                </IconButton>
+                <Stack direction={"row"} alignItems="center" gap={1}>
+                    <IconButton onClick={() => setEditGroupModalOpen(true)}>
+                        <SettingsIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
+                    </IconButton>
+                    <IconButton onClick={() => setLeaveGroupModalOpen(true)}>
+                        <PersonRemoveIcon  sx={{ fontSize: 40, color: COLORS.RED}} />
+                    </IconButton>
+                </Stack>
             </Stack>
 
             {/* Mobile header */}
@@ -88,6 +96,13 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
                 open={editGroupModalOpen}
                 onClose={() => setEditGroupModalOpen(false)}
                 initGroup={group}
+            />
+
+            <LeaveGroupModal
+                open={leaveGroupModalOpen}
+                onClose={() => setLeaveGroupModalOpen(false)}
+                groupId={group.id}
+                groupName={group.name}
             />
         </>
     )

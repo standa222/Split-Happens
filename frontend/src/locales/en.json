@@ -166,5 +166,11 @@
   "qrPayment.loading": "Loading QR...",
   "qrPayment.error": "Failed to load QR image.",
   "qrPayment.qrAlt": "QR payment",
-  "qrPayment.currencyNotSupported": "QR payment is currently implemented only for CZK. (Current currency: {currency})"
+  "qrPayment.currencyNotSupported": "QR payment is currently implemented only for CZK. (Current currency: {currency})",
+
+  "group.leave.title": "Leave {name}?",
+  "group.leave.confirm": "Are you sure you want to leave {name}? You may lose access to its expenses and balances.",
+  "group.leave.action": "Leave group",
+  "group.leave.leaving": "Leaving...",
+  "group.leave.error": "Couldn’t leave the group. Please try again."
 }

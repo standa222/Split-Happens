@@ -34,3 +34,18 @@ export function useEditGroupMutation(options?: Options) {
         onError: (error) => console.error('Error editing group:', error)
     })
 }
+
+export function useLeaveGroup(options?: Options) {
+    const queryClient = useQueryClient();
+
+    return useMutation<void, Error, number>({
+        mutationFn: (groupId) => api.get(`/groups/${groupId}/leave`).then(res => res.data),
+        onSuccess: (_, groupId) => {
+            console.log('Left group successfully');
+            queryClient.invalidateQueries({ queryKey: ["groups"] });
+            queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] });
+            options?.onSuccess?.();
+        },
+        onError: (error) => console.error('Error leaving group:', error)
+    })
+}
