@@ -111,33 +111,34 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                     />
                 </Stack>
 
-                <Stack flex={1}>
-                    <Controller
-                        name="defaultCurrency"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                size="small"
-                                options={favCurrencies}
-                                value={favCurrencies.find((c) => c.code === field.value) ?? null}
-                                onChange={(_, opt) => field.onChange(opt?.code ?? "")}
-                                isOptionEqualToValue={(a, b) => a.code === b.code}
-                                getOptionLabel={(o) => o.code}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        fullWidth
-                                        label={<FormattedMessage id="group.form.fields.defaultCurrency" />}
-                                        inputRef={field.ref}
-                                        error={!!errors.defaultCurrency}
-                                        helperText={errors.defaultCurrency?.message}
-                                    />
-                                )}
-                            />
-                        )}
-                    />
-                </Stack>
-
+                {!isEditMode && (
+                    <Stack flex={1}>
+                        <Controller
+                            name="defaultCurrency"
+                            control={control}
+                            render={({ field }) => (
+                                <Autocomplete
+                                    size="small"
+                                    options={favCurrencies}
+                                    value={favCurrencies.find((c) => c.code === field.value) ?? null}
+                                    onChange={(_, opt) => field.onChange(opt?.code ?? "")}
+                                    isOptionEqualToValue={(a, b) => a.code === b.code}
+                                    getOptionLabel={(o) => o.code}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            fullWidth
+                                            label={<FormattedMessage id="group.form.fields.defaultCurrency" />}
+                                            inputRef={field.ref}
+                                            error={!!errors.defaultCurrency}
+                                            helperText={errors.defaultCurrency?.message}
+                                        />
+                                    )}
+                                />
+                            )}
+                        />
+                    </Stack>
+                )}
                 <Stack flex={1}>
                     <Controller
                         name="permissionMode"
