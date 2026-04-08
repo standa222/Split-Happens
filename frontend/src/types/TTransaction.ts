@@ -11,4 +11,5 @@ export type TTransaction = {
         user: TUser;
         balanceChange: number;
     }[];
+    currency: string;
 }

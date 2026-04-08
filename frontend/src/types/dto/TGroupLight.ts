@@ -5,4 +5,5 @@ export type TGroupLight = {
     name: string;
     userDebts: TDebt[];
     lastActivity: string;
+    defaultCurrency: string;
 }

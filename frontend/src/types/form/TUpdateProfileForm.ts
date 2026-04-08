@@ -1,13 +1,10 @@
 import { z } from "zod";
 
-// Backend expects camelCase: UserCreateDto.bankAccount
 const emptyToUndefined = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
 
-export const registerFormSchema = z.object({
+export const updateProfileFormSchema = z.object({
     firstName: z.string().trim().min(1, "First name is required"),
     lastName: z.string().trim().min(1, "Last name is required"),
-    email: z.string().trim(),
-    password: z.string(),
     bankAccount: z
         .object({
             prefix: z.preprocess(emptyToUndefined, z.string().trim().min(1).optional()),
@@ -25,4 +22,5 @@ export const registerFormSchema = z.object({
         }),
 });
 
-export type TRegisterForm = z.infer<typeof registerFormSchema>;
+export type TUpdateProfileForm = z.infer<typeof updateProfileFormSchema>;
+

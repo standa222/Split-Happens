@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface UserService {
     UserDto createUser(UserCreateDto createDto);
     Optional<User> findById(Long id);
-//    UserDto updateProfile(Long id, UserUpdateDto updateDto);
+    UserDto updateProfile(Long id, UserCreateDto updateDto);
     Optional<User> findByEmail(String email);
     List<UserDto> searchUsers(String query, int limit);
 }

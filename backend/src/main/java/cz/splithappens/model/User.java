@@ -32,9 +32,8 @@ public class User implements UserDetails {
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
-    // TODO create BankAccount entity
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-//    private BankAccount bankAccount;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private BankAccount bankAccount;
 
     @ManyToMany
     @JoinTable(
@@ -57,5 +56,12 @@ public class User implements UserDetails {
     @Override
     public String getUsername() {
         return email;
+    }
+
+    public void assignBankAccount(BankAccount account) {
+        this.bankAccount = account;
+        if (account != null) {
+            account.setUser(this);
+        }
     }
 }
