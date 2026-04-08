@@ -39,6 +39,7 @@
   "expense.action.adding": "Přidávám...",
 
   "common.close": "Zavřít",
+  "common.cancel": "Zrušit",
 
   "common.unknownUser": "Neznámý uživatel",
 
@@ -68,11 +69,12 @@
   "debts.actions.notify": "Upozornit",
 
   "debts.settled": "{isCurrentUser, select, true {Jste} other {{name} je}} v této skupině vyrovnán/a.",
-  "debts.owesLine": "{debtorIsCurrent, select, true {Dlužíte} other {{debtorName} dluží}} {creditorIsCurrent, select, true {vám} other {{creditorName}}} {amount} $",
+  "debts.owesLine": "{debtorIsCurrent, select, true {Dlužíte} other {{debtorName} dluží}} {creditorIsCurrent, select, true {vám} other {{creditorName}}} {amount} {currencySymbol}",
 
   "overallBalance.label": "Váš celkový zůstatek je:",
   "overallBalance.loading": "Váš celkový zůstatek je: Načítám...",
   "overallBalance.error": "Nepodařilo se načíst váš celkový zůstatek.",
+  "overallBalance.settled": "Jste ve všech skupinách vyrovnán/a.",
 
   "groupDetail.loading": "Načítám...",
   "groupDetail.error": "Chyba při načítání detailu skupiny.",
@@ -90,7 +92,7 @@
   "groupDetail.expenses.yourSplit": "váš podíl",
   "groupDetail.expenses.totalPaid": "celkem zaplaceno",
   "groupDetail.expenses.detail": "Detail",
-  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {Vy} other {{debtorName}}} jste zaplatil/a {amount} $ {creditorIsCurrent, select, true {Vám} other {uživateli {creditorName}}}",
+  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {Vy} other {{debtorName}}} jste zaplatil/a {amount} {currencySymbol} {creditorIsCurrent, select, true {Vám} other {uživateli {creditorName}}}",
 
   "common.detail": "Detail",
 
@@ -113,6 +115,9 @@
 
   "register.firstName": "Jméno",
   "register.lastName": "Příjmení",
+  "register.bankAccountPrefix": "Předčíslí",
+  "register.bankAccountNumber": "Číslo účtu",
+  "register.bankCode": "Kód banky",
   "register.submit": "Zaregistrovat se",
   "register.submitting": "Registruji...",
   "register.haveAccount": "Už máte účet?",
@@ -136,5 +141,32 @@
 
   "expense.edit.title": "Upravit výdaj",
   "expense.action.save": "Uložit změny",
-  "expense.action.saving": "Ukládám..."
+  "expense.action.saving": "Ukládám...",
+
+  "profile.title": "Profil",
+  "profile.firstName": "Jméno",
+  "profile.lastName": "Příjmení",
+  "profile.email": "Email",
+  "profile.bankAccount": "Bankovní účet",
+  "profile.bankAccount.notSet": "Není nastaven",
+  "profile.unknown": "—",
+
+  "profile.edit": "Upravit profil",
+  "profile.edit.title": "Upravit profil",
+  "profile.edit.save": "Uložit",
+  "profile.edit.saving": "Ukládám...",
+
+  "qrPayment.title": "QR platba",
+  "qrPayment.subtitle": "Zaplaťte {amount} uživateli {creditorName}",
+  "qrPayment.from": "Od",
+  "qrPayment.to": "Komu",
+  "qrPayment.amount": "Částka",
+  "qrPayment.bankAccount": "Bankovní účet",
+  "qrPayment.noBankAccount": "Příjemce nemá nastavený bankovní účet, takže QR platbu nelze vygenerovat.",
+  "qrPayment.qrPlaceholder.title": "QR kód",
+  "qrPayment.qrPlaceholder.text": "Generování QR bude doplněno později.",
+  "qrPayment.loading": "Načítám QR...",
+  "qrPayment.error": "Nepodařilo se načíst QR obrázek.",
+  "qrPayment.qrAlt": "QR platba",
+  "qrPayment.currencyNotSupported": "QR platba je aktuálně implementovaná pouze pro CZK. (Aktuální měna: {currency})"
 }

@@ -11,6 +11,7 @@ import {ExpenseDetailModal} from "./ExpenseDetailModal";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
 import logo from "../../assets/logo_dark.png";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import {getCurrencySymbol} from "../../utils/currencyUtils";
 
 type Props = {
     transactions: TTransaction[];
@@ -36,6 +37,7 @@ const PaidBy = ( { payers }: { payers: string[] }) => {
 
 const PaymentMessage = ({ transaction }: { transaction: TTransaction }) => {
     const currentUserId = useAuthStore((s) => s.currentUser.id);
+    const currencySymbol = getCurrencySymbol(transaction.currency);
 
     // In PAYMENT transactions, one side is positive (creditor receiving), the other negative (debtor paying).
     const creditorItem = transaction.items
@@ -59,6 +61,7 @@ const PaymentMessage = ({ transaction }: { transaction: TTransaction }) => {
                     creditorIsCurrent,
                     creditorName,
                     amount: amount.toFixed(2),
+                    currencySymbol,
                 }}
             />
         </Typography>
@@ -75,6 +78,7 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
         .filter((item) => item.balanceChange > 0)
         .sort((a, b) => b.balanceChange - a.balanceChange)
         .map((item) => item.user.firstName);
+    const currencySymbol = getCurrencySymbol(transaction.currency);
 
     return (
         <>
@@ -100,13 +104,13 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                                     color={isNegative ? COLORS.RED : COLORS.PRIMARY}
                                     sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}
                                 >
-                                    <FormattedMessage id="groupDetail.expenses.yourSplit" />: {userSplit.toFixed(2)} $
+                                    <FormattedMessage id="groupDetail.expenses.yourSplit" />: {userSplit.toFixed(2)} {currencySymbol}
                                 </Typography>
                             </Stack>
 
                             <Stack width="45%" gap={1}>
                                 <Typography color={COLORS.PRIMARY} sx={{ fontSize: { xs: "0.75rem", md: "1rem" } }}>
-                                    <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} $
+                                    <FormattedMessage id="groupDetail.expenses.totalPaid" />: {transaction.totalAmount.toFixed(2)} {currencySymbol}
                                 </Typography>
                                 <PaidBy payers={paidBy} />
                             </Stack>

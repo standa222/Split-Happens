@@ -29,9 +29,10 @@ type MemberProps = {
     member: TUser;
     memberDebts: TDebt[];
     groupId: number;
+    defaultCurrency: string;
 }
 
-const MemberItem = ({member, memberDebts, groupId}: MemberProps) => {
+const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps) => {
     const userId = useAuthStore((s) => s.currentUser.id);
     const [ showDebts, setShowDebts ] = useState(member.id === userId);
     const balance = memberDebts.reduce((acc, debt) => member.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
@@ -82,11 +83,12 @@ const MemberItem = ({member, memberDebts, groupId}: MemberProps) => {
                                     },
                                 }}
                                 balance={balance}
+                                currency={defaultCurrency}
                             />
                         </Stack>
                         {showDebts ? (
                             <Stack flex={1} sx={{ display: { xs: "none", md: "block" } }}>
-                                <DebtsList userDebts={memberDebts} user={member} showActionButtons={true} groupId={groupId} />
+                                <DebtsList userDebts={memberDebts} user={member} showActionButtons={true} groupId={groupId} groupCurrency={defaultCurrency} />
                             </Stack>
                         ) : (
                             <Button
@@ -125,7 +127,7 @@ const MemberItem = ({member, memberDebts, groupId}: MemberProps) => {
                             <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY} noWrap>
                                 {memberFullName}
                             </Typography>
-                            <BalanceDisplay variant="body2" balance={balance} />
+                            <BalanceDisplay variant="body2" balance={balance} currency={defaultCurrency} />
                         </Stack>
                         <IconButton onClick={() => setShowDebts(false)} sx={{ mt: -0.5, mr: -0.5 }}>
                             <CloseIcon sx={{color: COLORS.PRIMARY}} />
@@ -139,6 +141,7 @@ const MemberItem = ({member, memberDebts, groupId}: MemberProps) => {
                         user={member}
                         showActionButtons={true}
                         groupId={groupId}
+                        groupCurrency={defaultCurrency}
                         showDividers={true}
                     />
                 </DialogContent>
@@ -161,6 +164,7 @@ export const GroupMembers = ({group}: Props) => {
                     member={member}
                     memberDebts={debtsByMemberId[member.id]}
                     groupId={group.id}
+                    defaultCurrency={group.defaultCurrency}
                 />
             ))}
         </>

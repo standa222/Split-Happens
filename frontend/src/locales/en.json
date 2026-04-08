@@ -39,6 +39,7 @@
   "expense.action.adding": "Adding...",
 
   "common.close": "Close",
+  "common.cancel": "Cancel",
 
   "common.unknownUser": "Unknown User",
 
@@ -68,11 +69,12 @@
   "debts.actions.notify": "Notify",
 
   "debts.settled": "{isCurrentUser, select, true {You are} other {{name} is}} settled in this group.",
-  "debts.owesLine": "{debtorIsCurrent, select, true {You owe} other {{debtorName} owes}} {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+  "debts.owesLine": "{debtorIsCurrent, select, true {You owe} other {{debtorName} owes}} {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
   "overallBalance.label": "Your overall balance is:",
   "overallBalance.loading": "Your overall balance is: Loading...",
   "overallBalance.error": "Error loading your overall balance.",
+  "overallBalance.settled": "You are settled with all groups.",
 
   "groupDetail.loading": "Loading...",
   "groupDetail.error": "Error loading group details.",
@@ -90,7 +92,7 @@
   "groupDetail.expenses.yourSplit": "your split",
   "groupDetail.expenses.totalPaid": "total paid",
   "groupDetail.expenses.detail": "Detail",
-  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} $ to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+  "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
   "common.detail": "Detail",
 
@@ -113,6 +115,9 @@
 
   "register.firstName": "First name",
   "register.lastName": "Last name",
+  "register.bankAccountPrefix": "Prefix",
+  "register.bankAccountNumber": "Account number",
+  "register.bankCode": "Bank code",
   "register.submit": "Register",
   "register.submitting": "Registering...",
   "register.haveAccount": "Already have an account?",
@@ -136,5 +141,30 @@
 
   "expense.edit.title": "Edit expense",
   "expense.action.save": "Save changes",
-  "expense.action.saving": "Saving..."
+  "expense.action.saving": "Saving...",
+
+  "profile.title": "Profile",
+  "profile.firstName": "First name",
+  "profile.lastName": "Last name",
+  "profile.email": "Email",
+  "profile.bankAccount": "Bank account",
+  "profile.unknown": "—",
+  "profile.edit": "Edit profile",
+  "profile.edit.title": "Edit profile",
+  "profile.edit.save": "Save",
+  "profile.edit.saving": "Saving...",
+
+  "qrPayment.title": "QR payment",
+  "qrPayment.subtitle": "Pay {amount} to {creditorName}",
+  "qrPayment.from": "From",
+  "qrPayment.to": "To",
+  "qrPayment.amount": "Amount",
+  "qrPayment.bankAccount": "Bank account",
+  "qrPayment.noBankAccount": "The creditor doesn’t have a bank account set, so a QR payment can’t be generated.",
+  "qrPayment.qrPlaceholder.title": "QR code",
+  "qrPayment.qrPlaceholder.text": "QR generation will be implemented later.",
+  "qrPayment.loading": "Loading QR...",
+  "qrPayment.error": "Failed to load QR image.",
+  "qrPayment.qrAlt": "QR payment",
+  "qrPayment.currencyNotSupported": "QR payment is currently implemented only for CZK. (Current currency: {currency})"
 }

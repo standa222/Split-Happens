@@ -3,4 +3,9 @@ export type TUser = {
     firstName: string;
     lastName: string;
     email: string;
+    bankAccount: {
+        prefix: string;
+        accountNumber: string;
+        bankCode: string;
+    } | null;
 }
