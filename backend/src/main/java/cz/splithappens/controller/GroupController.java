@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +35,7 @@ public class GroupController {
     })
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<GroupDto> createGroup(
-            @RequestBody GroupCreateDto createDto,
+            @RequestBody @Valid GroupCreateDto createDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return ResponseEntity.ok(groupService.createGroup(createDto, userDetails.getUser()));
@@ -71,7 +72,7 @@ public class GroupController {
     })
     public ResponseEntity<GroupDto> updateGroup(
             @PathVariable Long groupId,
-            @RequestBody GroupCreateDto updateDto,
+            @RequestBody @Valid GroupCreateDto updateDto,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return ResponseEntity.ok(groupService.updateGroup(groupId, updateDto, userDetails.getUser()));

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -28,7 +29,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
-    public ResponseEntity<UserDto> createUser(@RequestBody UserCreateDto createDto) {
+    public ResponseEntity<UserDto> createUser(@RequestBody @Valid UserCreateDto createDto) {
         return ResponseEntity.ok(userService.createUser(createDto));
     }
 
@@ -52,7 +53,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<UserDto> updateProfile(@RequestBody UserCreateDto updateDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<UserDto> updateProfile(@RequestBody @Valid UserCreateDto updateDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.updateProfile(userDetails.getUser().getId(), updateDto));
     }
 }
