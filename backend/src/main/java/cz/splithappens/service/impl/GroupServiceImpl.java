@@ -91,7 +91,7 @@ public class GroupServiceImpl implements GroupService {
         }
         List<User> members = userRepository.findAllById(updateDto.getMemberIds());
         group.setName(updateDto.getName());
-        group.setDefaultCurrency(updateDto.getDefaultCurrency());
+        // TODO add update default currency + recalculate debts if currency changes
         group.setPermissionMode(updateDto.getPermissionMode());
         group.setMembers(new HashSet<>(members));
         group.updateLastActivity();
