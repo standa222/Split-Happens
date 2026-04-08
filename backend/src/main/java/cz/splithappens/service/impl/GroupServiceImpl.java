@@ -98,6 +98,19 @@ public class GroupServiceImpl implements GroupService {
         return groupMapper.toDto(groupRepository.save(group));
     }
 
+    @Override
+    @Transactional
+    public void leaveGroup(Long groupId, User user) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+        if (!group.getMembers().stream().map(User::getId).toList().contains(user.getId())) {
+            throw new RuntimeException("User is not a member of the group"); // TODO: Custom exception
+        }
+        group.getMembers().removeIf(member -> member.getId().equals(user.getId()));
+        group.updateLastActivity();
+        groupRepository.save(group);
+    }
+
     private boolean isUserInvolvedInDebt(Debt debt, Long userId) {
         return debt.getCreditor().getId().equals(userId) || debt.getDebtor().getId().equals(userId);
     }

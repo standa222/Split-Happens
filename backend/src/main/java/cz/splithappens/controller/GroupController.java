@@ -76,4 +76,19 @@ public class GroupController {
     ) {
         return ResponseEntity.ok(groupService.updateGroup(groupId, updateDto, userDetails.getUser()));
     }
+
+    @GetMapping("/{groupId}/leave")
+    @Operation(summary = "Leave a group", description = "Removes the authenticated user from the specified group.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Left group successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    public ResponseEntity<Void> leaveGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        groupService.leaveGroup(groupId, userDetails.getUser());
+        return ResponseEntity.ok().build();
+    }
 }
