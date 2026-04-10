@@ -174,5 +174,10 @@
   "group.leave.confirm": "Opravdu chcete opustit skupinu {name}? Můžete ztratit přístup k jejím výdajům a zůstatkům.",
   "group.leave.action": "Opustit skupinu",
   "group.leave.leaving": "Opouštím...",
-  "group.leave.error": "Skupinu se nepodařilo opustit. Zkuste to prosím znovu."
+  "group.leave.error": "Skupinu se nepodařilo opustit. Zkuste to prosím znovu.",
+
+  "expense.delete.title": "Smazat výdaj?",
+  "expense.delete.confirm": "Opravdu chcete smazat tento výdaj? Tuto akci nelze vrátit zpět.",
+  "expense.delete.action": "Smazat",
+  "expense.delete.deleting": "Mažu..."
 }
