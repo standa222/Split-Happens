@@ -182,8 +182,18 @@
   "validation.required.firstName": "First name is required.",
   "validation.required.lastName": "Last name is required.",
   "validation.required.password": "Password is required and must have at least 6 characters.",
+  "validation.required.passwordLogin": "Password is required.",
+  "validation.required.email": "Email is required.",
   "validation.email.invalid": "Invalid email address.",
   "validation.bankAccount.accountNumberAndBankCodeRequired": "Provide account number and bank code (prefix is optional).",
   "validation.bankAccount.digitsOnly": "Use digits only.",
-  "validation.bankAccount.fourDigits": "Bank code must be exactly 4 digits."
+  "validation.bankAccount.fourDigits": "Bank code must be exactly 4 digits.",
+
+  "auth.login.error.invalidCredentials": "Invalid email or password.",
+  "api.error.network": "Can’t reach the server. Please check your connection and try again.",
+  "api.error.forbidden": "You don’t have permission to perform this action.",
+  "api.error.notFound": "Requested resource was not found.",
+  "api.error.server": "Server error. Please try again later.",
+  "api.error.generic": "Request failed. (HTTP {status})",
+  "api.error.unknown": "Something went wrong. Please try again."
 }
