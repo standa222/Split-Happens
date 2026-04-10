@@ -188,6 +188,9 @@
   "validation.bankAccount.accountNumberAndBankCodeRequired": "Provide account number and bank code (prefix is optional).",
   "validation.bankAccount.digitsOnly": "Use digits only.",
   "validation.bankAccount.fourDigits": "Bank code must be exactly 4 digits.",
+  "validation.group.nameRequired": "Group name is required.",
+  "validation.group.currencyCodeRequired": "Currency code is required.",
+  "validation.group.membersNotEmpty": "At least one member must be selected.",
 
   "auth.login.error.invalidCredentials": "Invalid email or password.",
   "api.error.network": "Can’t reach the server. Please check your connection and try again.",
@@ -195,5 +198,7 @@
   "api.error.notFound": "Requested resource was not found.",
   "api.error.server": "Server error. Please try again later.",
   "api.error.generic": "Request failed. (HTTP {status})",
-  "api.error.unknown": "Something went wrong. Please try again."
+  "api.error.unknown": "Something went wrong. Please try again.",
+  "group.create.success": "Group created successfully.",
+  "group.edit.success": "Group updated successfully."
 }
