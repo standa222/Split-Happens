@@ -37,6 +37,7 @@
 
   "expense.action.add": "Add expense",
   "expense.action.adding": "Adding...",
+  "expense.add.success": "Expense added successfully.",
 
   "common.close": "Close",
   "common.cancel": "Cancel",
@@ -142,6 +143,7 @@
   "expense.edit.title": "Edit expense",
   "expense.action.save": "Save changes",
   "expense.action.saving": "Saving...",
+  "expense.edit.success": "Expense saved successfully.",
 
   "profile.title": "Profile",
   "profile.firstName": "First name",
@@ -191,6 +193,12 @@
   "validation.group.nameRequired": "Group name is required.",
   "validation.group.currencyCodeRequired": "Currency code is required.",
   "validation.group.membersNotEmpty": "At least one member must be selected.",
+  "validation.requiredField": "Mandatory field.",
+  "validation.transaction.paidBySumMismatch": "Paid by amounts must add up to the total amount.",
+  "validation.transaction.splitBetweenSumMismatch": "Split between amounts must add up to the total amount.",
+  "validation.transaction.paidByPercentageSumMismatch": "Paid by percentages must add up to 100%.",
+  "validation.transaction.splitBetweenPercentageSumMismatch": "Split between percentages must add up to 100%.",
+  "validation.transaction.splitValueMustBePositive": "Split value must be greater than 0.",
 
   "auth.login.error.invalidCredentials": "Invalid email or password.",
   "api.error.network": "Can’t reach the server. Please check your connection and try again.",
@@ -199,6 +207,9 @@
   "api.error.server": "Server error. Please try again later.",
   "api.error.generic": "Request failed. (HTTP {status})",
   "api.error.unknown": "Something went wrong. Please try again.",
+  "api.error.validation": "Validation failed. Please check the form.",
+  "api.error.message": "{message}",
+  "api.error.validation.message": "{message}",
   "group.create.success": "Group created successfully.",
   "group.edit.success": "Group updated successfully."
 }

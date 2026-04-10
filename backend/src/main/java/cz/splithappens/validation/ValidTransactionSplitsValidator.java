@@ -24,8 +24,8 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
         boolean ok = true;
         context.disableDefaultConstraintViolation();
 
-        ok &= validateSplitList("paidBy", value.getPaidBy(), value.getTotalAmount(), context, true);
-        ok &= validateSplitList("splitBetween", value.getSplitBetween(), value.getTotalAmount(), context, false);
+        ok &= validateSplitList("paidBy", value.getPaidBy(), value.getTotalAmount(), context);
+        ok &= validateSplitList("splitBetween", value.getSplitBetween(), value.getTotalAmount(), context);
 
         return ok;
     }
@@ -34,8 +34,7 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
             String fieldName,
             List<TransactionSplitCreateDto> splits,
             BigDecimal totalAmount,
-            ConstraintValidatorContext context,
-            boolean enforceSums
+            ConstraintValidatorContext context
     ) {
         if (splits == null || splits.isEmpty()) {
             // Let @NotEmpty / @NotNull handle this if present; otherwise accept.
@@ -72,10 +71,6 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
             } else if (splitMode == Mode.PERCENTAGE) {
                 percentageSum += Objects.requireNonNull(split.getPercentage());
             }
-        }
-
-        if (!enforceSums) {
-            return true;
         }
 
         if (mode == Mode.FIXED) {

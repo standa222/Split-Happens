@@ -9,7 +9,8 @@ import {AddExpenseForm} from "../../components/AddExpenseForm";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Button, DialogActions, DialogTitle, Typography } from "@mui/material";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { AppSnackbar } from "../../components/AppSnackbar";
 import { useDeleteExpense } from "../../hooks/useDeleteExpense";
 
 type Props = {
@@ -22,6 +23,9 @@ type Props = {
 export const ExpenseDetailModal = ({ open, onClose, transaction, group }: Props) => {
     const [editOpen, setEditOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [successOpen, setSuccessOpen] = useState(false);
+    const [successMessageId, setSuccessMessageId] = useState<string>("expense.edit.success");
+    const intl = useIntl();
 
     const { mutate: deleteMutate, isPending: isDeletePending } = useDeleteExpense({
         onSuccess: () => {
@@ -96,10 +100,21 @@ export const ExpenseDetailModal = ({ open, onClose, transaction, group }: Props)
                             initGroup={group}
                             initTransaction={transaction}
                             onClose={() => setEditOpen(false)}
+                            onSuccess={(mode) => {
+                                setSuccessMessageId(mode === "edit" ? "expense.edit.success" : "expense.add.success");
+                                setSuccessOpen(true);
+                            }}
                         />
                     )}
                 </DialogContent>
             </Dialog>
+
+            <AppSnackbar
+                open={successOpen}
+                onClose={() => setSuccessOpen(false)}
+                severity={"success"}
+                message={intl.formatMessage({ id: successMessageId, defaultMessage: successMessageId })}
+            />
 
             <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} maxWidth="xs">
                 <DialogTitle sx={{ color: COLORS.PRIMARY, fontWeight: 700 }}>

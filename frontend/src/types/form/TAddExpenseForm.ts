@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 export const addExpenseFormSchema = z.object({
-    title: z.string(),
-    category: z.string(),
-    groupId: z.number(),
-    totalAmount: z.number(),
-    currency: z.string(),
+    title: z.string().trim().min(1, "validation.requiredField"),
+    category: z.string().trim().min(1, "validation.requiredField"),
+    groupId: z.number().min(1, "validation.requiredField"),
+    totalAmount: z.number().min(1, "validation.requiredField"),
+    currency: z.string().trim().min(1, "validation.requiredField"),
     paidBy: z.array(z.object({
         userId: z.number(),
         fixed: z.number().optional(),
