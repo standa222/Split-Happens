@@ -18,12 +18,10 @@ public class UserCreateDto {
     @Schema(description = "Last name.", example = "Novák")
     private String lastName;
 
-    @NotBlank
     @Email
     @Schema(description = "Email address.", example = "jan.novak@example.com")
     private String email;
 
-    @NotBlank
     @Size(min = 6, max = 255)
     @Schema(description = "Password.", minLength = 6)
     private String password;

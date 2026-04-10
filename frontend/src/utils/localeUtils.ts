@@ -1,5 +1,6 @@
 import type { Locale as DateFnsLocale } from "date-fns";
 import { enUS, cs } from "date-fns/locale";
+import type { IntlShape } from "react-intl";
 
 /**
  * Map an application / react-intl locale (e.g. "cs", "cs-CZ", "en", "en-US")
@@ -17,3 +18,7 @@ export function getDateFnsLocale(appLocale: string | undefined | null): DateFnsL
   return enUS;
 }
 
+export function tError(intl: IntlShape, msg?: string): string | undefined {
+  if (!msg) return undefined;
+  return intl.formatMessage({ id: msg, defaultMessage: msg });
+}

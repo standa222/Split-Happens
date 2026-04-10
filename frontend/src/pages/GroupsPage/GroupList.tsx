@@ -10,7 +10,7 @@ import {DebtsList} from "../../components/DebtsList";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
 import {useAuthStore} from "../../store/authStore";
 import { FormattedMessage, useIntl } from "react-intl";
-import { getDateFnsLocale } from "../../utils/dateFnsLocaleUtils";
+import { getDateFnsLocale } from "../../utils/localeUtils";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import {Collapse} from "@mui/material";

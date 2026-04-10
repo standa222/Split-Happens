@@ -179,5 +179,13 @@
   "expense.delete.title": "Smazat výdaj?",
   "expense.delete.confirm": "Opravdu chcete smazat tento výdaj? Tuto akci nelze vrátit zpět.",
   "expense.delete.action": "Smazat",
-  "expense.delete.deleting": "Mažu..."
+  "expense.delete.deleting": "Mažu...",
+
+  "validation.required.firstName": "Jméno je povinné.",
+  "validation.required.lastName": "Příjmení je povinné.",
+  "validation.required.password": "Heslo je povinné a musí mít alespoň 6 znaků.",
+  "validation.email.invalid": "Nevalidní email adresa.",
+  "validation.bankAccount.accountNumberAndBankCodeRequired": "Vyplňte číslo účtu a kód banky (předčíslí je nepovinné).",
+  "validation.bankAccount.digitsOnly": "Použijte pouze číslice.",
+  "validation.bankAccount.fourDigits": "Kód banky musí mít přesně 4 číslice."
 }

@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TUpdateProfileForm, updateProfileFormSchema } from "../../types/form/TUpdateProfileForm";
 import { useUpdateProfile } from "../../hooks/useUpdateProfile";
+import {tError} from "../../utils/localeUtils";
 
 function formatBankAccount(bankAccount: { prefix: string; accountNumber: string; bankCode: string }) {
     const prefix = bankAccount.prefix?.trim();
@@ -166,7 +167,7 @@ export function ProfilePage() {
                             label={<FormattedMessage id="profile.firstName" defaultMessage="First name" />}
                             {...register("firstName")}
                             error={!!errors.firstName}
-                            helperText={errors.firstName?.message}
+                            helperText={tError(intl, errors.firstName?.message)}
                             autoFocus
                         />
 
@@ -174,7 +175,7 @@ export function ProfilePage() {
                             label={<FormattedMessage id="profile.lastName" defaultMessage="Last name" />}
                             {...register("lastName")}
                             error={!!errors.lastName}
-                            helperText={errors.lastName?.message}
+                            helperText={tError(intl, errors.lastName?.message)}
                         />
 
                         <Typography variant="subtitle1" fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
@@ -185,21 +186,21 @@ export function ProfilePage() {
                             label={<FormattedMessage id="register.bankAccountPrefix" defaultMessage="Prefix" />}
                             {...register("bankAccount.prefix")}
                             error={!!errors.bankAccount?.prefix}
-                            helperText={errors.bankAccount?.prefix?.message}
+                            helperText={tError(intl, errors.bankAccount?.prefix?.message)}
                         />
 
                         <TextField
                             label={<FormattedMessage id="register.bankAccountNumber" defaultMessage="Account number" />}
                             {...register("bankAccount.accountNumber")}
-                            error={!!errors.bankAccount?.accountNumber || !!(errors.bankAccount as any)?.message}
-                            helperText={errors.bankAccount?.accountNumber?.message ?? (errors.bankAccount as any)?.message}
+                            error={!!errors.bankAccount?.accountNumber}
+                            helperText={tError(intl, errors.bankAccount?.accountNumber?.message)}
                         />
 
                         <TextField
                             label={<FormattedMessage id="register.bankCode" defaultMessage="Bank code" />}
                             {...register("bankAccount.bankCode")}
-                            error={!!errors.bankAccount?.bankCode || !!(errors.bankAccount as any)?.message}
-                            helperText={errors.bankAccount?.bankCode?.message ?? (errors.bankAccount as any)?.message}
+                            error={!!errors.bankAccount?.bankCode}
+                            helperText={tError(intl, errors.bankAccount?.bankCode?.message)}
                         />
                         <Stack sx={{ alignItems: "center", width: "100%", mt: 2 }}>
                             <Button
