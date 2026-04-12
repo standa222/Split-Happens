@@ -1,5 +1,5 @@
 import {Typography, Stack, Box} from "@mui/material";
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import {ImagePlaceholder} from "../../components/ImagePlaceholder";
 import { COLORS } from "../../constants/colors";
 import { FormattedMessage } from "react-intl";
 
@@ -15,20 +15,7 @@ const ActivityItem = ({ user, action, amount, group, date }: any) => {
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
             <Stack direction="row" spacing={2} alignItems="center">
-                <Box
-                    sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: '50%',
-                        border: `2px dashed ${COLORS.PRIMARY}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                    }}
-                >
-                    <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
-                </Box>
+                <ImagePlaceholder width={60} height={60} />
 
                 <Stack spacing={0.5}>
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>

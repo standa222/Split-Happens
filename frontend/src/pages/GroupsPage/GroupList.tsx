@@ -2,7 +2,7 @@ import { Typography, Box, Stack } from "@mui/material";
 import {GroupsByActivity, useGroupsQuery} from "../../hooks/useGroupsQuery";
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {COLORS} from "../../constants/colors";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import {ImagePlaceholder} from "../../components/ImagePlaceholder";
 import {NavLink} from "react-router-dom";
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {ROUTES} from "../../enums/routes";
@@ -31,20 +31,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity, defaultCurrency }: T
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
             <Stack direction="row" gap={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px:{md: 3, xs: 1} }}>
-                <Box
-                    sx={{
-                        width: {md: 120, xs: 60},
-                        height: {md: 120, xs: 60},
-                        borderRadius: '50%',
-                        border: `2px dashed ${COLORS.PRIMARY}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                    }}
-                >
-                    <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
-                </Box>
+                <ImagePlaceholder />
                 <Stack direction={{md: 'row', xs: 'column'}} gap={{md: 0, xs: 1}} flex={1} sx={{ px: {md: 5, xs: 1} }}>
                     <Stack width={{md: '50%', xs: '100%'}} gap={3} justifyContent="center">
                         <Typography

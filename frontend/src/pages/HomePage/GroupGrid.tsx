@@ -1,6 +1,6 @@
 import {Box, Grid, Typography, Stack } from "@mui/material";
 import { COLORS } from "../../constants/colors";
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import {ImagePlaceholder} from "../../components/ImagePlaceholder";
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
 import {useAuthStore} from "../../store/authStore";
@@ -29,23 +29,17 @@ const GroupCard = ({ name, userDebts }: TGroupLight) => {
                 flexDirection: { xs: 'row', md: 'column' },
             }}
         >
-            <Box
+            <ImagePlaceholder
+                width={{ xs: '60px', md: '100%' }}
+                height={{ xs: '60px', md: 'auto' }}
+                shape="rounded"
+                iconSize={{ xs: 24, md: 40 }}
                 sx={{
                     order: 1,
-                    width: { xs: '60px', md: '100%' },
-                    height: { xs: '60px', md: 'auto' },
                     flex: { md: 1 },
-                    aspectRatio: { xs: '1/1', md: 'unset' },
-                    border: `2px dashed ${COLORS.PRIMARY}`,
                     borderRadius: { xs: '50%', md: '20px' },
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
                 }}
-            >
-                <PhotoCameraIcon sx={{ fontSize: { xs: 24, md: 40 }, color: COLORS.PRIMARY }} />
-            </Box>
+            />
 
             <Box
                 sx={{

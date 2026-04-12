@@ -11,7 +11,7 @@ import {
     IconButton,
     Divider,
 } from "@mui/material";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import {ImagePlaceholder} from "../../components/ImagePlaceholder";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
 import {useAuthStore} from "../../store/authStore";
 import {useState} from "react";
@@ -43,20 +43,7 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
         <>
             <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
                 <Stack direction="row" gap={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px: {md: 3, xs: 1} }}>
-                    <Box
-                        sx={{
-                            width: {xs: 60, md: 120},
-                            height: {xs: 60, md: 120},
-                            borderRadius: '50%',
-                            border: `2px dashed ${COLORS.PRIMARY}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                        }}
-                    >
-                        <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: 24 }} />
-                    </Box>
+                    <ImagePlaceholder />
                     <Stack direction="row" sx={{ width: "100%", pl: 3, alignItems: 'center',}}>
                         <Stack flex={1} gap={{md: 3, xs: 1}}>
                             <Typography variant="h6" sx={{

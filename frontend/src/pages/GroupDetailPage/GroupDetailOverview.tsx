@@ -1,7 +1,7 @@
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
 import {useAuthStore} from "../../store/authStore";
 import {COLORS} from "../../constants/colors";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import {ImagePlaceholder} from "../../components/ImagePlaceholder";
 import {Box, IconButton, Stack, Typography} from "@mui/material";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -23,19 +23,17 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
         <>
             {/* Desktop header */}
             <Stack direction="row" gap={6} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
-                <Box
+                <ImagePlaceholder
+                    width={296}
+                    height={140}
+                    shape="rounded"
+                    iconSize={40}
                     sx={{
                         minWidth: 296,
                         minHeight: 140,
-                        border: `2px dashed ${COLORS.PRIMARY}`,
                         borderRadius: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
                     }}
-                >
-                    <PhotoCameraIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
-                </Box>
+                />
                 <Stack gap={2} flexGrow={1}>
                     <Typography variant="h5" fontWeight={600}>{group.name}</Typography>
                     <BalanceDisplay variant="h6" balance={balance} currency={group.defaultCurrency} />
