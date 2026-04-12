@@ -11,7 +11,7 @@ import {
     IconButton,
     Divider,
 } from "@mui/material";
-import {ImagePlaceholder} from "../../components/ImagePlaceholder";
+import {ImageAvatar} from "../../components/ImageAvatar";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
 import {useAuthStore} from "../../store/authStore";
 import {useState} from "react";
@@ -43,7 +43,7 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
         <>
             <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
                 <Stack direction="row" gap={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px: {md: 3, xs: 1} }}>
-                    <ImagePlaceholder />
+                    <ImageAvatar type="user" id={member.id} />
                     <Stack direction="row" sx={{ width: "100%", pl: 3, alignItems: 'center',}}>
                         <Stack flex={1} gap={{md: 3, xs: 1}}>
                             <Typography variant="h6" sx={{
