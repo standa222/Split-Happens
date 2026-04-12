@@ -1,6 +1,6 @@
 import {Box, Grid, Typography, Stack } from "@mui/material";
 import { COLORS } from "../../constants/colors";
-import {ImagePlaceholder} from "../../components/ImagePlaceholder";
+import {ImageAvatar} from "../../components/ImageAvatar";
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
 import {useAuthStore} from "../../store/authStore";
@@ -12,7 +12,7 @@ type GroupContentProps = {
     isError: boolean,
 }
 
-const GroupCard = ({ name, userDebts }: TGroupLight) => {
+const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
     const userId = useAuthStore((s) => s.currentUser.id)
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const isNegative = balance < 0;
@@ -25,11 +25,13 @@ const GroupCard = ({ name, userDebts }: TGroupLight) => {
                 padding: '16px',
                 alignItems: 'center',
                 gap: { xs: 3, md: 2 },
-                minHeight: { md: '250px' },
+                height: { md: '250px' },
                 flexDirection: { xs: 'row', md: 'column' },
             }}
         >
-            <ImagePlaceholder
+            <ImageAvatar
+                type="group"
+                id={id}
                 width={{ xs: '60px', md: '100%' }}
                 height={{ xs: '60px', md: 'auto' }}
                 shape="rounded"

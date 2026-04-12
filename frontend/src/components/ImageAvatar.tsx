@@ -40,6 +40,7 @@ export const ImageAvatar = ({
             objectFit: "cover",
             display: "block",
             flexShrink: 0,
+            overflow: "hidden",
         };
 
         return [base, sx, imgSx].filter(Boolean) as unknown as SxProps<Theme>;

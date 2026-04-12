@@ -2,7 +2,7 @@ import { Typography, Box, Stack } from "@mui/material";
 import {GroupsByActivity, useGroupsQuery} from "../../hooks/useGroupsQuery";
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {COLORS} from "../../constants/colors";
-import {ImagePlaceholder} from "../../components/ImagePlaceholder";
+import {ImageAvatar} from "../../components/ImageAvatar";
 import {NavLink} from "react-router-dom";
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import {ROUTES} from "../../enums/routes";
@@ -31,7 +31,7 @@ const GroupListItem = ({ id, name, userDebts, lastActivity, defaultCurrency }: T
     return (
         <Box sx={{ py: 2, borderTop: `2px solid ${COLORS.PRIMARY}` }}>
             <Stack direction="row" gap={{ md: 2, xs: 0.5 }} alignItems="center" sx={{ px:{md: 3, xs: 1} }}>
-                <ImagePlaceholder />
+                <ImageAvatar type="group" id={id} />
                 <Stack direction={{md: 'row', xs: 'column'}} gap={{md: 0, xs: 1}} flex={1} sx={{ px: {md: 5, xs: 1} }}>
                     <Stack width={{md: '50%', xs: '100%'}} gap={3} justifyContent="center">
                         <Typography
