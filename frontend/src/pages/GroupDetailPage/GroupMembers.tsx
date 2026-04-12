@@ -6,10 +6,11 @@ import {
     Button,
     Stack,
     Typography,
-    Dialog,
-    DialogContent,
     IconButton,
     Divider,
+    SwipeableDrawer,
+    useMediaQuery,
+    useTheme
 } from "@mui/material";
 import {ImageAvatar} from "../../components/ImageAvatar";
 import {BalanceDisplay} from "../../components/BalanceDisplay";
@@ -34,9 +35,15 @@ type MemberProps = {
 
 const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps) => {
     const userId = useAuthStore((s) => s.currentUser.id);
-    const [ showDebts, setShowDebts ] = useState(member.id === userId);
-    const balance = memberDebts.reduce((acc, debt) => member.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
+    const isCurrentUser = member.id === userId;
 
+    // Default to false so the button shows on mobile for everyone
+    const [ showDebts, setShowDebts ] = useState(false);
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    const balance = memberDebts.reduce((acc, debt) => member.id === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const memberFullName = `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim();
 
     return (
@@ -47,37 +54,52 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
                     <Stack direction="row" sx={{ width: "100%", pl: 3, alignItems: 'center',}}>
                         <Stack flex={1} gap={{md: 3, xs: 1}}>
                             <Typography variant="h6" sx={{
-                                typography: {
-                                    xs: 'body1',
-                                    md: 'h6',
-                                },
-                                fontWeight: {
-                                    xs: 600,
-                                    md: 600,
-                                },
+                                typography: { xs: 'body1', md: 'h6' },
+                                fontWeight: 600,
                             }}>
-                                {member.firstName} {member.lastName} {member.id === userId ? (<FormattedMessage id="groupDetail.members.you" />) : ""}
+                                {member.firstName} {member.lastName} {isCurrentUser ? (<FormattedMessage id="groupDetail.members.you" />) : ""}
                             </Typography>
                             <BalanceDisplay
                                 sx={{
-                                    typography: {
-                                        xs: 'body2',
-                                        md: 'h6',
-                                    },
-                                    fontWeight: {
-                                        xs: 500,
-                                        md: 600,
-                                    },
+                                    typography: { xs: 'body2', md: 'h6' },
+                                    fontWeight: { xs: 500, md: 600 },
                                 }}
                                 balance={balance}
                                 currency={defaultCurrency}
                             />
                         </Stack>
-                        {showDebts ? (
+
+                        {/* Desktop: Always show for current user. Mobile: Always hide this container */}
+                        {isCurrentUser && (
                             <Stack flex={1} sx={{ display: { xs: "none", md: "block" } }}>
-                                <DebtsList userDebts={memberDebts} user={member} showActionButtons={true} groupId={groupId} groupCurrency={defaultCurrency} />
+                                <DebtsList
+                                    userDebts={memberDebts}
+                                    user={member}
+                                    showActionButtons={true}
+                                    groupId={groupId}
+                                    groupCurrency={defaultCurrency}
+                                />
                             </Stack>
-                        ) : (
+                        )}
+
+                        {/* Desktop: Show list if toggled. Mobile: Always hide this container */}
+                        {!isCurrentUser && showDebts && (
+                            <Stack flex={1} sx={{ display: { xs: "none", md: "block" } }}>
+                                <DebtsList
+                                    userDebts={memberDebts}
+                                    user={member}
+                                    showActionButtons={true}
+                                    groupId={groupId}
+                                    groupCurrency={defaultCurrency}
+                                />
+                            </Stack>
+                        )}
+
+                        {/* Show button if:
+                           1. It's mobile (isMobile)
+                           2. OR it's a different user and debts aren't toggled yet
+                        */}
+                        {(isMobile || (!isCurrentUser && !showDebts)) && (
                             <Button
                                 onClick={() => setShowDebts(true)}
                                 sx={{
@@ -88,6 +110,8 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
                                     minWidth: { xs: 30, md: "auto" },
                                     borderRadius: { xs: "50%", md: 10 },
                                     textTransform: 'none',
+                                    // Hide the button on desktop if it's the current user
+                                    display: isCurrentUser ? { xs: 'flex', md: 'none' } : 'flex'
                                 }}
                             >
                                 <Box component="span" sx={{ display: { xs: "none", md: "inline" }, mx: 1 }}>
@@ -100,39 +124,50 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
                 </Stack>
             </Box>
 
-            {/* Mobile-only modal for debts */}
-            <Dialog
-                open={showDebts}
-                onClose={() => setShowDebts(false)}
-                fullWidth
-                maxWidth="xs"
-                sx={{ display: { xs: 'block', md: 'none' } }}
-            >
-                <DialogContent sx={{ p: 2.5 }}>
-                    <Stack direction="row" alignItems="flex-start" justifyContent="space-between" gap={2}>
-                        <Stack gap={0.5} minWidth={0}>
-                            <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY} noWrap>
-                                {memberFullName}
-                            </Typography>
-                            <BalanceDisplay variant="body2" balance={balance} currency={defaultCurrency} />
+            {isMobile && (
+                <SwipeableDrawer
+                    anchor="bottom"
+                    open={showDebts}
+                    onClose={() => setShowDebts(false)}
+                    onOpen={() => setShowDebts(true)}
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                borderTopLeftRadius: 20,
+                                borderTopRightRadius: 20,
+                                maxHeight: '80vh',
+                                backgroundColor: COLORS.SECONDARY,
+                                color: COLORS.PRIMARY,
+                            }
+                        }
+                    }}
+                >
+                    <Box sx={{ p: 3 }}>
+                        <Stack direction="row" alignItems="flex-start" justifyContent="space-between" gap={2}>
+                            <Stack gap={0.5} minWidth={0}>
+                                <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY} noWrap>
+                                    {memberFullName}
+                                </Typography>
+                                <BalanceDisplay variant="body2" balance={balance} currency={defaultCurrency} />
+                            </Stack>
+                            <IconButton onClick={() => setShowDebts(false)} sx={{ mt: -0.5, mr: -0.5 }}>
+                                <CloseIcon sx={{color: COLORS.PRIMARY}} />
+                            </IconButton>
                         </Stack>
-                        <IconButton onClick={() => setShowDebts(false)} sx={{ mt: -0.5, mr: -0.5 }}>
-                            <CloseIcon sx={{color: COLORS.PRIMARY}} />
-                        </IconButton>
-                    </Stack>
 
-                    <Divider sx={{ my: 2, color: COLORS.PRIMARY }} />
+                        <Divider sx={{ my: 2, borderColor: COLORS.PRIMARY }} />
 
-                    <DebtsList
-                        userDebts={memberDebts}
-                        user={member}
-                        showActionButtons={true}
-                        groupId={groupId}
-                        groupCurrency={defaultCurrency}
-                        showDividers={true}
-                    />
-                </DialogContent>
-            </Dialog>
+                        <DebtsList
+                            userDebts={memberDebts}
+                            user={member}
+                            showActionButtons={true}
+                            groupId={groupId}
+                            groupCurrency={defaultCurrency}
+                            showDividers={true}
+                        />
+                    </Box>
+                </SwipeableDrawer>
+            )}
         </>
     )
 }
