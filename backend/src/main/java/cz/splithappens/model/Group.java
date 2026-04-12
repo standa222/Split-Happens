@@ -41,6 +41,9 @@ public class Group {
     @Column(name = "last_activity", nullable = false)
     private OffsetDateTime lastActivity = OffsetDateTime.now();
 
+    @Lob
+    private byte[] groupImage;
+
     public void updateLastActivity() {
         this.lastActivity = OffsetDateTime.now();
     }

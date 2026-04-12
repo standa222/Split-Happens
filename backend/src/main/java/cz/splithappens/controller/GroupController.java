@@ -13,10 +13,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -91,5 +94,41 @@ public class GroupController {
     ) {
         groupService.leaveGroup(groupId, userDetails.getUser());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{groupId}/image")
+    @Operation(summary = "Get group image", description = "Retrieves the image associated with the specified group.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Group image retrieved successfully"),
+            @ApiResponse(responseCode = "204", description = "Group exists but has no image"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    public ResponseEntity<byte[]> getGroupImage(@PathVariable Long groupId) {
+        byte[] imageData = groupService.getGroupImage(groupId);
+        if (imageData == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "image/webp")
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=86400, public")
+                .body(imageData);
+    }
+
+    @PostMapping("/{groupId}/image")
+    @Operation(summary = "Upload group image", description = "Uploads a new image for the specified group.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Group image uploaded successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    public ResponseEntity<Void> uploadGroupImage(@PathVariable Long groupId, @RequestParam("file") MultipartFile imageData) {
+        try {
+            groupService.uploadGroupImage(groupId, imageData);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

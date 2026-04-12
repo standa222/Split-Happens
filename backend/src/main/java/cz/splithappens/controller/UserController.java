@@ -10,10 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -55,5 +59,39 @@ public class UserController {
     })
     public ResponseEntity<UserDto> updateProfile(@RequestBody @Valid UserCreateDto updateDto, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.updateProfile(userDetails.getUser().getId(), updateDto));
+    }
+
+    @GetMapping("/{userId}/image")
+    @Operation(summary = "Get user profile image", description = "Retrieves the profile image of the specified user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profile image retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "User or profile image not found")
+    })
+    public ResponseEntity<byte[]> getUserImage(@PathVariable Long userId) {
+        byte[] imageData = userService.getUserImage(userId);
+        if (imageData == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "image/webp")
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=86400, public")
+                .body(imageData);
+    }
+
+    @PostMapping("/image")
+    @Operation(summary = "Upload user profile image", description = "Uploads a new profile image for the authenticated user.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profile image uploaded successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<Void> uploadUserImage(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        try {
+            userService.uploadUserImage(userDetails.getUser().getId(), file);
+            return ResponseEntity.ok().build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

@@ -17,7 +17,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,6 +74,21 @@ public class UserServiceImpl implements UserService {
         return users.stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public byte[] getUserImage(Long userId) {
+        return userRepository.findById(userId)
+                .flatMap(user -> Optional.ofNullable(user.getProfileImage()))
+                .orElse(null);
+    }
+
+    @Override
+    public void uploadUserImage(Long userId, MultipartFile imageData) throws IOException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        user.setProfileImage(imageData.getBytes());
+        userRepository.save(user);
     }
 
     private void updateBankAccount(User user, BankAccountCreateDto bankAccountDto) {

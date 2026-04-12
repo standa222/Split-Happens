@@ -22,8 +22,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,6 +112,21 @@ public class GroupServiceImpl implements GroupService {
         }
         group.getMembers().removeIf(member -> member.getId().equals(user.getId()));
         group.updateLastActivity();
+        groupRepository.save(group);
+    }
+
+    @Override
+    public byte[] getGroupImage(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        return group.getGroupImage();
+    }
+
+    @Override
+    public void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        group.setGroupImage(imageData.getBytes());
         groupRepository.save(group);
     }
 
