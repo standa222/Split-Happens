@@ -1,5 +1,6 @@
 import {useQuery} from "@tanstack/react-query";
 import {api} from "../axios/axios";
+import {useImageCacheBusterStore} from "../store/imageCacheBusterStore";
 
 export type ImageQueryResult = {
     blob: Blob | null;
@@ -34,12 +35,17 @@ export const useImageQuery = (key: unknown[], url: string | null | undefined) =>
 };
 
 export const useUserImageQuery = (userId: number | null | undefined) => {
-    const url = typeof userId === "number" && userId > 0 ? `/users/${userId}/image` : null;
+    const version = useImageCacheBusterStore((s) => s.version);
+    const url = typeof userId === "number" && userId > 0
+        ? `/users/${userId}/image?v=${version}`
+        : null;
     return useImageQuery(["userImage"], url);
 };
 
 export const useGroupImageQuery = (groupId: number | null | undefined) => {
-    const url = typeof groupId === "number" && groupId > 0 ? `/groups/${groupId}/image` : null;
+    const version = useImageCacheBusterStore((s) => s.version);
+    const url = typeof groupId === "number" && groupId > 0
+        ? `/groups/${groupId}/image?v=${version}`
+        : null;
     return useImageQuery(["groupImage"], url);
 };
-
