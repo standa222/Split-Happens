@@ -1,6 +1,6 @@
 import {Box, Grid, Typography, Stack } from "@mui/material";
 import { COLORS } from "../../constants/colors";
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import {ImageAvatar} from "../../components/ImageAvatar";
 import {TGroupLight} from "../../types/dto/TGroupLight";
 import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
 import {useAuthStore} from "../../store/authStore";
@@ -12,7 +12,7 @@ type GroupContentProps = {
     isError: boolean,
 }
 
-const GroupCard = ({ name, userDebts }: TGroupLight) => {
+const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
     const userId = useAuthStore((s) => s.currentUser.id)
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const isNegative = balance < 0;
@@ -25,27 +25,23 @@ const GroupCard = ({ name, userDebts }: TGroupLight) => {
                 padding: '16px',
                 alignItems: 'center',
                 gap: { xs: 3, md: 2 },
-                minHeight: { md: '250px' },
+                height: { md: '250px' },
                 flexDirection: { xs: 'row', md: 'column' },
             }}
         >
-            <Box
+            <ImageAvatar
+                type="group"
+                id={id}
+                width={{ xs: '60px', md: '100%' }}
+                height={{ xs: '60px', md: 'auto' }}
+                shape="rounded"
+                iconSize={{ xs: 24, md: 40 }}
                 sx={{
                     order: 1,
-                    width: { xs: '60px', md: '100%' },
-                    height: { xs: '60px', md: 'auto' },
                     flex: { md: 1 },
-                    aspectRatio: { xs: '1/1', md: 'unset' },
-                    border: `2px dashed ${COLORS.PRIMARY}`,
                     borderRadius: { xs: '50%', md: '20px' },
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
                 }}
-            >
-                <PhotoCameraIcon sx={{ fontSize: { xs: 24, md: 40 }, color: COLORS.PRIMARY }} />
-            </Box>
+            />
 
             <Box
                 sx={{

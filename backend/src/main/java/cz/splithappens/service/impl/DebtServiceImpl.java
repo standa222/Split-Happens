@@ -1,5 +1,7 @@
 package cz.splithappens.service.impl;
 
+import cz.splithappens.exception.DebtNotFoundException;
+import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.model.Debt;
 import cz.splithappens.model.Transaction;
 import cz.splithappens.model.TransactionItem;
@@ -30,12 +32,12 @@ public class DebtServiceImpl implements DebtService {
     @Transactional
     public void settleDebt(Long debtId) {
         Debt debt = debtRepository.findById(debtId)
-                .orElseThrow(() -> new RuntimeException("Debt not found")); // TODO: Custom exception
+                .orElseThrow(() -> new DebtNotFoundException(debtId));
 
         User debtor = userRepository.findById(debt.getDebtor().getId())
-                .orElseThrow(() -> new RuntimeException("Debtor not found")); // TODO: Custom exception
+                .orElseThrow(() -> new UserNotFoundException(debt.getDebtor().getId()));
         User creditor = userRepository.findById(debt.getCreditor().getId())
-                .orElseThrow(() -> new RuntimeException("Creditor not found")); // TODO: Custom exception
+                .orElseThrow(() -> new UserNotFoundException(debt.getCreditor().getId()));
 
         Transaction paymentTransaction = Transaction.builder()
                 .group(debt.getGroup())

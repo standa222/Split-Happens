@@ -2,8 +2,9 @@ package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.request.BankAccountCreateDto;
 import cz.splithappens.dto.request.UserCreateDto;
-import cz.splithappens.dto.response.BankAccountDto;
 import cz.splithappens.dto.response.UserDto;
+import cz.splithappens.exception.EmailAlreadyExistsException;
+import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.mapper.BankAccountMapper;
 import cz.splithappens.mapper.UserMapper;
 import cz.splithappens.model.BankAccount;
@@ -16,7 +17,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +35,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto createUser(UserCreateDto createDto) {
         if (userRepository.findByEmail(createDto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists"); // TODO custom exception
+            throw new EmailAlreadyExistsException(createDto.getEmail());
         }
         User user = userMapper.toEntity(createDto);
         BankAccount account = bankAccountMapper.toEntity(createDto.getBankAccount());
@@ -50,7 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateProfile(Long id, UserCreateDto updateDto) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found")); // TODO custom exception
+                .orElseThrow(() -> new UserNotFoundException(id));
         user.setFirstName(updateDto.getFirstName());
         user.setLastName(updateDto.getLastName());
         // TODO: think about updating email and password
@@ -71,6 +74,21 @@ public class UserServiceImpl implements UserService {
         return users.stream()
                 .map(userMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public byte[] getUserImage(Long userId) {
+        return userRepository.findById(userId)
+                .flatMap(user -> Optional.ofNullable(user.getProfileImage()))
+                .orElse(null);
+    }
+
+    @Override
+    public void uploadUserImage(Long userId, MultipartFile imageData) throws IOException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+        user.setProfileImage(imageData.getBytes());
+        userRepository.save(user);
     }
 
     private void updateBankAccount(User user, BankAccountCreateDto bankAccountDto) {

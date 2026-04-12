@@ -1,13 +1,31 @@
-import { Box, Divider, Paper, Stack, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from "@mui/material";
+import {
+    Box,
+    Divider,
+    Paper,
+    Stack,
+    Typography,
+    IconButton,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    Button,
+    TextField,
+} from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { FormattedMessage, useIntl } from "react-intl";
-import { useAuthStore } from "../../store/authStore";
-import { COLORS } from "../../constants/colors";
-import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TUpdateProfileForm, updateProfileFormSchema } from "../../types/form/TUpdateProfileForm";
-import { useUpdateProfile } from "../../hooks/useUpdateProfile";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import {FormattedMessage, useIntl} from "react-intl";
+import {useAuthStore} from "../../store/authStore";
+import {COLORS} from "../../constants/colors";
+import {ChangeEvent, useMemo, useRef, useState} from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {TUpdateProfileForm, updateProfileFormSchema} from "../../types/form/TUpdateProfileForm";
+import {useUpdateProfile} from "../../hooks/useUpdateProfile";
+import {tError} from "../../utils/localeUtils";
+import {ImageAvatar} from "../../components/ImageAvatar";
+import {compressToWebp} from "../../utils/imageUtils";
+import {useUploadUserImage} from "../../hooks/useUploadUserImage";
+import {AppSnackbar} from "../../components/AppSnackbar";
 
 function formatBankAccount(bankAccount: { prefix: string; accountNumber: string; bankCode: string }) {
     const prefix = bankAccount.prefix?.trim();
@@ -21,6 +39,13 @@ function formatBankAccount(bankAccount: { prefix: string; accountNumber: string;
 export function ProfilePage() {
     const intl = useIntl();
     const currentUser = useAuthStore((s) => s.currentUser);
+
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
+
+    const [snackbar, setSnackbar] = useState<{open: boolean; message: string; severity: "success" | "error"}>(
+        {open: false, message: "", severity: "success"}
+    );
 
     const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -53,6 +78,28 @@ export function ProfilePage() {
         },
     });
 
+    const {
+        mutate: uploadUserImage,
+        isPending: isImageUploading,
+    } = useUploadUserImage({
+        onSuccess: () => {
+            // Remove local preview once upload is complete; ImageAvatar will refetch.
+            setLocalPreviewUrl((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
+
+            setSnackbar({
+                open: true,
+                severity: "success",
+                message: intl.formatMessage({
+                    id: "profile.image.uploadSuccess",
+                    defaultMessage: "Profile photo updated.",
+                }),
+            });
+        },
+    });
+
     const openEdit = () => {
         reset(defaultValues);
         setIsEditOpen(true);
@@ -68,6 +115,43 @@ export function ProfilePage() {
         updateProfile(parsed);
     };
 
+    const onPickImage = () => {
+        fileInputRef.current?.click();
+    };
+
+    const onImageSelected = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Reset input value so selecting the same file again triggers onChange.
+        e.target.value = "";
+
+        // Local immediate preview (before compression/upload).
+        setLocalPreviewUrl((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return URL.createObjectURL(file);
+        });
+
+        try {
+            const webpFile = await compressToWebp(file, {maxSize: 640, quality: 0.8});
+            uploadUserImage(webpFile);
+        } catch (err) {
+            console.error("Failed to process/upload image", err);
+            setSnackbar({
+                open: true,
+                severity: "error",
+                message: intl.formatMessage({
+                    id: "profile.image.uploadError",
+                    defaultMessage: "Failed to upload profile photo.",
+                }),
+            });
+            setLocalPreviewUrl((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
+        }
+    };
+
     return (
         <Stack spacing={3} sx={{ py: 2 }}>
             <Stack direction="row" alignItems="center" gap={2}>
@@ -76,7 +160,7 @@ export function ProfilePage() {
                 </Typography>
 
                 <IconButton
-                    aria-label={intl.formatMessage({ id: "profile.edit" , defaultMessage: "Edit profile" })}
+                    aria-label={intl.formatMessage({ id: "profile.edit", defaultMessage: "Edit profile" })}
                     onClick={openEdit}
                     sx={{
                         color: COLORS.PRIMARY,
@@ -86,65 +170,124 @@ export function ProfilePage() {
                 </IconButton>
             </Stack>
 
-            <Paper
-                elevation={0}
-                sx={{
-                    borderRadius: 4,
-                    backgroundColor: "transparent",
-                }}
-            >
-                <Stack spacing={2}>
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
-                        <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
-                            <FormattedMessage id="profile.firstName" defaultMessage="First name" />
-                        </Typography>
-                        <Typography sx={{ color: COLORS.PRIMARY }}>
-                            {currentUser?.firstName ?? <FormattedMessage id="profile.unknown" defaultMessage="—" />}
-                        </Typography>
-                    </Stack>
+            <Stack direction={{xs: "column", md: "row"}} gap={3} alignItems={{md: "flex-start"}}>
+                <Stack alignItems="center" gap={1.5} sx={{minWidth: {md: 200}}}>
+                    {localPreviewUrl ? (
+                        <Box
+                            component="img"
+                            src={localPreviewUrl}
+                            alt=""
+                            sx={{
+                                width: 160,
+                                height: 160,
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                                border: `2px solid ${COLORS.PRIMARY}`,
+                            }}
+                        />
+                    ) : currentUser?.id ? (
+                        <ImageAvatar
+                            type="user"
+                            id={currentUser.id}
+                            width={160}
+                            height={160}
+                            shape="circle"
+                            iconSize={40}
+                            sx={{borderWidth: 3}}
+                        />
+                    ) : null}
 
-                    <Divider sx={{ borderColor: COLORS.PRIMARY, opacity: 0.2 }} />
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={onImageSelected}
+                    />
 
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
-                        <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
-                            <FormattedMessage id="profile.lastName" defaultMessage="Last name" />
-                        </Typography>
-                        <Typography sx={{ color: COLORS.PRIMARY }}>
-                            {currentUser?.lastName ?? <FormattedMessage id="profile.unknown" defaultMessage="—" />}
-                        </Typography>
-                    </Stack>
-
-                    <Divider sx={{ borderColor: COLORS.PRIMARY, opacity: 0.2 }} />
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
-                        <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
-                            <FormattedMessage id="profile.email" defaultMessage="Email" />
-                        </Typography>
-                        <Typography sx={{ color: COLORS.PRIMARY }}>
-                            {currentUser?.email ?? <FormattedMessage id="profile.unknown" defaultMessage="—" />}
-                        </Typography>
-                    </Stack>
-
-                    <Divider sx={{ borderColor: COLORS.PRIMARY, opacity: 0.2 }} />
-
-                    <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
-                        <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
-                            <FormattedMessage id="profile.bankAccount" defaultMessage="Bank account" />
-                        </Typography>
-                        <Box>
-                            {currentUser?.bankAccount ? (
-                                <Typography sx={{ color: COLORS.PRIMARY }}>
-                                    {formatBankAccount(currentUser.bankAccount)}
-                                </Typography>
-                            ) : (
-                                <Typography sx={{ color: COLORS.PRIMARY, opacity: 0.8 }}>
-                                    <FormattedMessage id="profile.bankAccount.notSet" defaultMessage="Not set" />
-                                </Typography>
-                            )}
-                        </Box>
-                    </Stack>
+                    <Button
+                        variant="contained"
+                        onClick={onPickImage}
+                        disabled={isImageUploading || !currentUser?.id}
+                        startIcon={<PhotoCameraIcon />}
+                        sx={{
+                            borderRadius: 999,
+                            textTransform: "none",
+                            fontWeight: 700,
+                            backgroundColor: COLORS.PRIMARY,
+                            color: COLORS.SECONDARY,
+                            px: 3,
+                        }}
+                    >
+                        {isImageUploading ? (
+                            <FormattedMessage id="profile.image.uploading" defaultMessage="Uploading..." />
+                        ) : (
+                            <FormattedMessage id="profile.image.change" defaultMessage="Change photo" />
+                        )}
+                    </Button>
                 </Stack>
-            </Paper>
+
+                <Paper
+                    elevation={0}
+                    sx={{
+                        borderRadius: 4,
+                        backgroundColor: "transparent",
+                        flex: 1,
+                    }}
+                >
+                    <Stack spacing={2}>
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
+                            <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
+                                <FormattedMessage id="profile.firstName" defaultMessage="First name" />
+                            </Typography>
+                            <Typography sx={{ color: COLORS.PRIMARY }}>
+                                {currentUser?.firstName ?? <FormattedMessage id="profile.unknown" defaultMessage="—" />}
+                            </Typography>
+                        </Stack>
+
+                        <Divider sx={{ borderColor: COLORS.PRIMARY, opacity: 0.2 }} />
+
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
+                            <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
+                                <FormattedMessage id="profile.lastName" defaultMessage="Last name" />
+                            </Typography>
+                            <Typography sx={{ color: COLORS.PRIMARY }}>
+                                {currentUser?.lastName ?? <FormattedMessage id="profile.unknown" defaultMessage="—" />}
+                            </Typography>
+                        </Stack>
+
+                        <Divider sx={{ borderColor: COLORS.PRIMARY, opacity: 0.2 }} />
+
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
+                            <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
+                                <FormattedMessage id="profile.email" defaultMessage="Email" />
+                            </Typography>
+                            <Typography sx={{ color: COLORS.PRIMARY }}>
+                                {currentUser?.email ?? <FormattedMessage id="profile.unknown" defaultMessage="—" />}
+                            </Typography>
+                        </Stack>
+
+                        <Divider sx={{ borderColor: COLORS.PRIMARY, opacity: 0.2 }} />
+
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ sm: "baseline" }}>
+                            <Typography fontWeight={700} sx={{ minWidth: 180, color: COLORS.PRIMARY }}>
+                                <FormattedMessage id="profile.bankAccount" defaultMessage="Bank account" />
+                            </Typography>
+                            <Box>
+                                {currentUser?.bankAccount ? (
+                                    <Typography sx={{ color: COLORS.PRIMARY }}>
+                                        {formatBankAccount(currentUser.bankAccount)}
+                                    </Typography>
+                                ) : (
+                                    <Typography sx={{ color: COLORS.PRIMARY, opacity: 0.8 }}>
+                                        <FormattedMessage id="profile.bankAccount.notSet" defaultMessage="Not set" />
+                                    </Typography>
+                                )}
+                            </Box>
+                        </Stack>
+                    </Stack>
+                </Paper>
+            </Stack>
 
             <Dialog
                 open={isEditOpen}
@@ -152,8 +295,8 @@ export function ProfilePage() {
                 maxWidth="sm"
                 slotProps={{
                     paper: {
-                        sx: { borderRadius: 10 }
-                    }
+                        sx: { borderRadius: 10 },
+                    },
                 }}
             >
                 <DialogTitle sx={{ color: COLORS.PRIMARY }}>
@@ -166,7 +309,7 @@ export function ProfilePage() {
                             label={<FormattedMessage id="profile.firstName" defaultMessage="First name" />}
                             {...register("firstName")}
                             error={!!errors.firstName}
-                            helperText={errors.firstName?.message}
+                            helperText={tError(intl, errors.firstName?.message)}
                             autoFocus
                         />
 
@@ -174,7 +317,7 @@ export function ProfilePage() {
                             label={<FormattedMessage id="profile.lastName" defaultMessage="Last name" />}
                             {...register("lastName")}
                             error={!!errors.lastName}
-                            helperText={errors.lastName?.message}
+                            helperText={tError(intl, errors.lastName?.message)}
                         />
 
                         <Typography variant="subtitle1" fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
@@ -185,22 +328,23 @@ export function ProfilePage() {
                             label={<FormattedMessage id="register.bankAccountPrefix" defaultMessage="Prefix" />}
                             {...register("bankAccount.prefix")}
                             error={!!errors.bankAccount?.prefix}
-                            helperText={errors.bankAccount?.prefix?.message}
+                            helperText={tError(intl, errors.bankAccount?.prefix?.message)}
                         />
 
                         <TextField
                             label={<FormattedMessage id="register.bankAccountNumber" defaultMessage="Account number" />}
                             {...register("bankAccount.accountNumber")}
-                            error={!!errors.bankAccount?.accountNumber || !!(errors.bankAccount as any)?.message}
-                            helperText={errors.bankAccount?.accountNumber?.message ?? (errors.bankAccount as any)?.message}
+                            error={!!errors.bankAccount?.accountNumber}
+                            helperText={tError(intl, errors.bankAccount?.accountNumber?.message)}
                         />
 
                         <TextField
                             label={<FormattedMessage id="register.bankCode" defaultMessage="Bank code" />}
                             {...register("bankAccount.bankCode")}
-                            error={!!errors.bankAccount?.bankCode || !!(errors.bankAccount as any)?.message}
-                            helperText={errors.bankAccount?.bankCode?.message ?? (errors.bankAccount as any)?.message}
+                            error={!!errors.bankAccount?.bankCode}
+                            helperText={tError(intl, errors.bankAccount?.bankCode?.message)}
                         />
+
                         <Stack sx={{ alignItems: "center", width: "100%", mt: 2 }}>
                             <Button
                                 type="submit"
@@ -227,6 +371,13 @@ export function ProfilePage() {
                     </DialogContent>
                 </Box>
             </Dialog>
+
+            <AppSnackbar
+                open={snackbar.open}
+                onClose={() => setSnackbar((s) => ({...s, open: false}))}
+                severity={snackbar.severity}
+                message={snackbar.message}
+            />
         </Stack>
     );
 }

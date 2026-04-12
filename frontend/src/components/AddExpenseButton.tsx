@@ -5,7 +5,8 @@ import {useState} from "react";
 import CloseIcon from '@mui/icons-material/Close';
 import {AddExpenseForm} from "./AddExpenseForm";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { AppSnackbar } from "./AppSnackbar";
 
 type ButtonSize = "small" | "large";
 
@@ -23,6 +24,9 @@ export function AddExpenseButton({
     size = "large",
 }: Props) {
     const [open, setOpen] = useState(false);
+    const [successOpen, setSuccessOpen] = useState(false);
+    const [successMessageId, setSuccessMessageId] = useState<string>("expense.add.success");
+    const intl = useIntl();
     const isMobile = useMediaQuery('(max-width:899px)');
 
     const resolvedVariant: TypographyVariant = typeof variant === 'string'
@@ -129,9 +133,20 @@ export function AddExpenseButton({
                     <AddExpenseForm
                         initGroup={group}
                         onClose={() => setOpen(false)}
+                        onSuccess={(mode) => {
+                            setSuccessMessageId(mode === "edit" ? "expense.edit.success" : "expense.add.success");
+                            setSuccessOpen(true);
+                        }}
                     />
                 </DialogContent>
             </Dialog>
+
+            <AppSnackbar
+                open={successOpen}
+                onClose={() => setSuccessOpen(false)}
+                severity={"success"}
+                message={intl.formatMessage({ id: successMessageId, defaultMessage: successMessageId })}
+            />
         </>
     );
 }

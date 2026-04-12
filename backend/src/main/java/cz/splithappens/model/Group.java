@@ -4,6 +4,8 @@ import cz.splithappens.model.enums.*;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -40,6 +42,11 @@ public class Group {
 
     @Column(name = "last_activity", nullable = false)
     private OffsetDateTime lastActivity = OffsetDateTime.now();
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "group_image")
+    private byte[] groupImage;
 
     public void updateLastActivity() {
         this.lastActivity = OffsetDateTime.now();

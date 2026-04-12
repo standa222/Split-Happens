@@ -3,6 +3,8 @@ package cz.splithappens.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -34,6 +36,11 @@ public class User implements UserDetails {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private BankAccount bankAccount;
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "profile_image")
+    private byte[] profileImage;
 
     @ManyToMany
     @JoinTable(

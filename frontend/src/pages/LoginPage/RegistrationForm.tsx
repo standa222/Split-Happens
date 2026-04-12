@@ -4,13 +4,15 @@ import {registerFormSchema, TRegisterForm} from "../../types/form/TRegisterForm"
 import {zodResolver} from "@hookform/resolvers/zod";
 import {Box, TextField, Button, Typography} from "@mui/material";
 import {COLORS} from "../../constants/colors";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { tError } from "../../utils/localeUtils";
 
 type Props = {
     onSwitchToLogin: () => void;
 }
 
 export function RegistrationForm({ onSwitchToLogin }: Props) {
+    const intl = useIntl();
     const { mutate, isPending } = useRegisterUser({
         onSuccess: () => {
             console.log("Registration successful, switching to login form");
@@ -53,49 +55,49 @@ export function RegistrationForm({ onSwitchToLogin }: Props) {
                 type="text"
                 {...register("firstName")}
                 error={!!errors.firstName}
-                helperText={errors.firstName?.message}
+                helperText={tError(intl, errors.firstName?.message)}
             />
             <TextField
                 label={<FormattedMessage id="register.lastName" />}
                 type="text"
                 {...register("lastName")}
                 error={!!errors.lastName}
-                helperText={errors.lastName?.message}
+                helperText={tError(intl, errors.lastName?.message)}
             />
             <TextField
                 label={<FormattedMessage id="login.email" />}
                 type="text"
                 {...register("email")}
                 error={!!errors.email}
-                helperText={errors.email?.message}
+                helperText={tError(intl, errors.email?.message)}
             />
             <TextField
                 label={<FormattedMessage id="login.password" />}
                 type="password"
                 {...register("password")}
                 error={!!errors.password}
-                helperText={errors.password?.message}
+                helperText={tError(intl, errors.password?.message)}
             />
             <TextField
                 label={<FormattedMessage id="register.bankAccountPrefix" />}
                 type="text"
                 {...register("bankAccount.prefix")}
                 error={!!errors.bankAccount?.prefix}
-                helperText={errors.bankAccount?.prefix?.message}
+                helperText={tError(intl, errors.bankAccount?.prefix?.message)}
             />
             <TextField
                 label={<FormattedMessage id="register.bankAccountNumber" />}
                 type="text"
                 {...register("bankAccount.accountNumber")}
-                error={!!errors.bankAccount?.accountNumber || !!(errors.bankAccount as any)?.message}
-                helperText={errors.bankAccount?.accountNumber?.message ?? (errors.bankAccount as any)?.message}
+                error={!!errors.bankAccount?.accountNumber}
+                helperText={tError(intl, errors.bankAccount?.accountNumber?.message)}
             />
             <TextField
                 label={<FormattedMessage id="register.bankCode" />}
                 type="text"
                 {...register("bankAccount.bankCode")}
-                error={!!errors.bankAccount?.bankCode || !!(errors.bankAccount as any)?.message}
-                helperText={errors.bankAccount?.bankCode?.message ?? (errors.bankAccount as any)?.message}
+                error={!!errors.bankAccount?.bankCode}
+                helperText={tError(intl, errors.bankAccount?.bankCode?.message)}
             />
             <Button
                 sx={{

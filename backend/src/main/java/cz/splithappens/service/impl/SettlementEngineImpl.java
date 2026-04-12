@@ -1,5 +1,6 @@
 package cz.splithappens.service.impl;
 
+import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.model.*;
 import cz.splithappens.repository.DebtRepository;
 import cz.splithappens.repository.GroupRepository;
@@ -26,7 +27,7 @@ public class SettlementEngineImpl implements SettlementEngine {
     @Transactional
     public void calculateDebts(Long groupId) {
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found"));
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
 
         debtRepository.deleteByGroupId(groupId);
 

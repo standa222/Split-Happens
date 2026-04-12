@@ -32,6 +32,7 @@ frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
 frontend/.vercel/
+frontend/tsconfig.tsbuildinfo
 
 # --- Environment & Infrastructure ---
 .env

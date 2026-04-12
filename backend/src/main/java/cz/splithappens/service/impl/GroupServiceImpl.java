@@ -5,6 +5,8 @@ import cz.splithappens.dto.response.DebtDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.exception.GroupNotFoundException;
+import cz.splithappens.exception.NotGroupMemberException;
 import cz.splithappens.mapper.DebtMapper;
 import cz.splithappens.mapper.GroupMapper;
 import cz.splithappens.model.Debt;
@@ -20,8 +22,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,7 +78,7 @@ public class GroupServiceImpl implements GroupService {
         List<TransactionDto> transactions = transactionService.getGroupTransactions(groupId);
         List<DebtDto> debts = debtMapper.toDtoList(debtRepository.findByGroupId(groupId));
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
         GroupDto groupDto = groupMapper.toDto(group);
         groupDto.setTransactions(transactions);
         groupDto.setDebts(debts);
@@ -85,17 +89,45 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user) {
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new RuntimeException("Group not found")); // TODO: Custom exception
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
         if (!group.getMembers().stream().map(User::getId).toList().contains(user.getId())) {
-            throw new RuntimeException("User is not a member of the group"); // TODO: Custom exception
+            throw new NotGroupMemberException(groupId);
         }
         List<User> members = userRepository.findAllById(updateDto.getMemberIds());
         group.setName(updateDto.getName());
-        group.setDefaultCurrency(updateDto.getDefaultCurrency());
+        // TODO add update default currency + recalculate debts if currency changes
         group.setPermissionMode(updateDto.getPermissionMode());
         group.setMembers(new HashSet<>(members));
         group.updateLastActivity();
         return groupMapper.toDto(groupRepository.save(group));
+    }
+
+    @Override
+    @Transactional
+    public void leaveGroup(Long groupId, User user) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        if (!group.getMembers().stream().map(User::getId).toList().contains(user.getId())) {
+            throw new NotGroupMemberException(groupId);
+        }
+        group.getMembers().removeIf(member -> member.getId().equals(user.getId()));
+        group.updateLastActivity();
+        groupRepository.save(group);
+    }
+
+    @Override
+    public byte[] getGroupImage(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        return group.getGroupImage();
+    }
+
+    @Override
+    public void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        group.setGroupImage(imageData.getBytes());
+        groupRepository.save(group);
     }
 
     private boolean isUserInvolvedInDebt(Debt debt, Long userId) {

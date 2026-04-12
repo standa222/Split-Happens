@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    public ResponseEntity<TransactionDto> createTransaction(@RequestBody TransactionCreateDto createDto) {
+    public ResponseEntity<TransactionDto> createTransaction(@RequestBody @Valid TransactionCreateDto createDto) {
         return ResponseEntity.ok(transactionService.createTransaction(createDto));
     }
 
@@ -49,7 +50,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Transaction not found")
     })
-    public ResponseEntity<TransactionDto> updateTransaction(@RequestBody TransactionCreateDto updateDto, @PathVariable Long transactionId) {
+    public ResponseEntity<TransactionDto> updateTransaction(@RequestBody @Valid TransactionCreateDto updateDto, @PathVariable Long transactionId) {
         return ResponseEntity.ok(transactionService.updateTransaction(transactionId, updateDto));
     }
 

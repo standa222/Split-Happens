@@ -20,10 +20,11 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {favCurrencies} from "../utils/currencyUtils";
 import {TUser} from "../types/TUser";
 import {useState} from "react";
-import {useUsersSearchQuery} from "../hooks/useUsersSearchQuery";
 import {useAuthStore} from "../store/authStore";
 import {useCreateGroupMutation, useEditGroupMutation} from "../hooks/useGroupMutation";
 import {FormattedMessage, useIntl} from "react-intl";
+import { tError } from "../utils/localeUtils";
+import {useUsersSearchQuery} from "../hooks/useUsersSearchQuery";
 
 type Props = {
     onClose?: () => void;
@@ -61,7 +62,11 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
         },
     });
 
-    const createGroup = useCreateGroupMutation({ onSuccess: onClose });
+    const createGroup = useCreateGroupMutation({
+        onSuccess: () => {
+            onClose?.();
+        }
+    });
     const editGroup = useEditGroupMutation({ onSuccess: onClose });
 
     const isPending = isEditMode ? editGroup.isPending : createGroup.isPending;
@@ -76,204 +81,209 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
     };
 
     return (
-        <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{
-                px: { xs: 0, md: 2 },
-                pb: 2,
-                backgroundColor: COLORS.SECONDARY,
-            }}
-        >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2, }}>
-                {isEditMode ? (
-                    <FormattedMessage id="group.form.title.edit" />
-                ) : (
-                    <FormattedMessage id="group.form.title.create" />
-                )}
-            </Typography>
-
+        <>
             <Box
-                display="flex"
-                gap={{ xs: 2, md: 3 }}
-                alignItems={{ xs: 'stretch', md: 'center' }}
-                flexDirection={{ xs: 'column', md: 'row' }}
+                component="form"
+                onSubmit={handleSubmit(onSubmit)}
+                sx={{
+                    px: { xs: 0, md: 2 },
+                    pb: 2,
+                    backgroundColor: COLORS.SECONDARY,
+                }}
             >
-                <Stack flex={1}>
-                    <TextField
-                        fullWidth
-                        label={<FormattedMessage id="group.form.fields.name" />}
-                        size="small"
-                        defaultValue={initGroup?.name ?? ""}
-                        {...register("name")}
-                        error={!!errors.name}
-                        helperText={errors.name?.message}
-                    />
-                </Stack>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2, }}>
+                    {isEditMode ? (
+                        <FormattedMessage id="group.form.title.edit" />
+                    ) : (
+                        <FormattedMessage id="group.form.title.create" />
+                    )}
+                </Typography>
 
-                <Stack flex={1}>
+                <Box
+                    display="flex"
+                    gap={{ xs: 2, md: 3 }}
+                    alignItems={{ xs: 'stretch', md: 'center' }}
+                    flexDirection={{ xs: 'column', md: 'row' }}
+                >
+                    <Stack flex={1}>
+                        <TextField
+                            fullWidth
+                            label={<FormattedMessage id="group.form.fields.name" />}
+                            size="small"
+                            defaultValue={initGroup?.name ?? ""}
+                            {...register("name")}
+                            error={!!errors.name}
+                            helperText={tError(intl, errors.name?.message)}
+                        />
+                    </Stack>
+
+                    {!isEditMode && (
+                        <Stack flex={1}>
+                            <Controller
+                                name="defaultCurrency"
+                                control={control}
+                                render={({ field }) => (
+                                    <Autocomplete
+                                        size="small"
+                                        options={favCurrencies}
+                                        value={favCurrencies.find((c) => c.code === field.value) ?? null}
+                                        onChange={(_, opt) => field.onChange(opt?.code ?? "")}
+                                        isOptionEqualToValue={(a, b) => a.code === b.code}
+                                        getOptionLabel={(o) => o.code}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                fullWidth
+                                                label={<FormattedMessage id="group.form.fields.defaultCurrency" />}
+                                                inputRef={field.ref}
+                                                error={!!errors.defaultCurrency}
+                                                helperText={tError(intl, errors.defaultCurrency?.message)}
+                                            />
+                                        )}
+                                    />
+                                )}
+                            />
+                        </Stack>
+                    )}
+                    <Stack flex={1}>
+                        <Controller
+                            name="permissionMode"
+                            control={control}
+                            render={({ field }) => (
+                                <>
+                                    <FormControl>
+                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
+                                            <FormattedMessage id="group.form.fields.permissionMode" />
+                                        </FormLabel>
+                                        <RadioGroup
+                                            row
+                                            value={field.value}
+                                            onChange={(_, v) => field.onChange(v)}
+                                            sx={{ gap: 2 }}
+                                        >
+                                            <FormControlLabel
+                                                value="SOFT"
+                                                control={<Radio size="small" />}
+                                                label={<FormattedMessage id="group.form.permissionMode.soft" />}
+                                                sx={{ mr: { xs: 0, md: 2 } }}
+                                            />
+                                            <FormControlLabel
+                                                value="HARD"
+                                                control={<Radio size="small" />}
+                                                label={<FormattedMessage id="group.form.permissionMode.hard" />}
+                                                sx={{ mr: { xs: 0, md: 0 } }}
+                                            />
+                                        </RadioGroup>
+                                    </FormControl>
+                                    {errors.permissionMode?.message ? (
+                                        <Typography variant="caption" color="error">
+                                            {tError(intl, errors.permissionMode.message)}
+                                        </Typography>
+                                    ) : null}
+                                </>
+                            )}
+                        />
+                    </Stack>
+                </Box>
+
+                {/* Members */}
+                <Box mt={2}>
                     <Controller
-                        name="defaultCurrency"
+                        name="memberIds"
                         control={control}
                         render={({ field }) => (
                             <Autocomplete
-                                size="small"
-                                options={favCurrencies}
-                                value={favCurrencies.find((c) => c.code === field.value) ?? null}
-                                onChange={(_, opt) => field.onChange(opt?.code ?? "")}
-                                isOptionEqualToValue={(a, b) => a.code === b.code}
-                                getOptionLabel={(o) => o.code}
+                                multiple
+                                disableCloseOnSelect
+                                options={memberOptions}
+                                loading={membersLoading}
+                                value={selectedUsers}
+                                onInputChange={(_, value) => setSearchTerm(value)}
+                                getOptionLabel={(u) => `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email}
+                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                onChange={(_, newValue) => {
+                                    setSelectedUsers(newValue);
+                                    field.onChange(newValue.map(u => u.id));
+                                }}
+                                renderOption={(props, option, { selected }) => (
+                                    <li {...props}>
+                                        <Checkbox
+                                            checked={selected}
+                                            sx={{
+                                                mr: 1,
+                                                color: COLORS.PRIMARY,
+                                                '&.Mui-checked': { color: COLORS.PRIMARY }
+                                            }}
+                                        />
+                                        <Stack>
+                                            <Typography variant="body2">
+                                                {`${option.firstName ?? ""} ${option.lastName ?? ""}`.trim() || (
+                                                    <FormattedMessage id="common.unknownUser" />
+                                                )}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {option.email}
+                                            </Typography>
+                                        </Stack>
+                                    </li>
+                                )}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
                                         fullWidth
-                                        label={<FormattedMessage id="group.form.fields.defaultCurrency" />}
-                                        inputRef={field.ref}
-                                        error={!!errors.defaultCurrency}
-                                        helperText={errors.defaultCurrency?.message}
+                                        label={<FormattedMessage id="group.form.members.search.label" />}
+                                        placeholder={intl.formatMessage({ id: "group.form.members.search.placeholder" })}
+                                        error={!!errors.memberIds}
+                                        helperText={tError(intl, errors.memberIds?.message as any)}
+                                        slotProps={{
+                                            input: {
+                                                ...params.InputProps,
+                                                endAdornment: (
+                                                    <>
+                                                        {membersLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                        {params.InputProps.endAdornment}
+                                                    </>
+                                                ),
+                                            },
+                                        }}
                                     />
                                 )}
                             />
                         )}
                     />
-                </Stack>
+                </Box>
 
-                <Stack flex={1}>
-                    <Controller
-                        name="permissionMode"
-                        control={control}
-                        render={({ field }) => (
-                            <>
-                                <FormControl>
-                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
-                                        <FormattedMessage id="group.form.fields.permissionMode" />
-                                    </FormLabel>
-                                    <RadioGroup
-                                        row
-                                        value={field.value}
-                                        onChange={(_, v) => field.onChange(v)}
-                                        sx={{ gap: 2 }}
-                                    >
-                                        <FormControlLabel
-                                            value="SOFT"
-                                            control={<Radio size="small" />}
-                                            label={<FormattedMessage id="group.form.permissionMode.soft" />}
-                                            sx={{ mr: { xs: 0, md: 2 } }}
-                                        />
-                                        <FormControlLabel
-                                            value="HARD"
-                                            control={<Radio size="small" />}
-                                            label={<FormattedMessage id="group.form.permissionMode.hard" />}
-                                            sx={{ mr: { xs: 0, md: 0 } }}
-                                        />
-                                    </RadioGroup>
-                                </FormControl>
-                                {errors.permissionMode?.message ? (
-                                    <Typography variant="caption" color="error">
-                                        {errors.permissionMode.message}
-                                    </Typography>
-                                ) : null}
-                            </>
+                <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{
+                            px: 6,
+                            py: 1.5,
+                            borderRadius: 999,
+                            textTransform: "none",
+                            fontWeight: 700,
+                            backgroundColor: COLORS.PRIMARY,
+                            color: COLORS.SECONDARY,
+                        }}
+                        disabled={isPending}
+                    >
+                        {isEditMode ? (
+                            isPending ? (
+                                <FormattedMessage id="group.form.action.saving" />
+                            ) : (
+                                <FormattedMessage id="group.form.action.saveChanges" />
+                            )
+                        ) : (
+                            isPending ? (
+                                <FormattedMessage id="group.form.action.creating" />
+                            ) : (
+                                <FormattedMessage id="group.form.action.create" />
+                            )
                         )}
-                    />
-                </Stack>
+                    </Button>
+                </Box>
             </Box>
-
-            {/* Members */}
-            <Box mt={2}>
-                <Controller
-                    name="memberIds"
-                    control={control}
-                    render={({ field }) => (
-                        <Autocomplete
-                            multiple
-                            disableCloseOnSelect
-                            options={memberOptions}
-                            loading={membersLoading}
-                            value={selectedUsers}
-                            onInputChange={(_, value) => setSearchTerm(value)}
-                            getOptionLabel={(u) => `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email}
-                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                            onChange={(_, newValue) => {
-                                setSelectedUsers(newValue);
-                                field.onChange(newValue.map(u => u.id));
-                            }}
-                            renderOption={(props, option, { selected }) => (
-                                <li {...props}>
-                                    <Checkbox
-                                        checked={selected}
-                                        sx={{
-                                            mr: 1,
-                                            color: COLORS.PRIMARY,
-                                            '&.Mui-checked': { color: COLORS.PRIMARY }
-                                        }}
-                                    />
-                                    <Stack>
-                                        <Typography variant="body2">
-                                            {`${option.firstName ?? ""} ${option.lastName ?? ""}`.trim() || (
-                                                <FormattedMessage id="common.unknownUser" />
-                                            )}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {option.email}
-                                        </Typography>
-                                    </Stack>
-                                </li>
-                            )}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    fullWidth
-                                    label={<FormattedMessage id="group.form.members.search.label" />}
-                                    placeholder={intl.formatMessage({ id: "group.form.members.search.placeholder" })}
-                                    slotProps={{
-                                        input: {
-                                            ...params.InputProps,
-                                            endAdornment: (
-                                                <>
-                                                    {membersLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                                                    {params.InputProps.endAdornment}
-                                                </>
-                                            ),
-                                        },
-                                    }}
-                                />
-                            )}
-                        />
-                    )}
-                />
-            </Box>
-
-            <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{
-                        px: 6,
-                        py: 1.5,
-                        borderRadius: 999,
-                        textTransform: "none",
-                        fontWeight: 700,
-                        backgroundColor: COLORS.PRIMARY,
-                        color: COLORS.SECONDARY,
-                    }}
-                    disabled={isPending}
-                >
-                    {isEditMode ? (
-                        isPending ? (
-                            <FormattedMessage id="group.form.action.saving" />
-                        ) : (
-                            <FormattedMessage id="group.form.action.saveChanges" />
-                        )
-                    ) : (
-                        isPending ? (
-                            <FormattedMessage id="group.form.action.creating" />
-                        ) : (
-                            <FormattedMessage id="group.form.action.create" />
-                        )
-                    )}
-                </Button>
-            </Box>
-        </Box>
+        </>
     );
 }

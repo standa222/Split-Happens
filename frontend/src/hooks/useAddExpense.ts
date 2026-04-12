@@ -2,6 +2,7 @@ import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {api} from "../axios/axios";
 import {TTransaction} from "../types/TTransaction";
 import {TAddExpenseForm} from "../types/form/TAddExpenseForm";
+import type { AxiosError } from "axios";
 
 type Options = {
     onSuccess?: () => void;
@@ -10,8 +11,11 @@ type Options = {
 export function useAddExpense(options?: Options) {
     const queryClient = useQueryClient();
 
-    return useMutation<TTransaction, Error, TAddExpenseForm>({
-        mutationFn: (data) => api.post('/transactions', data).then(res => res.data),
+    return useMutation<TTransaction, AxiosError, TAddExpenseForm>({
+        mutationFn: (data) => api.post('/transactions', data).then(res => {
+            console.log(res);
+            return res.data;
+        }),
         onSuccess: (data, variables) => {
             console.log('Expense added successfully:', data);
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });

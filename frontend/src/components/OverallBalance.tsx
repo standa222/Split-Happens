@@ -72,10 +72,9 @@ const Content = () => {
                     </Box>
                 ) : (
                     balances.map((b, idx) => (
-                        <>
+                        <Box key={b.currency} component="span">
                             {idx > 0 ? ", " : ""}
                             <Box
-                                key={b.currency}
                                 component="span"
                                 sx={{
                                     color: b.amount < 0 ? COLORS.RED : COLORS.PRIMARY,
@@ -84,7 +83,7 @@ const Content = () => {
                             >
                                 {formatMoneyWithSymbol(b.amount, b.currency)}
                             </Box>
-                        </>
+                        </Box>
                     ))
                 )}
             </Typography>

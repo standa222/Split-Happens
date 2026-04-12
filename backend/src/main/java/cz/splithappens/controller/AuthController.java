@@ -2,6 +2,7 @@ package cz.splithappens.controller;
 
 import cz.splithappens.dto.request.LoginRequestDto;
 import cz.splithappens.dto.response.LoginResponseDto;
+import cz.splithappens.exception.InvalidCredentialsException;
 import cz.splithappens.mapper.UserMapper;
 import cz.splithappens.model.User;
 import cz.splithappens.security.JwtUtil;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,15 +43,11 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Successful login", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials")
     })
-    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequest) {
-        if (loginRequest.getEmail() == null || loginRequest.getPassword() == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
+    public ResponseEntity<LoginResponseDto> login(@RequestBody @Valid LoginRequestDto loginRequest) {
         Optional<User> userOpt = userService.findByEmail(loginRequest.getEmail());
 
         if (userOpt.isEmpty() || !passwordEncoder.matches(loginRequest.getPassword(), userOpt.get().getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new InvalidCredentialsException();
         }
 
         return ResponseEntity.ok(new LoginResponseDto(

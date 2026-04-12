@@ -37,6 +37,7 @@
 
   "expense.action.add": "Add expense",
   "expense.action.adding": "Adding...",
+  "expense.add.success": "Expense added successfully.",
 
   "common.close": "Close",
   "common.cancel": "Cancel",
@@ -142,6 +143,7 @@
   "expense.edit.title": "Edit expense",
   "expense.action.save": "Save changes",
   "expense.action.saving": "Saving...",
+  "expense.edit.success": "Expense saved successfully.",
 
   "profile.title": "Profile",
   "profile.firstName": "First name",
@@ -166,5 +168,48 @@
   "qrPayment.loading": "Loading QR...",
   "qrPayment.error": "Failed to load QR image.",
   "qrPayment.qrAlt": "QR payment",
-  "qrPayment.currencyNotSupported": "QR payment is currently implemented only for CZK. (Current currency: {currency})"
+  "qrPayment.currencyNotSupported": "QR payment is currently implemented only for CZK. (Current currency: {currency})",
+
+  "group.leave.title": "Leave {name}?",
+  "group.leave.confirm": "Are you sure you want to leave {name}? You may lose access to its expenses and balances.",
+  "group.leave.action": "Leave group",
+  "group.leave.leaving": "Leaving...",
+  "group.leave.error": "Couldn’t leave the group. Please try again.",
+
+  "expense.delete.title": "Delete expense?",
+  "expense.delete.confirm": "Are you sure you want to delete this expense? This action can’t be undone.",
+  "expense.delete.action": "Delete",
+  "expense.delete.deleting": "Deleting...",
+
+  "validation.required.firstName": "First name is required.",
+  "validation.required.lastName": "Last name is required.",
+  "validation.required.password": "Password is required and must have at least 6 characters.",
+  "validation.required.passwordLogin": "Password is required.",
+  "validation.required.email": "Email is required.",
+  "validation.email.invalid": "Invalid email address.",
+  "validation.bankAccount.accountNumberAndBankCodeRequired": "Provide account number and bank code (prefix is optional).",
+  "validation.bankAccount.digitsOnly": "Use digits only.",
+  "validation.bankAccount.fourDigits": "Bank code must be exactly 4 digits.",
+  "validation.group.nameRequired": "Group name is required.",
+  "validation.group.currencyCodeRequired": "Currency code is required.",
+  "validation.group.membersNotEmpty": "At least one member must be selected.",
+  "validation.requiredField": "Mandatory field.",
+  "validation.transaction.paidBySumMismatch": "Paid by amounts must add up to the total amount.",
+  "validation.transaction.splitBetweenSumMismatch": "Split between amounts must add up to the total amount.",
+  "validation.transaction.paidByPercentageSumMismatch": "Paid by percentages must add up to 100%.",
+  "validation.transaction.splitBetweenPercentageSumMismatch": "Split between percentages must add up to 100%.",
+  "validation.transaction.splitValueMustBePositive": "Split value must be greater than 0.",
+
+  "auth.login.error.invalidCredentials": "Invalid email or password.",
+  "api.error.network": "Can’t reach the server. Please check your connection and try again.",
+  "api.error.forbidden": "You don’t have permission to perform this action.",
+  "api.error.notFound": "Requested resource was not found.",
+  "api.error.server": "Server error. Please try again later.",
+  "api.error.generic": "Request failed. (HTTP {status})",
+  "api.error.unknown": "Something went wrong. Please try again.",
+  "api.error.validation": "Validation failed. Please check the form.",
+  "api.error.message": "{message}",
+  "api.error.validation.message": "{message}",
+  "group.create.success": "Group created successfully.",
+  "group.edit.success": "Group updated successfully."
 }

@@ -18,21 +18,25 @@ import {
 } from "@mui/material";
 import { COLORS } from "../constants/colors";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
-import {Controller, useForm} from "react-hook-form";
+import {Controller, useForm, useWatch} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useGroupDetail, useGroupsQuery} from "../hooks/useGroupsQuery";
 import {TUser} from "../types/TUser";
 import {useAddExpense} from "../hooks/useAddExpense";
 import {useEditExpense} from "../hooks/useEditExpense";
-import {favCurrencies} from "../utils/currencyUtils";
-import { FormattedMessage } from "react-intl";
+import {favCurrencies, getCurrencySymbol} from "../utils/currencyUtils";
+import {FormattedMessage, useIntl} from "react-intl";
 import {TTransaction} from "../types/TTransaction";
+import {tError} from "../utils/localeUtils";
+import {AppSnackbar} from "./AppSnackbar";
+import {formatApiError} from "../utils/apiErrorUtils";
 
 type Props = {
     onClose?: () => void;
     initGroup?: TGroupDetail;
     initTransaction?: TTransaction;
+    onSuccess?: (mode: "create" | "edit") => void;
 };
 
 type Mode = "fixed" | "partial" | "percentage";
@@ -51,8 +55,8 @@ const asModeValue = (mode: Mode, value: number) => {
     return { percentage: n } as const;
 };
 
-const unitAdornment = (mode: Mode) => {
-    if (mode === "fixed") return <InputAdornment position="end">$</InputAdornment>;
+const unitAdornment = (mode: Mode, currencyCode?: string) => {
+    if (mode === "fixed") return <InputAdornment position="end">{getCurrencySymbol(currencyCode ?? "")}</InputAdornment>;
     if (mode === "partial") return <InputAdornment position="end">parts</InputAdornment>;
     if (mode === "percentage") return <InputAdornment position="end">%</InputAdornment>;
     return null;
@@ -60,7 +64,7 @@ const unitAdornment = (mode: Mode) => {
 
 type ParticipantView = 'paid' | 'split';
 
-export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) => {
+export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess }: Props) => {
     const isEditMode = Boolean(initTransaction);
 
     const [paidMode, setPaidMode] = useState<Mode>("fixed");
@@ -69,6 +73,8 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
     const [participants, setParticipants] = useState(initGroup?.members || []);
     const [rowState, setRowState] = useState<Record<number, RowState>>({});
     const [participantView, setParticipantView] = useState<ParticipantView>('split');
+    const [errorOpen, setErrorOpen] = useState(false);
+    const intl = useIntl();
 
     const { data: fetchedGroups, isLoading: isGroupsLoading, isError: isGroupError } = useGroupsQuery();
     const groups = useMemo(() => {
@@ -81,19 +87,30 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
         setParticipants(groupDetail?.members || []);
     }, [groupDetail]);
 
-    const { mutate: createMutate, isPending: isCreatePending } = useAddExpense({
-        onSuccess: () => onClose?.(),
+    const { mutate: createMutate, isPending: isCreatePending, isError: isCreateError, error: createError } = useAddExpense({
+        onSuccess: () => {
+            onSuccess?.("create");
+            onClose?.();
+        },
     });
 
-    const { mutate: editMutate, isPending: isEditPending } = useEditExpense({
-        onSuccess: () => onClose?.(),
+    const { mutate: editMutate, isPending: isEditPending, isError: isEditError, error: editError } = useEditExpense({
+        onSuccess: () => {
+            onSuccess?.("edit");
+            onClose?.();
+        },
     });
+
+    useEffect(() => {
+        if (isCreateError || isEditError) setErrorOpen(true);
+    }, [isCreateError, isEditError]);
+
+    const apiError = (isEditMode ? editError : createError) as unknown;
 
     const isPending = isEditMode ? isEditPending : isCreatePending;
 
     const {
         control,
-        register,
         handleSubmit,
         formState: { errors },
         reset,
@@ -110,6 +127,8 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
             transactionType: "EXPENSE",
         },
     });
+
+    const currency = useWatch({ control, name: "currency" });
 
     useEffect(() => {
         if (!initTransaction) return;
@@ -162,9 +181,6 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
             transactionType: "EXPENSE",
         };
 
-        console.log("payload", payload);
-        console.log("currency", payload.currency);
-
         if (isEditMode) {
             editMutate({ transactionId: initTransaction!.id, data: payload });
         } else {
@@ -173,54 +189,411 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
     };
 
     return (
-        <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{
-                px: { xs: 0, md: 2 },
-                pb: 2,
-                backgroundColor: COLORS.SECONDARY,
-                width: {xs: '100%', md: "auto"},
-            }}
-        >
-            <Typography
-                variant="h6"
+        <>
+            <Box
+                component="form"
+                onSubmit={handleSubmit(onSubmit)}
                 sx={{
-                    fontWeight: 700,
-                    color: COLORS.PRIMARY,
-                    mb: 2,
+                    px: { xs: 0, md: 2 },
+                    pb: 2,
+                    backgroundColor: COLORS.SECONDARY,
+                    width: {xs: '100%', md: "auto"},
                 }}
             >
-                <FormattedMessage id={isEditMode ? "expense.edit.title" : "expense.add.title"} />
-            </Typography>
+                <Typography
+                    variant="h6"
+                    sx={{
+                        fontWeight: 700,
+                        color: COLORS.PRIMARY,
+                        mb: 2,
+                    }}
+                >
+                    <FormattedMessage id={isEditMode ? "expense.edit.title" : "expense.add.title"} />
+                </Typography>
 
-            {/* Desktop layout */}
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                <Stack>
-                    <Box display="flex" gap={3} alignItems="center">
-                        <Stack flex={1}>
-                            <Controller
-                                name="title"
-                                control={control}
-                                render={({ field }) => (
-                                    <TextField
-                                        {...field}
-                                        label={<FormattedMessage id="expense.fields.title" />}
-                                        size="small"
-                                        error={!!errors.title}
-                                        helperText={errors.title?.message}
+                {/* Desktop layout */}
+                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Stack>
+                        <Box display="flex" gap={3} alignItems="center">
+                            <Stack flex={1}>
+                                <Controller
+                                    name="title"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            {...field}
+                                            label={<FormattedMessage id="expense.fields.title" />}
+                                            size="small"
+                                            error={!!errors.title}
+                                            helperText={tError(intl, errors.title?.message)}
+                                        />
+                                    )}
+                                />
+                            </Stack>
+
+                            <Stack flex={1}>
+                                <Controller
+                                    name="category"
+                                    control={control}
+                                    defaultValue=""
+                                    render={({ field }) => (
+                                        <TextField
+                                            label={<FormattedMessage id="expense.fields.category" />}
+                                            select
+                                            size="small"
+                                            value={field.value ?? ""}
+                                            onChange={field.onChange}
+                                            onBlur={field.onBlur}
+                                            inputRef={field.ref}
+                                            error={!!errors.category}
+                                            helperText={tError(intl, errors.category?.message)}
+                                        >
+                                            <MenuItem value="Fun"><FormattedMessage id="expense.category.fun" /></MenuItem>
+                                            <MenuItem value="Food"><FormattedMessage id="expense.category.food" /></MenuItem>
+                                            <MenuItem value="Transport"><FormattedMessage id="expense.category.transport" /></MenuItem>
+                                            <MenuItem value="Utilities"><FormattedMessage id="expense.category.utilities" /></MenuItem>
+                                        </TextField>
+                                    )}
+                                />
+                            </Stack>
+
+                            <Stack flex={1}>
+                                <FormControl>
+                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                        <FormattedMessage id="expense.mode.paidBy" />
+                                    </FormLabel>
+                                    <RadioGroup row value={paidMode} onChange={(e) => setPaidMode(e.target.value as Mode)}>
+                                        <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                        <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                        <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Stack>
+                        </Box>
+
+                        <Box display="flex" gap={3} mt={2} alignItems="center">
+                            <Stack flex={1}>
+                                <Controller
+                                    name="groupId"
+                                    control={control}
+                                    defaultValue={initGroup?.id ?? 0}
+                                    render={({ field }) => (
+                                        <Autocomplete
+                                            size="small"
+                                            options={groups}
+                                            getOptionLabel={(o) => o.name}
+                                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                                            value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
+                                            onChange={(_, selected) => {
+                                                if (isEditMode) return;
+                                                field.onChange(selected?.id ?? 0);
+                                                setGroupId(selected?.id ?? 0);
+                                            }}
+                                            onBlur={field.onBlur}
+                                            filterOptions={(options, state) => {
+                                                const q = state.inputValue.trim().toLowerCase();
+                                                if (!q) return options;
+                                                return options.filter((o) => o.name.toLowerCase().includes(q));
+                                            }}
+                                            renderOption={(props, option) => (
+                                                <Box component="li" {...props} key={option.id}>
+                                                    {option.name}
+                                                </Box>
+                                            )}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label={<FormattedMessage id="expense.fields.group" />}
+                                                    inputRef={field.ref}
+                                                    error={!!errors.groupId}
+                                                    helperText={tError(intl, errors.groupId?.message)}
+                                                />
+                                            )}
+                                        />
+                                    )}
+                                />
+                            </Stack>
+
+                            <Box display="flex" gap={3} flex={1} alignItems="center">
+                                <Stack flex={1}>
+                                    <Controller
+                                        name="totalAmount"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <TextField
+                                                {...field}
+                                                label={<FormattedMessage id="expense.fields.amount" />}
+                                                size="small"
+                                                inputMode="decimal"
+                                                value={field.value ?? ""}
+                                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                                error={!!errors.totalAmount}
+                                                helperText={tError(intl, errors.totalAmount?.message)}
+                                            />
+                                        )}
                                     />
-                                )}
-                            />
-                        </Stack>
+                                </Stack>
 
-                        <Stack flex={1}>
+                                <Stack flex={1}>
+                                    <Controller
+                                        name="currency"
+                                        control={control}
+                                        defaultValue={initGroup?.defaultCurrency ?? ""}
+                                        render={({ field }) => (
+                                            <Autocomplete
+                                                size="small"
+                                                options={favCurrencies}
+                                                getOptionLabel={(o) => `${o.code}`}
+                                                filterOptions={(options, state) => {
+                                                    const q = state.inputValue.trim().toLowerCase();
+                                                    if (!q) return options;
+                                                    return options.filter(
+                                                        (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
+                                                    );
+                                                }}
+                                                value={favCurrencies.find((c) => c.code === (field.value ?? "")) ?? null}
+                                                onChange={(_, selected) => field.onChange(selected?.code ?? "")}
+                                                onBlur={field.onBlur}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label={<FormattedMessage id="expense.fields.currency" />}
+                                                        inputRef={field.ref}
+                                                        error={!!errors.currency}
+                                                        helperText={tError(intl, errors.currency?.message)}
+                                                    />
+                                                )}
+                                            />
+                                        )}
+                                    />
+                                </Stack>
+                            </Box>
+
+                            <Stack flex={1}>
+                                <FormControl>
+                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                        <FormattedMessage id="expense.mode.splitBetween" />
+                                    </FormLabel>
+                                    <RadioGroup row value={splitMode} onChange={(e) => setSplitMode(e.target.value as Mode)}>
+                                        <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                        <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                        <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Stack>
+                        </Box>
+                    </Stack>
+
+                    <Box sx={{ mt: 3.5 }}>
+                        <Grid
+                            container
+                            alignItems="center"
+                            columnSpacing={2.5}
+                            rowSpacing={1.5}
+                        >
+                            {/* Header row */}
+                            <Grid size={3.5}>
+                                <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                                    <FormattedMessage id="expense.whoIsInvolved" />
+                                </Typography>
+                            </Grid>
+
+                            <Grid
+                                size={0.7}
+                                sx={{ position: "relative", display: "flex", justifyContent: "center" }}
+                            >
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: COLORS.PRIMARY,
+                                        fontWeight: 800,
+                                        position: "absolute",
+                                        top: "50%",
+                                        left: "50%",
+                                        transform: "translate(-50%, -50%)",
+                                        whiteSpace: "nowrap",
+                                        width: "max-content",
+                                        overflow: "visible",
+                                        textAlign: "center",
+                                        pointerEvents: "none",
+                                    }}
+                                >
+                                    <FormattedMessage id="expense.paidByHeader" />
+                                </Typography>
+                            </Grid>
+
+                            <Grid size={3.3} />
+
+                            <Grid
+                                size={0.7}
+                                sx={{ position: "relative", display: "flex", justifyContent: "center" }}
+                            >
+                                <Typography
+                                    variant="caption"
+                                    sx={{
+                                        color: COLORS.PRIMARY,
+                                        fontWeight: 800,
+                                        position: "absolute",
+                                        top: "50%",
+                                        left: "50%",
+                                        transform: "translate(-50%, -50%)",
+                                        whiteSpace: "nowrap",
+                                        width: "max-content",
+                                        overflow: "visible",
+                                        textAlign: "center",
+                                        pointerEvents: "none",
+                                    }}
+                                >
+                                    <FormattedMessage id="expense.splitBetweenHeader" />
+                                </Typography>
+                            </Grid>
+
+                            <Grid size={3.3} />
+
+                            {/* Rows */}
+                            {(participants as unknown as TUser[]).map((u) => {
+                                const s: RowState = rowState[u.id] ?? {
+                                    paidEnabled: false,
+                                    paidValue: 0,
+                                    splitEnabled: true,
+                                    splitValue: 0,
+                            };
+
+                                return (
+                                    <Box key={u.id} component="div" sx={{ display: "contents" }}>
+                                        <Grid size={3.5}>
+                                            <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 600 }}>
+                                                {u.firstName ?? ""} {u.lastName ?? ""}
+                                            </Typography>
+                                        </Grid>
+
+                                        <Grid size={0.7} sx={{ display: "flex", justifyContent: "center" }}>
+                                            <Checkbox
+                                                checked={s.paidEnabled}
+                                                onChange={(e) =>
+                                                    setRowState((prev) => ({
+                                                        ...prev,
+                                                        [u.id]: { ...s, paidEnabled: e.target.checked },
+                                                    }))
+                                                }
+                                                sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={3.3}>
+                                            <TextField
+                                                size="small"
+                                                inputMode="decimal"
+                                                disabled={!s.paidEnabled}
+                                                value={s.paidEnabled ? s.paidValue : ""}
+                                                onChange={(e) =>
+                                                    setRowState((prev) => ({
+                                                        ...prev,
+                                                        [u.id]: { ...s, paidValue: Number(e.target.value) },
+                                                    }))
+                                                }
+                                                slotProps={{
+                                                    input: {
+                                                        endAdornment: unitAdornment(paidMode, currency)
+                                                    }
+                                                }}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={0.7} sx={{ display: "flex", justifyContent: "center" }}>
+                                            <Checkbox
+                                                checked={s.splitEnabled}
+                                                onChange={(e) =>
+                                                    setRowState((prev) => ({
+                                                        ...prev,
+                                                        [u.id]: { ...s, splitEnabled: e.target.checked },
+                                                    }))
+                                                }
+                                                sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
+                                            />
+                                        </Grid>
+
+                                        <Grid size={3.3}>
+                                            <TextField
+                                                size="small"
+                                                inputMode="decimal"
+                                                disabled={!s.splitEnabled}
+                                                value={s.splitEnabled ? s.splitValue : ""}
+                                                onChange={(e) =>
+                                                    setRowState((prev) => ({
+                                                        ...prev,
+                                                        [u.id]: { ...s, splitValue: Number(e.target.value) },
+                                                    }))
+                                                }
+                                                slotProps={{
+                                                    input: {
+                                                        endAdornment: unitAdornment(splitMode, currency)
+                                                    }
+                                                }}
+                                            />
+                                        </Grid>
+                                    </Box>
+                                );
+                            })}
+                        </Grid>
+                    </Box>
+
+                    <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                                px: 6,
+                                py: 1.5,
+                                borderRadius: 999,
+                                textTransform: "none",
+                                fontWeight: 700,
+                                backgroundColor: COLORS.PRIMARY,
+                                color: COLORS.SECONDARY,
+                            }}
+                            disabled={isPending}
+                        >
+                            {isPending ? (
+                                <FormattedMessage id={isEditMode ? "expense.action.saving" : "expense.action.adding"} />
+                            ) : (
+                                <FormattedMessage id={isEditMode ? "expense.action.save" : "expense.action.add"} />
+                            )}
+                        </Button>
+                    </Box>
+                </Box>
+
+                {/* Mobile layout (xs-sm) */}
+                <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                    <Stack gap={1.5}>
+                        <Controller
+                            name="title"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    {...field}
+                                    fullWidth
+                                    label={<FormattedMessage id="expense.fields.title" />}
+                                    size="small"
+                                    error={!!errors.title}
+                                    helperText={tError(intl, errors.title?.message)}
+                                />
+                            )}
+                        />
+
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: 1.5,
+                            }}
+                        >
                             <Controller
                                 name="category"
                                 control={control}
                                 defaultValue=""
                                 render={({ field }) => (
                                     <TextField
+                                        fullWidth
                                         label={<FormattedMessage id="expense.fields.category" />}
                                         select
                                         size="small"
@@ -229,7 +602,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                                         onBlur={field.onBlur}
                                         inputRef={field.ref}
                                         error={!!errors.category}
-                                        helperText={errors.category?.message}
+                                        helperText={tError(intl, errors.category?.message)}
                                     >
                                         <MenuItem value="Fun"><FormattedMessage id="expense.category.fun" /></MenuItem>
                                         <MenuItem value="Food"><FormattedMessage id="expense.category.food" /></MenuItem>
@@ -238,24 +611,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                                     </TextField>
                                 )}
                             />
-                        </Stack>
 
-                        <Stack flex={1}>
-                            <FormControl>
-                                <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                    <FormattedMessage id="expense.mode.paidBy" />
-                                </FormLabel>
-                                <RadioGroup row value={paidMode} onChange={(e) => setPaidMode(e.target.value as Mode)}>
-                                    <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                    <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                    <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
-                                </RadioGroup>
-                            </FormControl>
-                        </Stack>
-                    </Box>
-
-                    <Box display="flex" gap={3} mt={2} alignItems="center">
-                        <Stack flex={1}>
                             <Controller
                                 name="groupId"
                                 control={control}
@@ -278,605 +634,274 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction }: Props) =
                                             if (!q) return options;
                                             return options.filter((o) => o.name.toLowerCase().includes(q));
                                         }}
-                                        renderOption={(props, option) => (
-                                            <Box component="li" {...props} key={option.id}>
-                                                {option.name}
-                                            </Box>
-                                        )}
                                         renderInput={(params) => (
                                             <TextField
                                                 {...params}
+                                                fullWidth
                                                 label={<FormattedMessage id="expense.fields.group" />}
                                                 inputRef={field.ref}
                                                 error={!!errors.groupId}
-                                                helperText={errors.groupId?.message}
+                                                helperText={tError(intl, errors.groupId?.message)}
                                             />
                                         )}
                                     />
                                 )}
                             />
-                        </Stack>
 
-                        <Box display="flex" gap={3} flex={1} alignItems="center">
-                            <Stack flex={1}>
-                                <Controller
-                                    name="totalAmount"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            label={<FormattedMessage id="expense.fields.amount" />}
-                                            size="small"
-                                            inputMode="decimal"
-                                            value={field.value ?? ""}
-                                            onChange={(e) => field.onChange(Number(e.target.value))}
-                                            error={!!errors.totalAmount}
-                                            helperText={errors.totalAmount?.message}
-                                        />
-                                    )}
-                                />
-                            </Stack>
-
-                            <Stack flex={1}>
-                                <Controller
-                                    name="currency"
-                                    control={control}
-                                    defaultValue={initGroup?.defaultCurrency ?? ""}
-                                    render={({ field }) => (
-                                        <Autocomplete
-                                            size="small"
-                                            options={favCurrencies}
-                                            getOptionLabel={(o) => `${o.code}`}
-                                            filterOptions={(options, state) => {
-                                                const q = state.inputValue.trim().toLowerCase();
-                                                if (!q) return options;
-                                                return options.filter(
-                                                    (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
-                                                );
-                                            }}
-                                            value={favCurrencies.find((c) => c.code === (field.value ?? "")) ?? null}
-                                            onChange={(_, selected) => field.onChange(selected?.code ?? "")}
-                                            onBlur={field.onBlur}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    label={<FormattedMessage id="expense.fields.currency" />}
-                                                    inputRef={field.ref}
-                                                    error={!!errors.currency}
-                                                    helperText={errors.currency?.message}
-                                                />
-                                            )}
-                                        />
-                                    )}
-                                />
-                            </Stack>
-                        </Box>
-
-                        <Stack flex={1}>
-                            <FormControl>
-                                <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                    <FormattedMessage id="expense.mode.splitBetween" />
-                                </FormLabel>
-                                <RadioGroup row value={splitMode} onChange={(e) => setSplitMode(e.target.value as Mode)}>
-                                    <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                    <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                    <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
-                                </RadioGroup>
-                            </FormControl>
-                        </Stack>
-                    </Box>
-                </Stack>
-
-                <Box sx={{ mt: 3.5 }}>
-                    <Grid
-                        container
-                        alignItems="center"
-                        columnSpacing={2.5}
-                        rowSpacing={1.5}
-                    >
-                        {/* Header row */}
-                        <Grid size={3.5}>
-                            <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                                <FormattedMessage id="expense.whoIsInvolved" />
-                            </Typography>
-                        </Grid>
-
-                        <Grid
-                            size={0.7}
-                            sx={{ position: "relative", display: "flex", justifyContent: "center" }}
-                        >
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    color: COLORS.PRIMARY,
-                                    fontWeight: 800,
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)",
-                                    whiteSpace: "nowrap",
-                                    width: "max-content",
-                                    overflow: "visible",
-                                    textAlign: "center",
-                                    pointerEvents: "none",
-                                }}
-                            >
-                                <FormattedMessage id="expense.paidByHeader" />
-                            </Typography>
-                        </Grid>
-
-                        <Grid size={3.3} />
-
-                        <Grid
-                            size={0.7}
-                            sx={{ position: "relative", display: "flex", justifyContent: "center" }}
-                        >
-                            <Typography
-                                variant="caption"
-                                sx={{
-                                    color: COLORS.PRIMARY,
-                                    fontWeight: 800,
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)",
-                                    whiteSpace: "nowrap",
-                                    width: "max-content",
-                                    overflow: "visible",
-                                    textAlign: "center",
-                                    pointerEvents: "none",
-                                }}
-                            >
-                                <FormattedMessage id="expense.splitBetweenHeader" />
-                            </Typography>
-                        </Grid>
-
-                        <Grid size={3.3} />
-
-                        {/* Rows */}
-                        {(participants as unknown as TUser[]).map((u) => {
-                            const s: RowState = rowState[u.id] ?? {
-                                paidEnabled: false,
-                                paidValue: 0,
-                                splitEnabled: true,
-                                splitValue: 0,
-                            };
-
-                            return (
-                                <Box key={u.id} component="div" sx={{ display: "contents" }}>
-                                    <Grid size={3.5}>
-                                        <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 600 }}>
-                                            {u.firstName ?? ""} {u.lastName ?? ""}
-                                        </Typography>
-                                    </Grid>
-
-                                    <Grid size={0.7} sx={{ display: "flex", justifyContent: "center" }}>
-                                        <Checkbox
-                                            checked={s.paidEnabled}
-                                            onChange={(e) =>
-                                                setRowState((prev) => ({
-                                                    ...prev,
-                                                    [u.id]: { ...s, paidEnabled: e.target.checked },
-                                                }))
-                                            }
-                                            sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
-                                        />
-                                    </Grid>
-
-                                    <Grid size={3.3}>
-                                        <TextField
-                                            size="small"
-                                            inputMode="decimal"
-                                            disabled={!s.paidEnabled}
-                                            value={s.paidEnabled ? s.paidValue : ""}
-                                            onChange={(e) =>
-                                                setRowState((prev) => ({
-                                                    ...prev,
-                                                    [u.id]: { ...s, paidValue: Number(e.target.value) },
-                                                }))
-                                            }
-                                            slotProps={{
-                                                input: {
-                                                    endAdornment: unitAdornment(paidMode)
-                                                }
-                                            }}
-                                        />
-                                    </Grid>
-
-                                    <Grid size={0.7} sx={{ display: "flex", justifyContent: "center" }}>
-                                        <Checkbox
-                                            checked={s.splitEnabled}
-                                            onChange={(e) =>
-                                                setRowState((prev) => ({
-                                                    ...prev,
-                                                    [u.id]: { ...s, splitEnabled: e.target.checked },
-                                                }))
-                                            }
-                                            sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
-                                        />
-                                    </Grid>
-
-                                    <Grid size={3.3}>
-                                        <TextField
-                                            size="small"
-                                            inputMode="decimal"
-                                            disabled={!s.splitEnabled}
-                                            value={s.splitEnabled ? s.splitValue : ""}
-                                            onChange={(e) =>
-                                                setRowState((prev) => ({
-                                                    ...prev,
-                                                    [u.id]: { ...s, splitValue: Number(e.target.value) },
-                                                }))
-                                            }
-                                            slotProps={{
-                                                input: {
-                                                    endAdornment: unitAdornment(splitMode)
-                                                }
-                                            }}
-                                        />
-                                    </Grid>
-                                </Box>
-                            );
-                        })}
-                    </Grid>
-                </Box>
-
-                <Box sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        sx={{
-                            px: 6,
-                            py: 1.5,
-                            borderRadius: 999,
-                            textTransform: "none",
-                            fontWeight: 700,
-                            backgroundColor: COLORS.PRIMARY,
-                            color: COLORS.SECONDARY,
-                        }}
-                        disabled={isPending}
-                    >
-                        {isPending ? (
-                            <FormattedMessage id={isEditMode ? "expense.action.saving" : "expense.action.adding"} />
-                        ) : (
-                            <FormattedMessage id={isEditMode ? "expense.action.save" : "expense.action.add"} />
-                        )}
-                    </Button>
-                </Box>
-            </Box>
-
-            {/* Mobile layout (xs-sm) */}
-            <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-                <Stack gap={1.5}>
-                    <Controller
-                        name="title"
-                        control={control}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                fullWidth
-                                label={<FormattedMessage id="expense.fields.title" />}
-                                size="small"
-                                error={!!errors.title}
-                                helperText={errors.title?.message}
+                            <Controller
+                                name="totalAmount"
+                                control={control}
+                                render={({ field }) => (
+                                    <TextField
+                                        {...field}
+                                        fullWidth
+                                        label={<FormattedMessage id="expense.fields.amount" />}
+                                        size="small"
+                                        inputMode="decimal"
+                                        value={field.value ?? ""}
+                                        onChange={(e) => field.onChange(Number(e.target.value))}
+                                        error={!!errors.totalAmount}
+                                        helperText={tError(intl, errors.totalAmount?.message)}
+                                    />
+                                )}
                             />
-                        )}
-                    />
 
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: 1.5,
-                        }}
-                    >
-                        <Controller
-                            name="category"
-                            control={control}
-                            defaultValue=""
-                            render={({ field }) => (
-                                <TextField
-                                    fullWidth
-                                    label={<FormattedMessage id="expense.fields.category" />}
-                                    select
-                                    size="small"
-                                    value={field.value ?? ""}
-                                    onChange={field.onChange}
-                                    onBlur={field.onBlur}
-                                    inputRef={field.ref}
-                                    error={!!errors.category}
-                                    helperText={errors.category?.message}
-                                >
-                                    <MenuItem value="Fun"><FormattedMessage id="expense.category.fun" /></MenuItem>
-                                    <MenuItem value="Food"><FormattedMessage id="expense.category.food" /></MenuItem>
-                                    <MenuItem value="Transport"><FormattedMessage id="expense.category.transport" /></MenuItem>
-                                    <MenuItem value="Utilities"><FormattedMessage id="expense.category.utilities" /></MenuItem>
-                                </TextField>
-                            )}
-                        />
-
-                        <Controller
-                            name="groupId"
-                            control={control}
-                            defaultValue={initGroup?.id ?? 0}
-                            render={({ field }) => (
-                                <Autocomplete
-                                    size="small"
-                                    options={groups}
-                                    getOptionLabel={(o) => o.name}
-                                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                                    value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
-                                    onChange={(_, selected) => {
-                                        if (isEditMode) return;
-                                        field.onChange(selected?.id ?? 0);
-                                        setGroupId(selected?.id ?? 0);
-                                    }}
-                                    onBlur={field.onBlur}
-                                    filterOptions={(options, state) => {
-                                        const q = state.inputValue.trim().toLowerCase();
-                                        if (!q) return options;
-                                        return options.filter((o) => o.name.toLowerCase().includes(q));
-                                    }}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            fullWidth
-                                            label={<FormattedMessage id="expense.fields.group" />}
-                                            inputRef={field.ref}
-                                            error={!!errors.groupId}
-                                            helperText={errors.groupId?.message}
-                                        />
-                                    )}
-                                />
-                            )}
-                        />
-
-                        <Controller
-                            name="totalAmount"
-                            control={control}
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
-                                    fullWidth
-                                    label={<FormattedMessage id="expense.fields.amount" />}
-                                    size="small"
-                                    inputMode="decimal"
-                                    value={field.value ?? ""}
-                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                    error={!!errors.totalAmount}
-                                    helperText={errors.totalAmount?.message}
-                                />
-                            )}
-                        />
-
-                        <Controller
-                            name="currency"
-                            control={control}
-                            defaultValue={initGroup?.defaultCurrency ?? ""}
-                            render={({ field }) => (
-                                <Autocomplete
-                                    size="small"
-                                    options={favCurrencies}
-                                    getOptionLabel={(o) => `${o.code}`}
-                                    filterOptions={(options, state) => {
-                                        const q = state.inputValue.trim().toLowerCase();
-                                        if (!q) return options;
-                                        return options.filter(
-                                            (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
-                                        );
-                                    }}
-                                    value={favCurrencies.find((c) => c.code === (field.value ?? "")) ?? null}
-                                    onChange={(_, selected) => field.onChange(selected?.code ?? "")}
-                                    onBlur={field.onBlur}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            fullWidth
-                                            label={<FormattedMessage id="expense.fields.currency" />}
-                                            inputRef={field.ref}
-                                            error={!!errors.currency}
-                                            helperText={errors.currency?.message}
-                                        />
-                                    )}
-                                />
-                            )}
-                        />
-                    </Box>
-
-                    <FormControl fullWidth>
-                        <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                            <FormattedMessage id="expense.mode.paidBy" />
-                        </FormLabel>
-                        <RadioGroup
-                            row
-                            value={paidMode}
-                            onChange={(e) => setPaidMode(e.target.value as Mode)}
-                            sx={{ justifyContent: 'space-between' }}
-                        >
-                            <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                            <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                            <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
-                        </RadioGroup>
-                    </FormControl>
-
-                    <FormControl fullWidth>
-                        <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                            <FormattedMessage id="expense.mode.splitBetween" />
-                        </FormLabel>
-                        <RadioGroup
-                            row
-                            value={splitMode}
-                            onChange={(e) => setSplitMode(e.target.value as Mode)}
-                            sx={{ justifyContent: 'space-between' }}
-                        >
-                            <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                            <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                            <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
-                        </RadioGroup>
-                    </FormControl>
-
-                    <Box>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                mt: 0.5,
-                                mb: 1,
-                            }}
-                        >
-                            <Typography variant="body1" sx={{ fontWeight: 700 }}>
-                                <FormattedMessage id="expense.whoIsInvolved" />
-                            </Typography>
-                            {/* placeholder search UI matching mock (non-functional) */}
-                            <TextField
-                                size="small"
-                                placeholder="Search"
-                                sx={{ width: 150 }}
-                            />
-                        </Box>
-
-                        {/* segmented toggle */}
-                        <Box
-                            sx={{
-                                backgroundColor: 'transparent',
-                                border: `2px solid ${COLORS.PRIMARY}`,
-                                borderRadius: 999,
-                                overflow: 'hidden',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                mb: 1.5,
-                            }}
-                        >
-                            <Button
-                                type="button"
-                                onClick={() => setParticipantView('paid')}
-                                sx={{
-                                    borderRadius: 0,
-                                    textTransform: 'none',
-                                    fontWeight: 800,
-                                    fontSize: 12,
-                                    py: 0.75,
-                                    backgroundColor: participantView === 'paid' ? COLORS.PRIMARY : 'transparent',
-                                    color: participantView === 'paid' ? COLORS.SECONDARY : COLORS.PRIMARY,
-                                    '&:hover': {
-                                        backgroundColor: participantView === 'paid' ? COLORS.PRIMARY : 'transparent',
-                                    },
-                                }}
-                            >
-                                <FormattedMessage id="expense.paidByHeader" />
-                            </Button>
-                            <Button
-                                type="button"
-                                onClick={() => setParticipantView('split')}
-                                sx={{
-                                    borderRadius: 0,
-                                    textTransform: 'none',
-                                    fontWeight: 800,
-                                    fontSize: 12,
-                                    py: 0.75,
-                                    backgroundColor: participantView === 'split' ? COLORS.PRIMARY : 'transparent',
-                                    color: participantView === 'split' ? COLORS.SECONDARY : COLORS.PRIMARY,
-                                    '&:hover': {
-                                        backgroundColor: participantView === 'split' ? COLORS.PRIMARY : 'transparent',
-                                    },
-                                }}
-                            >
-                                <FormattedMessage id="expense.splitBetweenHeader" />
-                            </Button>
-                        </Box>
-
-                        <Stack gap={1}>
-                            {(participants as unknown as TUser[]).map((u) => {
-                                const s: RowState = rowState[u.id] ?? {
-                                    paidEnabled: false,
-                                    paidValue: 0,
-                                    splitEnabled: true,
-                                    splitValue: 0,
-                                };
-
-                                const enabled = participantView === 'paid' ? s.paidEnabled : s.splitEnabled;
-                                const value = participantView === 'paid' ? s.paidValue : s.splitValue;
-                                const mode = participantView === 'paid' ? paidMode : splitMode;
-
-                                return (
-                                    <Box
-                                        key={u.id}
-                                        sx={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '1fr auto 110px',
-                                            alignItems: 'center',
-                                            gap: 1,
+                            <Controller
+                                name="currency"
+                                control={control}
+                                defaultValue={initGroup?.defaultCurrency ?? ""}
+                                render={({ field }) => (
+                                    <Autocomplete
+                                        size="small"
+                                        options={favCurrencies}
+                                        getOptionLabel={(o) => `${o.code}`}
+                                        filterOptions={(options, state) => {
+                                            const q = state.inputValue.trim().toLowerCase();
+                                            if (!q) return options;
+                                            return options.filter(
+                                                (o) => o.code.toLowerCase().includes(q) || o.name.toLowerCase().includes(q),
+                                            );
                                         }}
-                                    >
-                                        <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 600 }}>
-                                            {u.firstName ?? ""} {u.lastName ?? ""}
-                                        </Typography>
+                                        value={favCurrencies.find((c) => c.code === (field.value ?? "")) ?? null}
+                                        onChange={(_, selected) => field.onChange(selected?.code ?? "")}
+                                        onBlur={field.onBlur}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                fullWidth
+                                                label={<FormattedMessage id="expense.fields.currency" />}
+                                                inputRef={field.ref}
+                                                error={!!errors.currency}
+                                                helperText={tError(intl, errors.currency?.message)}
+                                            />
+                                        )}
+                                    />
+                                )}
+                            />
+                        </Box>
 
-                                        <Checkbox
-                                            checked={enabled}
-                                            onChange={(e) => {
-                                                const checked = e.target.checked;
-                                                setRowState((prev) => ({
-                                                    ...prev,
-                                                    [u.id]: participantView === 'paid'
-                                                        ? { ...s, paidEnabled: checked }
-                                                        : { ...s, splitEnabled: checked },
-                                                }))
-                                            }}
-                                            sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
-                                        />
+                        <FormControl fullWidth>
+                            <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                <FormattedMessage id="expense.mode.paidBy" />
+                            </FormLabel>
+                            <RadioGroup
+                                row
+                                value={paidMode}
+                                onChange={(e) => setPaidMode(e.target.value as Mode)}
+                                sx={{ justifyContent: 'space-between' }}
+                            >
+                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                            </RadioGroup>
+                        </FormControl>
 
-                                        <TextField
-                                            size="small"
-                                            inputMode="decimal"
-                                            disabled={!enabled}
-                                            value={enabled ? value : ""}
-                                            onChange={(e) => {
-                                                const n = Number(e.target.value);
-                                                setRowState((prev) => ({
-                                                    ...prev,
-                                                    [u.id]: participantView === 'paid'
-                                                        ? { ...s, paidValue: n }
-                                                        : { ...s, splitValue: n },
-                                                }))
-                                            }}
-                                            slotProps={{
-                                                input: { endAdornment: unitAdornment(mode) }
-                                            }}
-                                        />
-                                    </Box>
-                                );
-                            })}
-                        </Stack>
-                    </Box>
+                        <FormControl fullWidth>
+                            <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                <FormattedMessage id="expense.mode.splitBetween" />
+                            </FormLabel>
+                            <RadioGroup
+                                row
+                                value={splitMode}
+                                onChange={(e) => setSplitMode(e.target.value as Mode)}
+                                sx={{ justifyContent: 'space-between' }}
+                            >
+                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                            </RadioGroup>
+                        </FormControl>
 
-                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            sx={{
-                                px: 4,
-                                py: 1.25,
-                                borderRadius: 999,
-                                textTransform: 'none',
-                                fontWeight: 800,
-                                backgroundColor: COLORS.PRIMARY,
-                                color: COLORS.SECONDARY,
-                                width: '100%',
-                                maxWidth: 360,
-                            }}
-                            disabled={isPending}
-                        >
-                            {isPending ? (
-                                <FormattedMessage id={isEditMode ? "expense.action.saving" : "expense.action.adding"} />
-                            ) : (
-                                <FormattedMessage id={isEditMode ? "expense.action.save" : "expense.action.add"} />
-                            )}
-                        </Button>
-                    </Box>
-                </Stack>
+                        <Box>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    mt: 0.5,
+                                    mb: 1,
+                                }}
+                            >
+                                <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                                    <FormattedMessage id="expense.whoIsInvolved" />
+                                </Typography>
+                                {/* placeholder search UI matching mock (non-functional) */}
+                                <TextField
+                                    size="small"
+                                    placeholder="Search"
+                                    sx={{ width: 150 }}
+                                />
+                            </Box>
+
+                            {/* segmented toggle */}
+                            <Box
+                                sx={{
+                                    backgroundColor: 'transparent',
+                                    border: `2px solid ${COLORS.PRIMARY}`,
+                                    borderRadius: 999,
+                                    overflow: 'hidden',
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    mb: 1.5,
+                                }}
+                            >
+                                <Button
+                                    type="button"
+                                    onClick={() => setParticipantView('paid')}
+                                    sx={{
+                                        borderRadius: 0,
+                                        textTransform: 'none',
+                                        fontWeight: 800,
+                                        fontSize: 12,
+                                        py: 0.75,
+                                        backgroundColor: participantView === 'paid' ? COLORS.PRIMARY : 'transparent',
+                                        color: participantView === 'paid' ? COLORS.SECONDARY : COLORS.PRIMARY,
+                                        '&:hover': {
+                                            backgroundColor: participantView === 'paid' ? COLORS.PRIMARY : 'transparent',
+                                        },
+                                    }}
+                                >
+                                    <FormattedMessage id="expense.paidByHeader" />
+                                </Button>
+                                <Button
+                                    type="button"
+                                    onClick={() => setParticipantView('split')}
+                                    sx={{
+                                        borderRadius: 0,
+                                        textTransform: 'none',
+                                        fontWeight: 800,
+                                        fontSize: 12,
+                                        py: 0.75,
+                                        backgroundColor: participantView === 'split' ? COLORS.PRIMARY : 'transparent',
+                                        color: participantView === 'split' ? COLORS.SECONDARY : COLORS.PRIMARY,
+                                        '&:hover': {
+                                            backgroundColor: participantView === 'split' ? COLORS.PRIMARY : 'transparent',
+                                        },
+                                    }}
+                                >
+                                    <FormattedMessage id="expense.splitBetweenHeader" />
+                                </Button>
+                            </Box>
+
+                            <Stack gap={1}>
+                                {(participants as unknown as TUser[]).map((u) => {
+                                    const s: RowState = rowState[u.id] ?? {
+                                        paidEnabled: false,
+                                        paidValue: 0,
+                                        splitEnabled: true,
+                                        splitValue: 0,
+                                    };
+
+                                    const enabled = participantView === 'paid' ? s.paidEnabled : s.splitEnabled;
+                                    const value = participantView === 'paid' ? s.paidValue : s.splitValue;
+                                    const mode = participantView === 'paid' ? paidMode : splitMode;
+
+                                    return (
+                                        <Box
+                                            key={u.id}
+                                            sx={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr auto 110px',
+                                                alignItems: 'center',
+                                                gap: 1,
+                                            }}
+                                        >
+                                            <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 600 }}>
+                                                {u.firstName ?? ""} {u.lastName ?? ""}
+                                            </Typography>
+
+                                            <Checkbox
+                                                checked={enabled}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    setRowState((prev) => ({
+                                                        ...prev,
+                                                        [u.id]: participantView === 'paid'
+                                                            ? { ...s, paidEnabled: checked }
+                                                            : { ...s, splitEnabled: checked },
+                                                    }))
+                                                }}
+                                                sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
+                                            />
+
+                                            <TextField
+                                                size="small"
+                                                inputMode="decimal"
+                                                disabled={!enabled}
+                                                value={enabled ? value : ""}
+                                                onChange={(e) => {
+                                                    const n = Number(e.target.value);
+                                                    setRowState((prev) => ({
+                                                        ...prev,
+                                                        [u.id]: participantView === 'paid'
+                                                            ? { ...s, paidValue: n }
+                                                            : { ...s, splitValue: n },
+                                                    }))
+                                                }}
+                                                slotProps={{
+                                                    input: { endAdornment: unitAdornment(mode, currency) }
+                                                }}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </Stack>
+                        </Box>
+
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                sx={{
+                                    px: 4,
+                                    py: 1.25,
+                                    borderRadius: 999,
+                                    textTransform: 'none',
+                                    fontWeight: 800,
+                                    backgroundColor: COLORS.PRIMARY,
+                                    color: COLORS.SECONDARY,
+                                    width: '100%',
+                                    maxWidth: 360,
+                                }}
+                                disabled={isPending}
+                            >
+                                {isPending ? (
+                                    <FormattedMessage id={isEditMode ? "expense.action.saving" : "expense.action.adding"} />
+                                ) : (
+                                    <FormattedMessage id={isEditMode ? "expense.action.save" : "expense.action.add"} />
+                                )}
+                            </Button>
+                        </Box>
+                    </Stack>
+                </Box>
             </Box>
-        </Box>
+
+            <AppSnackbar
+                open={errorOpen}
+                onClose={() => setErrorOpen(false)}
+                severity={"error"}
+                message={formatApiError(intl, apiError)}
+            />
+        </>
     );
 };
