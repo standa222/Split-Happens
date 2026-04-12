@@ -3,10 +3,10 @@ import {api} from "../axios/axios";
 import {useImageCacheBusterStore} from "../store/imageCacheBusterStore";
 
 type Options = {
-    onSuccess?: () => void;
+  onSuccess?: () => void;
 };
 
-export const useUploadUserImage = (options?: Options) => {
+export const useUploadGroupImage = (groupId: number, options?: Options) => {
     const queryClient = useQueryClient();
     const bump = useImageCacheBusterStore((s) => s.bump);
 
@@ -15,16 +15,15 @@ export const useUploadUserImage = (options?: Options) => {
             const formData = new FormData();
             formData.append("file", file);
 
-            await api.post("/users/image", formData, {
+            await api.post(`/groups/${groupId}/image`, formData, {
                 headers: {
-                    // Let browser set boundary
                     "Content-Type": "multipart/form-data",
                 },
             });
         },
         onSuccess: async () => {
             bump();
-            await queryClient.invalidateQueries({queryKey: ["userImage"], exact: false});
+            await queryClient.invalidateQueries({ queryKey: ["groupImage"], exact: false });
             options?.onSuccess?.();
         },
     });
