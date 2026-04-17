@@ -12,4 +12,5 @@ export type TTransaction = {
         balanceChange: number;
     }[];
     currency: string;
+    expenseCategory: string | null;
 }

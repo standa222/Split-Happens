@@ -8,7 +8,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -38,7 +38,8 @@ public class Group {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> members = new HashSet<>();
+    @OrderBy("lastName ASC, firstName ASC, id ASC")
+    private Set<User> members = new LinkedHashSet<>();
 
     @Column(name = "last_activity", nullable = false)
     private OffsetDateTime lastActivity = OffsetDateTime.now();

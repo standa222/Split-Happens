@@ -75,6 +75,15 @@ export function ProfilePage() {
     const { mutate: updateProfile, isPending } = useUpdateProfile({
         onSuccess: () => {
             setIsEditOpen(false);
+
+            setSnackbar({
+                open: true,
+                severity: "success",
+                message: intl.formatMessage({
+                    id: "profile.edit.success",
+                    defaultMessage: "Profile updated successfully.",
+                }),
+            })
         },
     });
 

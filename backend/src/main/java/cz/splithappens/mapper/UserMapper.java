@@ -13,6 +13,7 @@ public interface UserMapper {
     @Mapping(target = "friends", ignore = true)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "bankAccount", ignore = true)
+    @Mapping(target = "profileImage", ignore = true)
     User toEntity(UserCreateDto createDto);
 
     UserDto toDto(User user);

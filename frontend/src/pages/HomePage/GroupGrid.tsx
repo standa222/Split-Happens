@@ -5,6 +5,8 @@ import {TGroupLight} from "../../types/dto/TGroupLight";
 import {useGroupsGridQuery} from "../../hooks/useGroupsQuery";
 import {useAuthStore} from "../../store/authStore";
 import { FormattedMessage } from "react-intl";
+import {useNavigate} from "react-router-dom";
+import {ROUTES} from "../../enums/routes";
 
 type GroupContentProps = {
     groups: TGroupLight[] | undefined,
@@ -13,13 +15,28 @@ type GroupContentProps = {
 }
 
 const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
+    const navigate = useNavigate();
     const userId = useAuthStore((s) => s.currentUser.id)
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
     const isNegative = balance < 0;
 
+    const goToDetail = () => {
+        navigate(ROUTES.GROUPS.detail(id));
+    };
+
     return (
         <Stack
+            role="button"
+            tabIndex={0}
+            onClick={goToDetail}
+            onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    goToDetail();
+                }
+            }}
             sx={{
+                cursor: "pointer",
                 border: `4px solid ${COLORS.PRIMARY}`,
                 borderRadius: { xs: 9999, md: 10 },
                 padding: '16px',
@@ -27,6 +44,10 @@ const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
                 gap: { xs: 3, md: 2 },
                 height: { md: '250px' },
                 flexDirection: { xs: 'row', md: 'column' },
+                transition: 'box-shadow 0.2s ease-in-out',
+                '&:hover': {
+                    boxShadow: `inset 0 0 0 4px ${COLORS.PRIMARY}`
+                }
             }}
         >
             <ImageAvatar

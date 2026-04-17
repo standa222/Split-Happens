@@ -11,7 +11,6 @@ export function useDeleteExpense(options?: Options) {
     return useMutation<void, Error, { transactionId: number; groupId: number }>({
         mutationFn: ({ transactionId }) => api.delete(`/transactions/${transactionId}`).then((res) => res.data),
         onSuccess: (_, variables) => {
-            console.log("Expense deleted successfully");
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
             options?.onSuccess?.();
         },

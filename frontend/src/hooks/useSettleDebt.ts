@@ -12,7 +12,6 @@ export function useSettleDebt() {
     return useMutation<void, Error, SettleDebtVariables>({
         mutationFn: ({debtId}) => api.delete(`/debts/${debtId}`).then(() => undefined),
         onSuccess: (_data, variables) => {
-            console.log('Debt settled successfully');
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
         },
         onError: (error) => console.error('Error settling debt:', error)

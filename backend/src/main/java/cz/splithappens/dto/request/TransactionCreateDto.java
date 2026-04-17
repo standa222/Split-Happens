@@ -1,6 +1,7 @@
 package cz.splithappens.dto.request;
 
 import cz.splithappens.model.enums.Currency;
+import cz.splithappens.model.enums.ExpenseCategory;
 import cz.splithappens.model.enums.TransactionType;
 import cz.splithappens.validation.ValidTransactionSplits;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -48,5 +49,8 @@ public class TransactionCreateDto {
     @Valid
     @Schema(description = "List of splits describing how the amount is split between users. All items must use the same mode.")
     private List<TransactionSplitCreateDto> splitBetween;
+
+    @Schema(description = "Expense category. Only applicable for transactions of type EXPENSE.")
+    private ExpenseCategory expenseCategory;
 }
 

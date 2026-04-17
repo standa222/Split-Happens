@@ -32,7 +32,6 @@ export function LoginForm({ onSwitchToRegister }: Props) {
     })
 
     const onSubmit = (data: TLoginForm) => {
-        console.log("Submitting login form with data:", data);
         mutate(data)
     }
 

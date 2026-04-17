@@ -105,6 +105,21 @@ export function getApiErrorMessage(error: unknown): ApiErrorMessage {
 
     const pd = asProblemDetail(error.response?.data);
 
+    // Registration: email already exists (backend returns 400 + plain string message).
+    // Example: "Email already exists: string@g.com"
+    if (status === 400) {
+      const data = error.response?.data;
+      const maybeText = typeof data === "string" ? data : typeof (data as any)?.message === "string" ? (data as any).message : undefined;
+      if (maybeText && maybeText.toLowerCase().includes("email already exists")) {
+        return { id: "auth.register.error.emailAlreadyExists" };
+      }
+
+      // Some endpoints return ProblemDetail with .detail set to the message.
+      if (pd?.detail && pd.detail.toLowerCase().includes("email already exists")) {
+        return { id: "auth.register.error.emailAlreadyExists" };
+      }
+    }
+
     // Handle backend validation errors.
     if (status === 400 && pd?.errorCode === "VALIDATION_ERROR") {
       const first = getFirstMeaningfulValidationError(pd);
@@ -112,8 +127,6 @@ export function getApiErrorMessage(error: unknown): ApiErrorMessage {
         const mapped = mapValidationFieldErrorToMessageId(first);
         if (mapped) return mapped;
 
-        // If backend sends a message but we don't have a mapping, fall back to a generic validation text.
-        // (Raw backend messages are often not localized and can be confusing.)
         return { id: "api.error.validation" };
       }
       return { id: "api.error.validation" };

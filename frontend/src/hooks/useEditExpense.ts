@@ -14,7 +14,6 @@ export function useEditExpense(options?: Options) {
     return useMutation<TTransaction, AxiosError, { transactionId: number; data: TAddExpenseForm }>({
         mutationFn: ({ transactionId, data }) => api.put(`/transactions/${transactionId}`, data).then((res) => res.data),
         onSuccess: (data, variables) => {
-            console.log("Expense updated successfully:", data);
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.data.groupId] });
             options?.onSuccess?.();
         },
