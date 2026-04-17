@@ -216,5 +216,25 @@
   "expense.add.success": "Výdaj byl úspěšně přidán.",
   "expense.edit.success": "Výdaj byl úspěšně uložen.",
   "auth.register.success": "Registrace proběhla úspěšně. Nyní se můžete přihlásit.",
-  "auth.register.error.emailAlreadyExists": "Účet s tímto e‑mailem už existuje."
+  "auth.register.error.emailAlreadyExists": "Účet s tímto e‑mailem už existuje.",
+
+  "category.housing": "Bydlení",
+  "category.utilities": "Služby",
+  "category.groceries": "Potraviny",
+  "category.dining": "Restaurace",
+  "category.coffee": "Káva",
+  "category.alcohol": "Alkohol",
+  "category.fuel": "Palivo",
+  "category.transit": "Doprava",
+  "category.sports": "Sport",
+  "category.pharmacy": "Lékárna",
+  "category.electronics": "Elektronika",
+  "category.household": "Domácnost",
+  "category.subscriptions": "Předplatné",
+  "category.entertainment": "Zábava",
+  "category.travel": "Cestování",
+  "category.hobbies": "Koníčky",
+  "category.pets": "Mazlíčci",
+  "category.gifts": "Dárky",
+  "category.other": "Ostatní"
 }

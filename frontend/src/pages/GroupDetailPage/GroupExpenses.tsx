@@ -4,14 +4,13 @@ import { COLORS } from "../../constants/colors";
 import {useAuthStore} from "../../store/authStore";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import WifiIcon from '@mui/icons-material/Wifi';
 import {useState} from "react";
 import { FormattedMessage } from "react-intl";
 import {ExpenseDetailModal} from "./ExpenseDetailModal";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
-import logo from "../../assets/logo_dark.png";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import {getCurrencySymbol} from "../../utils/currencyUtils";
+import {getCategoryIcon} from "../../utils/categoryUtils";
 
 type Props = {
     transactions: TTransaction[];
@@ -169,15 +168,6 @@ const MonthSection = ({ month, transactions, onOpenDetail }: { month: string; tr
         </Box>
     );
 };
-
-function getCategoryIcon(transaction: TTransaction) {
-    // TODO show icon based on transaction category
-    return transaction.transactionType === "PAYMENT" ? (
-        <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
-    ) : (
-        <WifiIcon sx={{fontSize: {xs: 30, md: 40}}}/>
-    )
-}
 
 export const GroupExpenses = ({ transactions, group }: Props) => {
     const [detailOpen, setDetailOpen] = useState(false);

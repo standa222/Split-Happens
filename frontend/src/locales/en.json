@@ -214,5 +214,25 @@
   "group.create.success": "Group created successfully.",
   "group.edit.success": "Group updated successfully.",
   "auth.register.success": "Registration successful. You can log in now.",
-  "auth.register.error.emailAlreadyExists": "An account with this email already exists."
+  "auth.register.error.emailAlreadyExists": "An account with this email already exists.",
+
+  "category.housing": "Housing",
+  "category.utilities": "Utilities",
+  "category.groceries": "Groceries",
+  "category.dining": "Dining",
+  "category.coffee": "Coffee",
+  "category.alcohol": "Alcohol",
+  "category.fuel": "Fuel",
+  "category.transit": "Transit",
+  "category.sports": "Sports",
+  "category.pharmacy": "Pharmacy",
+  "category.electronics": "Electronics",
+  "category.household": "Household",
+  "category.subscriptions": "Subscriptions",
+  "category.entertainment": "Entertainment",
+  "category.travel": "Travel",
+  "category.hobbies": "Hobbies",
+  "category.pets": "Pets",
+  "category.gifts": "Gifts",
+  "category.other": "Other"
 }

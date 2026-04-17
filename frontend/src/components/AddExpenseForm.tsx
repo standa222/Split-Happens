@@ -31,6 +31,7 @@ import {TTransaction} from "../types/TTransaction";
 import {tError} from "../utils/localeUtils";
 import {AppSnackbar} from "./AppSnackbar";
 import {formatApiError} from "../utils/apiErrorUtils";
+import {categories} from "../utils/categoryUtils";
 
 type Props = {
     onClose?: () => void;
@@ -118,7 +119,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         resolver: zodResolver(addExpenseFormSchema),
         defaultValues: {
             title: initTransaction?.title ?? "",
-            category: "",
+            expenseCategory: initTransaction?.expenseCategory ?? "",
             groupId: initGroup?.id ?? 0,
             totalAmount: initTransaction?.totalAmount ?? 0,
             currency: initGroup?.defaultCurrency ?? "",
@@ -233,26 +234,40 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                             <Stack flex={1}>
                                 <Controller
-                                    name="category"
+                                    name="expenseCategory"
                                     control={control}
-                                    defaultValue=""
+                                    defaultValue={initTransaction?.expenseCategory ?? ""}
                                     render={({ field }) => (
-                                        <TextField
-                                            label={<FormattedMessage id="expense.fields.category" />}
-                                            select
+                                        <Autocomplete
                                             size="small"
-                                            value={field.value ?? ""}
-                                            onChange={field.onChange}
+                                            options={categories}
+                                            getOptionLabel={(o) => intl.formatMessage({ id: o.intlId })}
+                                            isOptionEqualToValue={(option, value) => option.name === value.name}
+                                            value={categories.find((c) => c.name === (field.value ?? "")) ?? null}
+                                            onChange={(_, selected) => {
+                                                field.onChange(selected?.name ?? "");
+                                            }}
                                             onBlur={field.onBlur}
-                                            inputRef={field.ref}
-                                            error={!!errors.category}
-                                            helperText={tError(intl, errors.category?.message)}
-                                        >
-                                            <MenuItem value="Fun"><FormattedMessage id="expense.category.fun" /></MenuItem>
-                                            <MenuItem value="Food"><FormattedMessage id="expense.category.food" /></MenuItem>
-                                            <MenuItem value="Transport"><FormattedMessage id="expense.category.transport" /></MenuItem>
-                                            <MenuItem value="Utilities"><FormattedMessage id="expense.category.utilities" /></MenuItem>
-                                        </TextField>
+                                            filterOptions={(options, state) => {
+                                                const q = state.inputValue.trim().toLowerCase();
+                                                if (!q) return options;
+                                                return options.filter((o) => o.name.toLowerCase().includes(q));
+                                            }}
+                                            renderOption={(props, option) => (
+                                                <Box component="li" {...props} key={option.name}>
+                                                    {intl.formatMessage({ id: option.intlId })}
+                                                </Box>
+                                            )}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label={<FormattedMessage id="expense.fields.category" />}
+                                                    inputRef={field.ref}
+                                                    error={!!errors.expenseCategory}
+                                                    helperText={tError(intl, errors.expenseCategory?.message)}
+                                                />
+                                            )}
+                                        />
                                     )}
                                 />
                             </Stack>
@@ -588,27 +603,40 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             }}
                         >
                             <Controller
-                                name="category"
+                                name="expenseCategory"
                                 control={control}
-                                defaultValue=""
+                                defaultValue={initTransaction?.expenseCategory ?? ""}
                                 render={({ field }) => (
-                                    <TextField
-                                        fullWidth
-                                        label={<FormattedMessage id="expense.fields.category" />}
-                                        select
+                                    <Autocomplete
                                         size="small"
-                                        value={field.value ?? ""}
-                                        onChange={field.onChange}
+                                        options={categories}
+                                        getOptionLabel={(o) => intl.formatMessage({ id: o.intlId })}
+                                        isOptionEqualToValue={(option, value) => option.name === value.name}
+                                        value={categories.find((c) => c.name === (field.value ?? "")) ?? null}
+                                        onChange={(_, selected) => {
+                                            field.onChange(selected?.name ?? "");
+                                        }}
                                         onBlur={field.onBlur}
-                                        inputRef={field.ref}
-                                        error={!!errors.category}
-                                        helperText={tError(intl, errors.category?.message)}
-                                    >
-                                        <MenuItem value="Fun"><FormattedMessage id="expense.category.fun" /></MenuItem>
-                                        <MenuItem value="Food"><FormattedMessage id="expense.category.food" /></MenuItem>
-                                        <MenuItem value="Transport"><FormattedMessage id="expense.category.transport" /></MenuItem>
-                                        <MenuItem value="Utilities"><FormattedMessage id="expense.category.utilities" /></MenuItem>
-                                    </TextField>
+                                        filterOptions={(options, state) => {
+                                            const q = state.inputValue.trim().toLowerCase();
+                                            if (!q) return options;
+                                            return options.filter((o) => o.name.toLowerCase().includes(q));
+                                        }}
+                                        renderOption={(props, option) => (
+                                            <Box component="li" {...props} key={option.name}>
+                                                {intl.formatMessage({ id: option.intlId })}
+                                            </Box>
+                                        )}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label={<FormattedMessage id="expense.fields.category" />}
+                                                inputRef={field.ref}
+                                                error={!!errors.expenseCategory}
+                                                helperText={tError(intl, errors.expenseCategory?.message)}
+                                            />
+                                        )}
+                                    />
                                 )}
                             />
 
