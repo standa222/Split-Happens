@@ -1,4 +1,4 @@
-const PAYLIBO_QR_IMAGE_URL = "http://api.paylibo.com/paylibo/generator/czech/image";
+const PAYLIBO_QR_IMAGE_URL = "https://api.paylibo.com/paylibo/generator/czech/image";
 
 const CROP_SETTINGS = {
     SQUARE_SIZE_FACTOR: 0.7,

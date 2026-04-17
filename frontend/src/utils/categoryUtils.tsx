@@ -50,7 +50,6 @@ export const categories: Category[] = [
 ];
 
 export function getCategoryIcon(transaction: TTransaction) {
-    console.log(transaction);
     const category = transaction.expenseCategory ? categories.find(c => c.name === transaction.expenseCategory) : null;
 
     return category ? (
