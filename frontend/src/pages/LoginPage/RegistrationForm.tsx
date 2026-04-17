@@ -6,15 +6,25 @@ import {Box, TextField, Button, Typography} from "@mui/material";
 import {COLORS} from "../../constants/colors";
 import { FormattedMessage, useIntl } from "react-intl";
 import { tError } from "../../utils/localeUtils";
+import {formatApiError} from "../../utils/apiErrorUtils";
 
 type Props = {
     onSwitchToLogin: () => void;
+    onRegisterSuccess?: (message: string) => void;
+    onRegisterError?: (message: string) => void;
 }
 
-export function RegistrationForm({ onSwitchToLogin }: Props) {
+export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegisterError }: Props) {
     const intl = useIntl();
+
     const { mutate, isPending } = useRegisterUser({
         onSuccess: () => {
+            onRegisterSuccess?.(
+                intl.formatMessage({
+                    id: "auth.register.success",
+                    defaultMessage: "Registration successful. You can log in now.",
+                })
+            );
             onSwitchToLogin();
         }
     });
@@ -35,9 +45,13 @@ export function RegistrationForm({ onSwitchToLogin }: Props) {
     })
 
     const onSubmit = (data: TRegisterForm) => {
-        // Ensure Zod transforms ran (e.g., drop empty bankAccount)
         const parsed = registerFormSchema.parse(data);
-        mutate(parsed)
+        mutate(parsed, {
+            onError: (error) => {
+                onRegisterError?.(formatApiError(intl, error));
+                console.error('Error registering user:', error);
+            },
+        });
     }
 
     return (

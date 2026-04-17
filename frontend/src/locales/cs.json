@@ -155,6 +155,7 @@
   "profile.edit.title": "Upravit profil",
   "profile.edit.save": "Uložit",
   "profile.edit.saving": "Ukládám...",
+  "profile.edit.success": "Profil byl úspěšně aktualizován.",
 
   "qrPayment.title": "QR platba",
   "qrPayment.subtitle": "Zaplaťte {amount} uživateli {creditorName}",
@@ -213,5 +214,7 @@
   "group.create.success": "Skupina byla úspěšně vytvořena.",
   "group.edit.success": "Skupina byla úspěšně upravena.",
   "expense.add.success": "Výdaj byl úspěšně přidán.",
-  "expense.edit.success": "Výdaj byl úspěšně uložen."
+  "expense.edit.success": "Výdaj byl úspěšně uložen.",
+  "auth.register.success": "Registrace proběhla úspěšně. Nyní se můžete přihlásit.",
+  "auth.register.error.emailAlreadyExists": "Účet s tímto e‑mailem už existuje."
 }
