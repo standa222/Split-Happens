@@ -32,7 +32,7 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency }: { debt: TDebt, grou
     };
 
     const onNotify = () => {
-        console.log("notify", debt.id);
+        console.log("notify debt", debt.id);
     };
 
     return (

@@ -9,7 +9,6 @@ export type GroupsByActivity = {
 
 const fetchGridGroups = async (): Promise<TGroupLight[]> => {
     const { data } = await api.get('/groups');
-    console.log("grid groups", data);
     return data.slice(0, 4);
 }
 
@@ -23,7 +22,6 @@ export const useGroupsGridQuery = () => {
 
 const fetchGroups = async (): Promise<GroupsByActivity> => {
     const { data } = await api.get('/groups');
-    console.log("groups", data);
     return groupActiveAndInactive(data);
 }
 
@@ -58,7 +56,6 @@ const groupActiveAndInactive = (groups: TGroupLight[]) => {
 
 const fetchGroupDetail = async (groupId: number) => {
     const { data } = await api.get(`/groups/${groupId}`);
-    console.log("group detail", data);
     return data;
 }
 

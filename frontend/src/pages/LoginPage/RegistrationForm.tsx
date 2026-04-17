@@ -15,7 +15,6 @@ export function RegistrationForm({ onSwitchToLogin }: Props) {
     const intl = useIntl();
     const { mutate, isPending } = useRegisterUser({
         onSuccess: () => {
-            console.log("Registration successful, switching to login form");
             onSwitchToLogin();
         }
     });
@@ -38,7 +37,6 @@ export function RegistrationForm({ onSwitchToLogin }: Props) {
     const onSubmit = (data: TRegisterForm) => {
         // Ensure Zod transforms ran (e.g., drop empty bankAccount)
         const parsed = registerFormSchema.parse(data);
-        console.log("Submitting registration form with data:", parsed);
         mutate(parsed)
     }
 

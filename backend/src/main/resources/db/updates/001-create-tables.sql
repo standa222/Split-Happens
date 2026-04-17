@@ -69,17 +69,7 @@ CREATE TABLE IF NOT EXISTS transaction_item (
     balance_change DECIMAL(19, 4) NOT NULL
 );
 
--- 9. Debt (Simplified State)
-CREATE TABLE IF NOT EXISTS debt (
-    id BIGSERIAL PRIMARY KEY,
-    group_id BIGINT REFERENCES "group"(id) ON DELETE CASCADE,
-    debtor_id BIGINT REFERENCES "user"(id) ON DELETE CASCADE,
-    creditor_id BIGINT REFERENCES "user"(id) ON DELETE CASCADE,
-    amount DECIMAL(19, 4) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE
-);
-
--- 10. Notification
+-- 9. Notification
 CREATE TABLE IF NOT EXISTS notification (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES "user"(id) ON DELETE CASCADE,

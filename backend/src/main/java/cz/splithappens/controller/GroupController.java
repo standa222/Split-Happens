@@ -1,10 +1,8 @@
 package cz.splithappens.controller;
 
 import cz.splithappens.dto.request.GroupCreateDto;
-import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
-import cz.splithappens.dto.response.TransactionDto;
 import cz.splithappens.security.CustomUserDetails;
 import cz.splithappens.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +13,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -61,8 +58,11 @@ public class GroupController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    public ResponseEntity<GroupDto> getGroupDetails(@PathVariable Long groupId) {
-        return ResponseEntity.ok(groupService.getGroupDetails(groupId));
+    public ResponseEntity<GroupDto> getGroupDetails(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(groupService.getGroupDetails(groupId, userDetails.getUser()));
     }
 
     @PutMapping("/{groupId}")
