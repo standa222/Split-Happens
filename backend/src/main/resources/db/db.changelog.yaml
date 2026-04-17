@@ -9,3 +9,5 @@ databaseChangeLog:
       file: db/updates/004-add-transaction-currency.sql
   - include:
       file: db/updates/005-add-user-and-group-images.sql
+  - include:
+      file: db/updates/006-performance-indexes.sql
