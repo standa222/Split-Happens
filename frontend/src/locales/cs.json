@@ -155,6 +155,7 @@
   "profile.edit.title": "Upravit profil",
   "profile.edit.save": "Uložit",
   "profile.edit.saving": "Ukládám...",
+  "profile.edit.success": "Profil byl úspěšně aktualizován.",
 
   "qrPayment.title": "QR platba",
   "qrPayment.subtitle": "Zaplaťte {amount} uživateli {creditorName}",
