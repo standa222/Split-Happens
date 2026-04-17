@@ -19,8 +19,6 @@ import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,8 +31,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
-    private static final Logger logger = LoggerFactory.getLogger(GroupServiceImpl.class);
-
     private final TransactionService transactionService;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
@@ -47,9 +43,9 @@ public class GroupServiceImpl implements GroupService {
     public GroupDto createGroup(GroupCreateDto createDto, User user) {
         Group group = groupMapper.toEntity(createDto);
         List<User> members = userRepository.findAllById(createDto.getMemberIds());
-        group.setMembers(new HashSet<>(members));
+        group.setMembers(new LinkedHashSet<>(members));
         group.setLastActivity(OffsetDateTime.now());
-        return groupMapper.toDto(groupRepository.save(group));
+        return groupMapper.toDto(groupRepository.save(group), user);
     }
 
     @Override
@@ -74,14 +70,19 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupDto getGroupDetails(Long groupId) {
-        List<TransactionDto> transactions = transactionService.getGroupTransactions(groupId);
-        List<DebtDto> debts = debtMapper.toDtoList(debtRepository.findByGroupId(groupId));
+    public GroupDto getGroupDetails(Long groupId, User user) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException(groupId));
-        GroupDto groupDto = groupMapper.toDto(group);
-        groupDto.setTransactions(transactions);
-        groupDto.setDebts(debts);
+
+        if (group.getMembers().stream().noneMatch(m -> m.getId().equals(user.getId()))) {
+            throw new NotGroupMemberException(groupId);
+        }
+
+        GroupDto groupDto = groupMapper.toDto(group, user);
+
+        groupDto.setTransactions(transactionService.getGroupTransactions(groupId));
+        groupDto.setDebts(debtMapper.toDtoList(debtRepository.findByGroupId(groupId)));
+
         return groupDto;
     }
 
@@ -97,9 +98,9 @@ public class GroupServiceImpl implements GroupService {
         group.setName(updateDto.getName());
         // TODO add update default currency + recalculate debts if currency changes
         group.setPermissionMode(updateDto.getPermissionMode());
-        group.setMembers(new HashSet<>(members));
+        group.setMembers(new LinkedHashSet<>(members));
         group.updateLastActivity();
-        return groupMapper.toDto(groupRepository.save(group));
+        return groupMapper.toDto(groupRepository.save(group), user);
     }
 
     @Override
