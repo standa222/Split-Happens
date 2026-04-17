@@ -82,7 +82,8 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setTotalAmount(updateDto.getTotalAmount());
         transaction.getItems().clear();
         transaction.getItems().addAll(createTransactionsItems(updateDto, transaction));
-        transaction.setCurrency(updateDto.getCurrency());
+//        transaction.setCurrency(updateDto.getCurrency());
+        transaction.setExpenseCategory(updateDto.getExpenseCategory());
 
         Transaction newTransaction = transactionRepository.save(transaction);
         settlementEngine.calculateDebts(transaction.getGroup().getId());

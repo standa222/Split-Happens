@@ -1,5 +1,8 @@
+--liquibase formatted sql
+--changeset stanislav:5
+
 ALTER TABLE "user"
-ADD COLUMN profile_image BYTEA;
+ADD COLUMN IF NOT EXISTS profile_image BYTEA;
 
 ALTER TABLE "group"
-ADD COLUMN group_image BYTEA;
+ADD COLUMN IF NOT EXISTS group_image BYTEA;

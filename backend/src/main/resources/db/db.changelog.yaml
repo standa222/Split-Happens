@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/updates/005-add-user-and-group-images.sql
   - include:
       file: db/updates/006-performance-indexes.sql
+  - include:
+      file: db/updates/007-update-categories.sql

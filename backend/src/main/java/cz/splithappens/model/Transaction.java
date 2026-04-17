@@ -1,6 +1,7 @@
 package cz.splithappens.model;
 
 import cz.splithappens.model.enums.Currency;
+import cz.splithappens.model.enums.ExpenseCategory;
 import cz.splithappens.model.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,4 +41,7 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     private Currency currency;
+
+    @Enumerated(EnumType.STRING)
+    private ExpenseCategory expenseCategory;
 }

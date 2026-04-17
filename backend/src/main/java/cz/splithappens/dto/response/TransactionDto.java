@@ -1,6 +1,7 @@
 package cz.splithappens.dto.response;
 
 import cz.splithappens.model.enums.Currency;
+import cz.splithappens.model.enums.ExpenseCategory;
 import cz.splithappens.model.enums.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -32,4 +33,7 @@ public class TransactionDto {
 
     @Schema(description = "Currency of the transaction.", example = "CZK")
     private Currency currency;
+
+    @Schema(description = "Category of the expense. Only applicable for transactions of type EXPENSE.")
+    private ExpenseCategory expenseCategory;
 }
