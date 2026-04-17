@@ -214,5 +214,7 @@
   "group.create.success": "Skupina byla úspěšně vytvořena.",
   "group.edit.success": "Skupina byla úspěšně upravena.",
   "expense.add.success": "Výdaj byl úspěšně přidán.",
-  "expense.edit.success": "Výdaj byl úspěšně uložen."
+  "expense.edit.success": "Výdaj byl úspěšně uložen.",
+  "auth.register.success": "Registrace proběhla úspěšně. Nyní se můžete přihlásit.",
+  "auth.register.error.emailAlreadyExists": "Účet s tímto e‑mailem už existuje."
 }

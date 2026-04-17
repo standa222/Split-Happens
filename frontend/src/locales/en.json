@@ -212,5 +212,7 @@
   "api.error.message": "{message}",
   "api.error.validation.message": "{message}",
   "group.create.success": "Group created successfully.",
-  "group.edit.success": "Group updated successfully."
+  "group.edit.success": "Group updated successfully.",
+  "auth.register.success": "Registration successful. You can log in now.",
+  "auth.register.error.emailAlreadyExists": "An account with this email already exists."
 }
