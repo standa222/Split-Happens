@@ -13,11 +13,9 @@ export function useAddExpense(options?: Options) {
 
     return useMutation<TTransaction, AxiosError, TAddExpenseForm>({
         mutationFn: (data) => api.post('/transactions', data).then(res => {
-            console.log(res);
             return res.data;
         }),
         onSuccess: (data, variables) => {
-            console.log('Expense added successfully:', data);
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
             options?.onSuccess?.();
         },

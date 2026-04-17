@@ -13,7 +13,6 @@ export function useCreateGroupMutation(options?: Options) {
     return useMutation<TGroupDetail, Error, TCreateGroupForm>({
         mutationFn: (data) => api.post('/groups', data).then(res => res.data),
         onSuccess: (data) => {
-            console.log('Group created successfully:', data);
             queryClient.invalidateQueries({ queryKey: ["groups"] });
             options?.onSuccess?.();
         },
@@ -27,7 +26,6 @@ export function useEditGroupMutation(options?: Options) {
     return useMutation<TGroupDetail, Error, {groupId: number, data: TCreateGroupForm}>({
         mutationFn: ({groupId, data}: {groupId: number, data: TCreateGroupForm}) => api.put(`/groups/${groupId}`, data).then(res => res.data),
         onSuccess: (data, variables) => {
-            console.log('Group edited successfully:', data);
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
             options?.onSuccess?.();
         },
@@ -41,7 +39,6 @@ export function useLeaveGroup(options?: Options) {
     return useMutation<void, Error, number>({
         mutationFn: (groupId) => api.get(`/groups/${groupId}/leave`).then(res => res.data),
         onSuccess: (_, groupId) => {
-            console.log('Left group successfully');
             queryClient.invalidateQueries({ queryKey: ["groups"] });
             queryClient.invalidateQueries({ queryKey: ["groupDetail", groupId] });
             options?.onSuccess?.();

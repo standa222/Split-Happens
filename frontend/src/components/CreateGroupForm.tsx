@@ -72,7 +72,6 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
     const isPending = isEditMode ? editGroup.isPending : createGroup.isPending;
 
     const onSubmit = (data: TCreateGroupForm) => {
-        console.log("submitting ", data);
         if (isEditMode) {
             editGroup.mutate({ groupId: initGroup!.id, data });
         } else {
