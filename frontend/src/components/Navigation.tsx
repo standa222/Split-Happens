@@ -239,7 +239,9 @@ export function Navigation() {
                     <Avatar sx={{bgcolor: "transparent", border: `2px dashed ${COLORS.SECONDARY}`, width: 50, height: 50}}>
                         <PhotoCameraIcon sx={{color: COLORS.SECONDARY}}/>
                     </Avatar>
-                    <Typography variant="h6" fontWeight={600}>{currentUser.firstName} {currentUser.lastName}</Typography>
+                    {currentUser &&
+                        <Typography variant="h6" fontWeight={600}>{currentUser.firstName} {currentUser.lastName}</Typography>
+                    }
                 </Stack>
 
                 <List sx={{flexGrow: 1, p: 0}}>
