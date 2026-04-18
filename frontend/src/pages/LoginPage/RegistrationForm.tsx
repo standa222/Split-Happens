@@ -65,6 +65,7 @@ export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegiste
             <TextField
                 label={<FormattedMessage id="register.firstName" />}
                 type="text"
+                required={true}
                 {...register("firstName")}
                 error={!!errors.firstName}
                 helperText={tError(intl, errors.firstName?.message)}
@@ -72,6 +73,7 @@ export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegiste
             <TextField
                 label={<FormattedMessage id="register.lastName" />}
                 type="text"
+                required={true}
                 {...register("lastName")}
                 error={!!errors.lastName}
                 helperText={tError(intl, errors.lastName?.message)}
@@ -79,6 +81,7 @@ export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegiste
             <TextField
                 label={<FormattedMessage id="login.email" />}
                 type="text"
+                required={true}
                 {...register("email")}
                 error={!!errors.email}
                 helperText={tError(intl, errors.email?.message)}
@@ -86,6 +89,7 @@ export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegiste
             <TextField
                 label={<FormattedMessage id="login.password" />}
                 type="password"
+                required={true}
                 {...register("password")}
                 error={!!errors.password}
                 helperText={tError(intl, errors.password?.message)}
