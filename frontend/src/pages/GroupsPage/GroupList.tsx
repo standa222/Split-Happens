@@ -80,9 +80,6 @@ const GroupListItem = ({ id, name, userDebts, lastActivity, defaultCurrency }: T
                     component={NavLink}
                     to={ROUTES.GROUPS.detail(id)}
                     sx={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
                         padding: {
                             xs: "8px 20px",
                             md: "12px 32px"

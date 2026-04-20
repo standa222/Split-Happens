@@ -138,6 +138,8 @@ const MemberItem = ({member, memberDebts, groupId, defaultCurrency}: MemberProps
                                 maxHeight: '80vh',
                                 backgroundColor: COLORS.SECONDARY,
                                 color: COLORS.PRIMARY,
+                                border: `4px solid ${COLORS.PRIMARY}`,
+                                borderBottom: "none",
                             }
                         }
                     }}

@@ -55,7 +55,7 @@ export function getCategoryIcon(transaction: TTransaction) {
     return category ? (
         category.icon
     ) : (
-        <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
+        <img src={logo} alt="Logo" style={{height: "100%", width: "100%"}}/>
     )
 }
 

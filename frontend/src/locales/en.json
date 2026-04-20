@@ -93,7 +93,7 @@
 
   "groupDetail.expenses.paidBy": "paid by",
   "groupDetail.expenses.yourSplit": "your split",
-  "groupDetail.expenses.totalPaid": "total paid",
+  "groupDetail.expenses.totalPaid": "total",
   "groupDetail.expenses.detail": "Detail",
   "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
 
@@ -248,5 +248,42 @@
   "settleModal.action": "Settle",
   "settleModal.settling": "Settling...",
   "settleModal.success": "Debt settled successfully.",
-  "settleModal.error": "Failed to settle the debt. Please try again."
+  "settleModal.error": "Failed to settle the debt. Please try again.",
+
+  "friends.title": "Friends",
+  "friends.add.title": "Add friend",
+  "friends.add.search.label": "Search users",
+  "friends.add.search.placeholder": "Type at least 2 characters...",
+  "friends.add.hint": "Search by name.",
+  "friends.add.send": "Send request",
+  "friends.add.sending": "Sending...",
+
+  "friends.incoming.title": "Incoming requests",
+  "friends.incoming.loading": "Loading...",
+  "friends.incoming.error": "Failed to load incoming requests.",
+  "friends.incoming.empty": "No incoming requests.",
+
+  "friends.outgoing.title": "Outgoing requests",
+  "friends.outgoing.loading": "Loading...",
+  "friends.outgoing.error": "Failed to load outgoing requests.",
+  "friends.outgoing.empty": "No outgoing requests.",
+  "friends.outgoing.pending": "Pending",
+
+  "friends.list.title": "Your friends",
+  "friends.list.loading": "Loading...",
+  "friends.list.error": "Failed to load friends.",
+  "friends.list.empty": "You don’t have any friends yet.",
+
+  "friends.request.accept": "Accept",
+  "friends.request.reject": "Reject",
+  "friends.request.sent": "Friend request sent.",
+  "friends.request.accepted": "Friend request accepted.",
+  "friends.request.rejected": "Friend request rejected.",
+
+  "friends.requests.manageAria": "Manage friend requests",
+  "friends.requests.manageTitle": "Friend requests",
+
+  "friends.detail.subtitle": "Friend balance",
+  "friends.detail.loading": "Loading...",
+  "friends.detail.error": "Failed to load friend detail."
 }
