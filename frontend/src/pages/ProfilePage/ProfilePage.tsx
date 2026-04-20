@@ -175,7 +175,7 @@ export function ProfilePage() {
                         color: COLORS.PRIMARY,
                     }}
                 >
-                    <EditIcon />
+                    <EditIcon sx={{ fontSize: {xs: 32, md: 40 } }}/>
                 </IconButton>
             </Stack>
 

@@ -16,6 +16,7 @@ import { TDebt } from "../types/TDebt";
 import { COLORS } from "../constants/colors";
 import { getQr } from "../utils/qrUtils";
 import CloseIcon from "@mui/icons-material/Close";
+import {formatMoneyWithSymbol} from "../utils/currencyUtils";
 
 type Props = {
     open: boolean;
@@ -140,15 +141,15 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
                 <CloseIcon sx={{ fontSize: 40 }} />
             </IconButton>
             <DialogContent>
-                <Stack spacing={2}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 2 }}>
+                <Stack spacing={2} sx={{color: COLORS.PRIMARY}}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                         <FormattedMessage id="qrPayment.title" />
                     </Typography>
-                    <Typography sx={{ color: COLORS.PRIMARY }}>
+                    <Typography>
                         <FormattedMessage
                             id="qrPayment.subtitle"
                             defaultMessage="Pay {amount} to {creditorName}"
-                            values={{ amount: debt.amount.toFixed(2), creditorName: creditorName || "—" }}
+                            values={{ amount: formatMoneyWithSymbol(debt.amount, normalizedCurrency), creditorName: creditorName || "—" }}
                         />
                     </Typography>
 
@@ -156,31 +157,31 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
 
                     <Stack spacing={1}>
                         <Stack direction="row" justifyContent="space-between" gap={2}>
-                            <Typography fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
+                            <Typography fontWeight={700}>
                                 <FormattedMessage id="qrPayment.from" defaultMessage="From" />
                             </Typography>
-                            <Typography sx={{ color: COLORS.PRIMARY }}>{debtorName || "—"}</Typography>
+                            <Typography>{debtorName || "—"}</Typography>
                         </Stack>
 
                         <Stack direction="row" justifyContent="space-between" gap={2}>
-                            <Typography fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
+                            <Typography fontWeight={700}>
                                 <FormattedMessage id="qrPayment.to" defaultMessage="To" />
                             </Typography>
-                            <Typography sx={{ color: COLORS.PRIMARY }}>{creditorName || "—"}</Typography>
+                            <Typography>{creditorName || "—"}</Typography>
                         </Stack>
 
                         <Stack direction="row" justifyContent="space-between" gap={2}>
-                            <Typography fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
+                            <Typography fontWeight={700}>
                                 <FormattedMessage id="qrPayment.amount" defaultMessage="Amount" />
                             </Typography>
-                            <Typography sx={{ color: COLORS.PRIMARY }}>{debt.amount.toFixed(2)}</Typography>
+                            <Typography>{formatMoneyWithSymbol(debt.amount, normalizedCurrency)}</Typography>
                         </Stack>
 
                         <Stack direction="row" justifyContent="space-between" gap={2}>
-                            <Typography fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
+                            <Typography fontWeight={700}>
                                 <FormattedMessage id="qrPayment.bankAccount" defaultMessage="Bank account" />
                             </Typography>
-                            <Typography sx={{ color: COLORS.PRIMARY }}>
+                            <Typography>
                                 {bankAccount ? formatBankAccount(bankAccount) : "—"}
                             </Typography>
                         </Stack>
@@ -222,7 +223,7 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
                             {isQrLoading ? (
                                 <Stack alignItems="center" spacing={2}>
                                     <CircularProgress />
-                                    <Typography sx={{ color: COLORS.PRIMARY, opacity: 0.8 }}>
+                                    <Typography sx={{ opacity: 0.8 }}>
                                         <FormattedMessage id="qrPayment.loading" defaultMessage="Loading QR..." />
                                     </Typography>
                                 </Stack>
@@ -238,7 +239,7 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
                                     }}
                                 />
                             ) : (
-                                <Typography sx={{ color: COLORS.PRIMARY, opacity: 0.8 }}>
+                                <Typography sx={{ opacity: 0.8 }}>
                                     <FormattedMessage
                                         id="qrPayment.qrPlaceholder.text"
                                         defaultMessage="QR generation will be implemented later."
@@ -263,7 +264,11 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
                         }}
                         disabled={isSettlePending}
                     >
-                        <FormattedMessage id="debts.actions.markPaid" defaultMessage="Close" />
+                        {isSettlePending ? (
+                            <FormattedMessage id="settleModal.settling" />
+                        ) : (
+                            <FormattedMessage id="settleModal.action" />
+                        )}
                     </Button>
                 </Box>
             </DialogContent>

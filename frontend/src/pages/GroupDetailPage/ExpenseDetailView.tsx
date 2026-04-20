@@ -4,6 +4,7 @@ import {TTransaction} from "../../types/TTransaction";
 import {COLORS} from "../../constants/colors";
 import {useAuthStore} from "../../store/authStore";
 import { formatMoneyWithSymbol } from "../../utils/currencyUtils";
+import {getCategoryIntlId} from "../../utils/categoryUtils";
 
 type Props = {
     transaction: TTransaction | null;
@@ -37,13 +38,13 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
         .map((item) => ({ name: item.user.firstName, amount: Math.abs(item.balanceChange) }));
 
     return (
-        <Box sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY }}>
+        <Box sx={{ px: 2, pb: 2, backgroundColor: COLORS.SECONDARY, color: COLORS.PRIMARY, }}>
             <Stack gap={2}>
                 <Stack gap={0.5}>
-                    <Typography sx={{ fontWeight: 800, color: COLORS.PRIMARY, fontSize: 20 }}>
+                    <Typography sx={{ fontWeight: 800, fontSize: 20 }}>
                         {transaction.title}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: COLORS.PRIMARY }}>
+                    <Typography variant="body2">
                         <FormattedMessage id="expense.detail.createdAt" />: {new Date(transaction.createdAt).toLocaleString()}
                     </Typography>
                 </Stack>
@@ -52,16 +53,16 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
 
                 <Stack direction={{ xs: "column", sm: "row" }} gap={3}>
                     <Stack flex={1} gap={0.5}>
-                        <Typography sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                        <Typography sx={{ fontWeight: 700 }}>
                             <FormattedMessage id="expense.detail.total" />
                         </Typography>
-                        <Typography sx={{ color: COLORS.PRIMARY }}>
+                        <Typography>
                             {formatMoneyWithSymbol(transaction.totalAmount, transaction.currency)}
                         </Typography>
                     </Stack>
 
                     <Stack flex={1} gap={0.5}>
-                        <Typography sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                        <Typography sx={{ fontWeight: 700 }}>
                             <FormattedMessage id="expense.detail.yourSplit" />
                         </Typography>
                         <Typography sx={{ fontWeight: 800, color: isNegative ? COLORS.RED : COLORS.PRIMARY }}>
@@ -70,12 +71,12 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                     </Stack>
 
                     <Stack flex={1} gap={0.5}>
-                        <Typography sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
-                            <FormattedMessage id="expense.detail.type" />
+                        <Typography sx={{ fontWeight: 700 }}>
+                            <FormattedMessage id="expense.detail.category" />
                         </Typography>
-                        <Typography sx={{ color: COLORS.PRIMARY }}>
+                        <Typography>
                             <FormattedMessage
-                                id={transaction.transactionType === "PAYMENT" ? "expense.detail.type.payment" : "expense.detail.type.expense"}
+                                id={getCategoryIntlId(transaction.expenseCategory)}
                             />
                         </Typography>
                     </Stack>
@@ -85,18 +86,18 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
 
                 <Stack direction={{ xs: "column", sm: "row" }} gap={3}>
                     <Stack flex={1} gap={1}>
-                        <Typography sx={{ fontWeight: 800, color: COLORS.PRIMARY }}>
+                        <Typography sx={{ fontWeight: 800 }}>
                             <FormattedMessage id="expense.detail.paidBy" />
                         </Typography>
                         {paidBy.length === 0 ? (
-                            <Typography variant="body2" sx={{ color: COLORS.PRIMARY }}>
+                            <Typography variant="body2">
                                 <FormattedMessage id="expense.detail.none" />
                             </Typography>
                         ) : (
                             <Stack gap={0.75}>
                                 {paidBy.map((p) => (
                                     <Stack key={`${p.name}-${p.amount}`} direction="row" justifyContent="space-between" gap={2}>
-                                        <Typography sx={{ color: COLORS.PRIMARY }}>
+                                        <Typography>
                                             {p.name}
                                         </Typography>
                                         <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 800 }}>
@@ -109,18 +110,18 @@ export const ExpenseDetailView = ({ transaction }: Props) => {
                     </Stack>
 
                     <Stack flex={1} gap={1}>
-                        <Typography sx={{ fontWeight: 800, color: COLORS.PRIMARY }}>
+                        <Typography sx={{ fontWeight: 800 }}>
                             <FormattedMessage id="expense.detail.splitBetween" />
                         </Typography>
                         {splitBetween.length === 0 ? (
-                            <Typography variant="body2" sx={{ color: COLORS.PRIMARY }}>
+                            <Typography variant="body2">
                                 <FormattedMessage id="expense.detail.none" />
                             </Typography>
                         ) : (
                             <Stack gap={0.75}>
                                 {splitBetween.map((s) => (
                                     <Stack key={`${s.name}-${s.amount}`} direction="row" justifyContent="space-between" gap={2}>
-                                        <Typography sx={{ color: COLORS.PRIMARY }}>
+                                        <Typography>
                                             {s.name}
                                         </Typography>
                                         <Typography sx={{ color: COLORS.PRIMARY, fontWeight: 800 }}>

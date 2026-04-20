@@ -22,7 +22,7 @@ const tabs: GroupDetailState[] = ["expenses", "members", "statistics"];
 
 const tabLabelId: Record<GroupDetailState, string> = {
     expenses: "groupDetail.tabs.expenses",
-    members: "groupDetail.tabs.members",
+    members: "groupDetail.tabs.balances",
     statistics: "groupDetail.tabs.statistics",
 };
 
@@ -141,7 +141,7 @@ const GroupDetailContent = ({ group }: { group: TGroupDetail }) => {
 
     return (
         <Box
-            mt={{ xs: 3, md: 8 }}
+            mt={{ xs: 1, md: 8 }}
             pb={{ xs: `${mobileBottomTabsHeight + 32}px`, md: 0 }}
         >
             <Stack direction={{ xs: 'column', md: 'row' }} gap={{ xs: 2, md: 6 }} alignItems="flex-start">

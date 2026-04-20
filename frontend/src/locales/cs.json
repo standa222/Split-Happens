@@ -30,6 +30,7 @@
   "expense.mode.fixed": "Pevně",
   "expense.mode.partial": "Poměrně",
   "expense.mode.percentage": "Procenta",
+  "expense.mode.tooltip": "Pevné - Přímé zadání pevných částek.\nPoměrné - Automatický výpočet dle podílů. Procentuální - Rozdělení podle procent.",
 
   "expense.whoIsInvolved": "Kdo se účastní?",
   "expense.paidByHeader": "ZAPLACENO",
@@ -52,6 +53,7 @@
 
   "group.form.permissionMode.soft": "Volný",
   "group.form.permissionMode.hard": "Striktní",
+  "group.form.permissionMode.tooltip": "JEŠTĚ NEIMPLEMENTOVÁNO - Striktní režim zakazuje upravovat a mazat výdaje přidané ostatními uživateli.",
 
   "group.form.members.title": "Výběr členů",
   "group.form.members.search.label": "Vyhledat a přidat uživatele",
@@ -80,7 +82,7 @@
   "groupDetail.error": "Chyba při načítání detailu skupiny.",
 
   "groupDetail.tabs.expenses": "Výdaje",
-  "groupDetail.tabs.members": "Členové",
+  "groupDetail.tabs.balances": "Zůstatky",
   "groupDetail.tabs.statistics": "Statistiky",
 
   "groupDetail.statistics.placeholder": "Obsah statistik pro {name}",
@@ -122,6 +124,9 @@
   "register.submitting": "Registruji...",
   "register.haveAccount": "Už máte účet?",
   "register.loginCta": "Přihlásit se",
+  "register.personalInfo": "Osobní informace",
+  "register.bankInfo": "Bankovní informace (nepovinné)",
+  "register.requiredFields": "* Povinné pole",
 
   "notFound.title": "404 - Stránka nenalezena",
   "notFound.description": "Požadovaná stránka neexistuje.",
@@ -132,7 +137,7 @@
   "expense.detail.createdAt": "Vytvořeno",
   "expense.detail.total": "Celkem",
   "expense.detail.yourSplit": "Váš podíl",
-  "expense.detail.type": "Typ",
+  "expense.detail.category": "Kategorie",
   "expense.detail.type.expense": "Výdaj",
   "expense.detail.type.payment": "Platba",
   "expense.detail.paidBy": "Zaplatil/a",
@@ -150,12 +155,13 @@
   "profile.bankAccount": "Bankovní účet",
   "profile.bankAccount.notSet": "Není nastaven",
   "profile.unknown": "—",
-
   "profile.edit": "Upravit profil",
   "profile.edit.title": "Upravit profil",
   "profile.edit.save": "Uložit",
   "profile.edit.saving": "Ukládám...",
   "profile.edit.success": "Profil byl úspěšně aktualizován.",
+  "profile.image.change": "Změnit fotku",
+  "group.image.change": "Změnit fotku",
 
   "qrPayment.title": "QR platba",
   "qrPayment.subtitle": "Zaplaťte {amount} uživateli {creditorName}",
@@ -236,5 +242,12 @@
   "category.hobbies": "Koníčky",
   "category.pets": "Mazlíčci",
   "category.gifts": "Dárky",
-  "category.other": "Ostatní"
+  "category.other": "Ostatní",
+
+  "settleModal.title": "Urovnat dluh",
+  "settleModal.confirmation": "Opravdu chcete urovnat tento dluh?",
+  "settleModal.action": "Urovnat",
+  "settleModal.settling": "Urovnávám...",
+  "settleModal.success": "Dluh byl úspěšně urovnán.",
+  "settleModal.error": "Nepodařilo se urovnat dluh. Zkuste to prosím znovu."
 }

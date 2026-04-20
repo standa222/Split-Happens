@@ -6,11 +6,12 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import {COLORS} from "../constants/colors";
-import { FormattedMessage } from "react-intl";
+import {FormattedMessage, useIntl} from "react-intl";
 import {useSettleDebt} from "../hooks/useSettleDebt";
 import {QRPaymentDialog} from "./QRPaymentDialog";
 import {useState} from "react";
 import {getCurrencySymbol} from "../utils/currencyUtils";
+import {SettleModal} from "./SettleModal";
 
 type Props = {
     userDebts: TDebt[],
@@ -23,16 +24,42 @@ type Props = {
     showDividers?: boolean,
 }
 
-const DebtActionButtons = ({ debt, groupId, groupCurrency }: { debt: TDebt, groupId: number, groupCurrency?: string }) => {
+type DebtActionButtonsProps = {
+    debt: TDebt;
+    groupId: number;
+    groupCurrency?: string;
+    owesLine?: string;
+}
+
+const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine }: DebtActionButtonsProps) => {
     const {mutate: settleDebt, isPending: isSettleDebtPending} = useSettleDebt();
     const [ qrModalOpen, setQrModalOpen ] = useState(false);
+    const [ settleModalOpen, setSettleModalOpen ] = useState(false);
 
     const onMarkPaid = () => {
-        settleDebt({ groupId, debtId: debt.id });
+        setSettleModalOpen(true);
     };
 
     const onNotify = () => {
         console.log("notify debt", debt.id);
+    };
+
+    const handleSettleFromQr = () => {
+        settleDebt(
+            { debtId: debt.id, groupId },
+            {
+                onSuccess: () => setQrModalOpen(false),
+            }
+        );
+    };
+
+    const handleSettleFromModal = () => {
+        settleDebt(
+            { debtId: debt.id, groupId },
+            {
+                onSuccess: () => setSettleModalOpen(false),
+            }
+        );
     };
 
     return (
@@ -104,11 +131,25 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency }: { debt: TDebt, grou
             </Stack>
             <QRPaymentDialog
                 open={qrModalOpen}
-                onClose={() => setQrModalOpen(false)}
+                onClose={() => {
+                    if (isSettleDebtPending) return;
+                    setQrModalOpen(false);
+                }}
                 debt={debt}
                 groupCurrency={groupCurrency}
-                onSettle={onMarkPaid}
+                onSettle={handleSettleFromQr}
                 isSettlePending={isSettleDebtPending}
+            />
+            <SettleModal
+                open={settleModalOpen}
+                onClose={() => {
+                    if (isSettleDebtPending) return;
+                    setSettleModalOpen(false);
+                }}
+                onSettle={handleSettleFromModal}
+                currency={groupCurrency}
+                isSettlePending={isSettleDebtPending}
+                owesLine={owesLine}
             />
         </>
     );
@@ -122,6 +163,7 @@ export const DebtsList = ({
         groupCurrency,
         display,
     }: Props) => {
+    const intl = useIntl();
     const currentUserId = useAuthStore((s) => s.currentUser.id);
     const currencySymbol = getCurrencySymbol(groupCurrency);
 
@@ -147,6 +189,18 @@ export const DebtsList = ({
                 const debtorName = (debt.debtor.firstName ?? debt.debtor.email ?? "").trim();
                 const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
 
+                const translatedMessage = intl.formatMessage(
+                    { id: "debts.owesLine" },
+                    {
+                        debtorIsCurrent,
+                        creditorIsCurrent,
+                        debtorName,
+                        creditorName,
+                        amount: debt.amount.toFixed(2),
+                        currencySymbol,
+                    }
+                );
+
                 return (
                     <Stack
                         direction={{xs: "column", md: "row"}}
@@ -156,20 +210,10 @@ export const DebtsList = ({
                         gap={2}
                     >
                         <Typography variant="body1" color={COLORS.PRIMARY}>
-                            <FormattedMessage
-                                id="debts.owesLine"
-                                values={{
-                                    debtorIsCurrent,
-                                    creditorIsCurrent,
-                                    debtorName,
-                                    creditorName,
-                                    amount: debt.amount.toFixed(2),
-                                    currencySymbol,
-                                }}
-                            />
+                            {translatedMessage}
                         </Typography>
                         {showActionButtons &&
-                            <DebtActionButtons debt={debt} groupId={groupId} groupCurrency={groupCurrency}/>
+                            <DebtActionButtons debt={debt} groupId={groupId} groupCurrency={groupCurrency} owesLine={translatedMessage}/>
                         }
                     </Stack>
                 );
