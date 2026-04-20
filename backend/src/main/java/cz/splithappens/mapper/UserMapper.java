@@ -10,7 +10,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "passwordHash", ignore = true)
-    @Mapping(target = "friends", ignore = true)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "bankAccount", ignore = true)
     @Mapping(target = "profileImage", ignore = true)
