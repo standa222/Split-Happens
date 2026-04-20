@@ -37,7 +37,7 @@ export const GroupFormModal = ({ open, onClose, initGroup }: Props) => {
                 onClose={handleClose}
                 sx={{
                     '& .MuiDialog-paper': {
-                        borderRadius: { xs: 0, md: 10 },
+                        borderRadius: 10,
                     },
                 }}
             >

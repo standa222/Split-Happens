@@ -254,7 +254,7 @@
   "friends.add.title": "Add friend",
   "friends.add.search.label": "Search users",
   "friends.add.search.placeholder": "Type at least 2 characters...",
-  "friends.add.hint": "Search by name or email.",
+  "friends.add.hint": "Search by name.",
   "friends.add.send": "Send request",
   "friends.add.sending": "Sending...",
 
@@ -278,5 +278,8 @@
   "friends.request.reject": "Reject",
   "friends.request.sent": "Friend request sent.",
   "friends.request.accepted": "Friend request accepted.",
-  "friends.request.rejected": "Friend request rejected."
+  "friends.request.rejected": "Friend request rejected.",
+
+  "friends.requests.manageAria": "Manage friend requests",
+  "friends.requests.manageTitle": "Friend requests"
 }

@@ -255,7 +255,7 @@
   "friends.add.title": "Přidat přítele",
   "friends.add.search.label": "Vyhledat uživatele",
   "friends.add.search.placeholder": "Napište alespoň 2 znaky...",
-  "friends.add.hint": "Vyhledávejte podle jména nebo emailu.",
+  "friends.add.hint": "Vyhledávejte podle jména.",
   "friends.add.send": "Odeslat žádost",
   "friends.add.sending": "Odesílám...",
 
@@ -279,5 +279,8 @@
   "friends.request.reject": "Odmítnout",
   "friends.request.sent": "Žádost o přátelství byla odeslána.",
   "friends.request.accepted": "Žádost o přátelství byla přijata.",
-  "friends.request.rejected": "Žádost o přátelství byla odmítnuta."
+  "friends.request.rejected": "Žádost o přátelství byla odmítnuta.",
+
+  "friends.requests.manageAria": "Spravovat žádosti o přátelství",
+  "friends.requests.manageTitle": "Žádosti o přátelství"
 }
