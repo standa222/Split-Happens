@@ -5,7 +5,7 @@ import {useAuthStore} from "../../store/authStore";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import {useState} from "react";
-import { FormattedMessage } from "react-intl";
+import {FormattedMessage, useIntl} from "react-intl";
 import {ExpenseDetailModal} from "./ExpenseDetailModal";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -179,12 +179,14 @@ const MonthSection = ({ month, transactions, onOpenDetail }: { month: string; tr
 export const GroupExpenses = ({ transactions, group }: Props) => {
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<TTransaction | null>(null);
+    const intl = useIntl();
 
     const groupTransactionsByMonth = transactions.reduce((acc, transaction) => {
-        const month = new Date(transaction.createdAt).toLocaleString("default", {
+        const month = new Intl.DateTimeFormat(intl.locale, {
             month: "long",
             year: "numeric",
-        });
+        }).format(new Date(transaction.createdAt));
+
         if (!acc[month]) acc[month] = [];
         acc[month].push(transaction);
         return acc;
