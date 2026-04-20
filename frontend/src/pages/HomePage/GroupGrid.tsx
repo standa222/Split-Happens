@@ -7,6 +7,7 @@ import {useAuthStore} from "../../store/authStore";
 import { FormattedMessage } from "react-intl";
 import {useNavigate} from "react-router-dom";
 import {ROUTES} from "../../enums/routes";
+import {formatMoneyWithSymbol} from "../../utils/currencyUtils";
 
 type GroupContentProps = {
     groups: TGroupLight[] | undefined,
@@ -14,7 +15,7 @@ type GroupContentProps = {
     isError: boolean,
 }
 
-const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
+const GroupCard = ({ id, name, userDebts, defaultCurrency }: TGroupLight) => {
     const navigate = useNavigate();
     const userId = useAuthStore((s) => s.currentUser.id)
     const balance = userDebts.reduce((acc, debt) => userId === debt.creditor.id ? acc + debt.amount : acc - debt.amount, 0);
@@ -98,7 +99,7 @@ const GroupCard = ({ id, name, userDebts }: TGroupLight) => {
                         component="span"
                         sx={{ color: isNegative ? COLORS.RED : COLORS.PRIMARY }}
                     >
-                        {balance.toFixed(2)} $
+                        {formatMoneyWithSymbol(balance, defaultCurrency)}
                     </Box>
                 </Typography>
             </Box>

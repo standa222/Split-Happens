@@ -16,6 +16,7 @@ import { TDebt } from "../types/TDebt";
 import { COLORS } from "../constants/colors";
 import { getQr } from "../utils/qrUtils";
 import CloseIcon from "@mui/icons-material/Close";
+import {formatMoneyWithSymbol} from "../utils/currencyUtils";
 
 type Props = {
     open: boolean;
@@ -148,7 +149,7 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
                         <FormattedMessage
                             id="qrPayment.subtitle"
                             defaultMessage="Pay {amount} to {creditorName}"
-                            values={{ amount: debt.amount.toFixed(2), creditorName: creditorName || "—" }}
+                            values={{ amount: formatMoneyWithSymbol(debt.amount, normalizedCurrency), creditorName: creditorName || "—" }}
                         />
                     </Typography>
 
@@ -173,7 +174,7 @@ export const QRPaymentDialog = ({ open, onClose, debt, groupCurrency, onSettle, 
                             <Typography fontWeight={700} sx={{ color: COLORS.PRIMARY }}>
                                 <FormattedMessage id="qrPayment.amount" defaultMessage="Amount" />
                             </Typography>
-                            <Typography sx={{ color: COLORS.PRIMARY }}>{debt.amount.toFixed(2)}</Typography>
+                            <Typography sx={{ color: COLORS.PRIMARY }}>{formatMoneyWithSymbol(debt.amount, normalizedCurrency)}</Typography>
                         </Stack>
 
                         <Stack direction="row" justifyContent="space-between" gap={2}>
