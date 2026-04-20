@@ -249,5 +249,35 @@
   "settleModal.action": "Urovnat",
   "settleModal.settling": "Urovnávám...",
   "settleModal.success": "Dluh byl úspěšně urovnán.",
-  "settleModal.error": "Nepodařilo se urovnat dluh. Zkuste to prosím znovu."
+  "settleModal.error": "Nepodařilo se urovnat dluh. Zkuste to prosím znovu.",
+
+  "friends.title": "Přátelé",
+  "friends.add.title": "Přidat přítele",
+  "friends.add.search.label": "Vyhledat uživatele",
+  "friends.add.search.placeholder": "Napište alespoň 2 znaky...",
+  "friends.add.hint": "Vyhledávejte podle jména nebo emailu.",
+  "friends.add.send": "Odeslat žádost",
+  "friends.add.sending": "Odesílám...",
+
+  "friends.incoming.title": "Příchozí žádosti",
+  "friends.incoming.loading": "Načítám...",
+  "friends.incoming.error": "Nepodařilo se načíst příchozí žádosti.",
+  "friends.incoming.empty": "Žádné příchozí žádosti.",
+
+  "friends.outgoing.title": "Odchozí žádosti",
+  "friends.outgoing.loading": "Načítám...",
+  "friends.outgoing.error": "Nepodařilo se načíst odchozí žádosti.",
+  "friends.outgoing.empty": "Žádné odchozí žádosti.",
+  "friends.outgoing.pending": "Čeká",
+
+  "friends.list.title": "Vaši přátelé",
+  "friends.list.loading": "Načítám...",
+  "friends.list.error": "Nepodařilo se načíst přátele.",
+  "friends.list.empty": "Zatím nemáte žádné přátele.",
+
+  "friends.request.accept": "Přijmout",
+  "friends.request.reject": "Odmítnout",
+  "friends.request.sent": "Žádost o přátelství byla odeslána.",
+  "friends.request.accepted": "Žádost o přátelství byla přijata.",
+  "friends.request.rejected": "Žádost o přátelství byla odmítnuta."
 }
