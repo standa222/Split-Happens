@@ -10,6 +10,7 @@ import {
     RadioGroup,
     Stack,
     TextField,
+    Tooltip,
     Typography
 } from "@mui/material";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
@@ -25,6 +26,7 @@ import {useCreateGroupMutation, useEditGroupMutation} from "../hooks/useGroupMut
 import {FormattedMessage, useIntl} from "react-intl";
 import { tError } from "../utils/localeUtils";
 import {useUsersSearchQuery} from "../hooks/useUsersSearchQuery";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 type Props = {
     onClose?: () => void;
@@ -151,9 +153,20 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             render={({ field }) => (
                                 <>
                                     <FormControl>
-                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
-                                            <FormattedMessage id="group.form.fields.permissionMode" />
-                                        </FormLabel>
+                                        <Stack direction="row" alignItems="center" gap={0.5}>
+                                            <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
+                                                <FormattedMessage id="group.form.fields.permissionMode" />
+                                            </FormLabel>
+                                            <Tooltip
+                                                title={<FormattedMessage id="group.form.permissionMode.tooltip" />}
+                                                placement="top"
+                                                arrow
+                                                enterTouchDelay={0}
+                                                leaveTouchDelay={5000}
+                                            >
+                                                <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                            </Tooltip>
+                                        </Stack>
                                         <RadioGroup
                                             row
                                             value={field.value}

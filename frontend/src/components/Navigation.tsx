@@ -25,24 +25,29 @@ import {useLocaleStore} from "../store/localeStore";
 
 function NavLogo() {
     return (
-        <Stack direction="row" alignItems="center" gap={2}>
-            <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
-            <Typography
-                sx={{
-                    color: COLORS.PRIMARY,
-                    typography: {
-                        xs: 'h5',
-                        md: 'h4'
-                    },
-                    fontWeight: {
-                        xs: 700,
-                        md: 700
-                    }
-                }}
-            >
-                SplitHappens
-            </Typography>
-        </Stack>
+        <NavLink
+            to={ROUTES.HOME}
+            style={{ textDecoration: "none", color: "inherit" }}
+        >
+            <Stack direction="row" alignItems="center" gap={2}>
+                <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
+                <Typography
+                    sx={{
+                        color: COLORS.PRIMARY,
+                        typography: {
+                            xs: 'h5',
+                            md: 'h4'
+                        },
+                        fontWeight: {
+                            xs: 700,
+                            md: 700
+                        }
+                    }}
+                >
+                    SplitHappens
+                </Typography>
+            </Stack>
+        </NavLink>
     );
 }
 
@@ -98,8 +103,16 @@ export function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChan
     const PILL_EXTRA_WIDTH_PX = 16;
     const pillCenter = selectedIndex <= 0 ? "25%" : "75%";
 
+    const handleToggle = () => {
+        const nextValue = value === "en" ? "cs" : "en";
+        onChange(nextValue);
+    };
+
     return (
         <Box
+            component="button"
+            type="button"
+            onClick={handleToggle}
             sx={{
                 position: "relative",
                 width: 110,
@@ -112,16 +125,16 @@ export function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChan
                 backgroundColor: COLORS.PRIMARY,
                 flexShrink: 0,
                 userSelect: "none",
+                cursor: "pointer",
+                padding: 0,
             }}
         >
-            {/* Moving pill */}
             <Box
                 sx={{
                     position: "absolute",
                     top: "50%",
                     left: pillCenter,
                     transform: "translate(-50%, -50%)",
-                    // Wider pill while still remaining fully inside due to centering.
                     width: `calc(50% + ${PILL_EXTRA_WIDTH_PX}px)`,
                     height: `calc(100%)`,
                     borderRadius: 999,
@@ -136,17 +149,14 @@ export function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChan
                 return (
                     <Box
                         key={opt.value}
-                        component="button"
-                        type="button"
-                        onClick={() => onChange(opt.value)}
                         sx={{
-                            border: "none",
-                            padding: 2,
-                            background: "transparent",
-                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                             zIndex: 1,
                             fontWeight: 600,
                             color: isSelected ? COLORS.PRIMARY : COLORS.SECONDARY,
+                            pointerEvents: "none",
                         }}
                     >
                         {opt.label}

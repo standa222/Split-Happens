@@ -14,6 +14,7 @@ import {
     RadioGroup,
     Stack,
     TextField,
+    Tooltip,
     Typography,
 } from "@mui/material";
 import { COLORS } from "../constants/colors";
@@ -32,6 +33,7 @@ import {tError} from "../utils/localeUtils";
 import {AppSnackbar} from "./AppSnackbar";
 import {formatApiError} from "../utils/apiErrorUtils";
 import {categories} from "../utils/categoryUtils";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 type Props = {
     onClose?: () => void;
@@ -274,9 +276,20 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                             <Stack flex={1}>
                                 <FormControl>
-                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                        <FormattedMessage id="expense.mode.paidBy" />
-                                    </FormLabel>
+                                    <Stack direction="row" alignItems="center" gap={0.5}>
+                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                            <FormattedMessage id="expense.mode.paidBy" />
+                                        </FormLabel>
+                                        <Tooltip
+                                            title={<FormattedMessage id="expense.mode.tooltip" />}
+                                            placement="top"
+                                            arrow
+                                            enterTouchDelay={0}
+                                            leaveTouchDelay={5000}
+                                        >
+                                            <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                        </Tooltip>
+                                    </Stack>
                                     <RadioGroup row value={paidMode} onChange={(e) => setPaidMode(e.target.value as Mode)}>
                                         <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
                                         <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
@@ -386,9 +399,20 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                             <Stack flex={1}>
                                 <FormControl>
-                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                        <FormattedMessage id="expense.mode.splitBetween" />
-                                    </FormLabel>
+                                    <Stack direction="row" alignItems="center" gap={0.5}>
+                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                            <FormattedMessage id="expense.mode.splitBetween" />
+                                        </FormLabel>
+                                        <Tooltip
+                                            title={<FormattedMessage id="expense.mode.tooltip" />}
+                                            placement="top"
+                                            arrow
+                                            enterTouchDelay={0}
+                                            leaveTouchDelay={5000}
+                                        >
+                                            <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                        </Tooltip>
+                                    </Stack>
                                     <RadioGroup row value={splitMode} onChange={(e) => setSplitMode(e.target.value as Mode)}>
                                         <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
                                         <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
@@ -729,9 +753,20 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                         </Box>
 
                         <FormControl fullWidth>
-                            <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                <FormattedMessage id="expense.mode.paidBy" />
-                            </FormLabel>
+                            <Stack direction="row" alignItems="center" gap={0.5}>
+                                <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                    <FormattedMessage id="expense.mode.paidBy" />
+                                </FormLabel>
+                                <Tooltip
+                                    title={<FormattedMessage id="expense.mode.tooltip" />}
+                                    placement="top"
+                                    arrow
+                                    enterTouchDelay={0}
+                                    leaveTouchDelay={5000}
+                                >
+                                    <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                </Tooltip>
+                            </Stack>
                             <RadioGroup
                                 row
                                 value={paidMode}
@@ -745,9 +780,20 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                         </FormControl>
 
                         <FormControl fullWidth>
-                            <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                <FormattedMessage id="expense.mode.splitBetween" />
-                            </FormLabel>
+                            <Stack direction="row" alignItems="center" gap={0.5}>
+                                <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                    <FormattedMessage id="expense.mode.splitBetween" />
+                                </FormLabel>
+                                <Tooltip
+                                    title={<FormattedMessage id="expense.mode.tooltip" />}
+                                    placement="top"
+                                    arrow
+                                    enterTouchDelay={0}
+                                    leaveTouchDelay={5000}
+                                >
+                                    <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                </Tooltip>
+                            </Stack>
                             <RadioGroup
                                 row
                                 value={splitMode}

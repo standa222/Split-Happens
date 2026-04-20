@@ -30,6 +30,7 @@
   "expense.mode.fixed": "Pevně",
   "expense.mode.partial": "Poměrně",
   "expense.mode.percentage": "Procenta",
+  "expense.mode.tooltip": "Pevné - Přímé zadání pevných částek.\nPoměrné - Automatický výpočet dle podílů. Procentuální - Rozdělení podle procent.",
 
   "expense.whoIsInvolved": "Kdo se účastní?",
   "expense.paidByHeader": "ZAPLACENO",
@@ -52,6 +53,7 @@
 
   "group.form.permissionMode.soft": "Volný",
   "group.form.permissionMode.hard": "Striktní",
+  "group.form.permissionMode.tooltip": "JEŠTĚ NEIMPLEMENTOVÁNO - Striktní režim zakazuje upravovat a mazat výdaje přidané ostatními uživateli.",
 
   "group.form.members.title": "Výběr členů",
   "group.form.members.search.label": "Vyhledat a přidat uživatele",

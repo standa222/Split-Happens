@@ -38,7 +38,7 @@ function mapValidationFieldErrorToMessageId(fe: BackendFieldError): ApiErrorMess
 
   // Numeric positive constraints from @Positive (BigDecimal/Integer).
   // Hibernate Validator message: "must be greater than 0".
-  if (msg === "must be greater than 0") {
+  if (msg === "must be greater than 0" || msg === "must be greater than or equal to 1") {
     return { id: "validation.transaction.splitValueMustBePositive" };
   }
 

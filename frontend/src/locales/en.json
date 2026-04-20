@@ -30,6 +30,7 @@
   "expense.mode.fixed": "Fixed",
   "expense.mode.partial": "Partial",
   "expense.mode.percentage": "Percentage",
+  "expense.mode.tooltip": "In fixed mode, you specify the exact amount each person paid or owes. Partial mode allows you to split the expense unevenly without specifying exact amounts. In percentage mode, you specify the percentage of the total amount each person paid or owes.",
 
   "expense.whoIsInvolved": "Who is involved?",
   "expense.paidByHeader": "PAID BY",
@@ -53,6 +54,7 @@
 
   "group.form.permissionMode.soft": "Soft",
   "group.form.permissionMode.hard": "Hard",
+  "group.form.permissionMode.tooltip": "NOT IMPLEMENTED YET: In hard mode, users can edit and delete only the expenses they added.",
 
   "group.form.members.title": "Members Selection",
   "group.form.members.search.label": "Search and Add Users",
