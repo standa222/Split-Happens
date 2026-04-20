@@ -80,7 +80,7 @@
   "groupDetail.error": "Chyba při načítání detailu skupiny.",
 
   "groupDetail.tabs.expenses": "Výdaje",
-  "groupDetail.tabs.members": "Členové",
+  "groupDetail.tabs.balances": "Zůstatky",
   "groupDetail.tabs.statistics": "Statistiky",
 
   "groupDetail.statistics.placeholder": "Obsah statistik pro {name}",
@@ -153,12 +153,13 @@
   "profile.bankAccount": "Bankovní účet",
   "profile.bankAccount.notSet": "Není nastaven",
   "profile.unknown": "—",
-
   "profile.edit": "Upravit profil",
   "profile.edit.title": "Upravit profil",
   "profile.edit.save": "Uložit",
   "profile.edit.saving": "Ukládám...",
   "profile.edit.success": "Profil byl úspěšně aktualizován.",
+  "profile.image.change": "Změnit fotku",
+  "group.image.change": "Změnit fotku",
 
   "qrPayment.title": "QR platba",
   "qrPayment.subtitle": "Zaplaťte {amount} uživateli {creditorName}",
@@ -239,5 +240,12 @@
   "category.hobbies": "Koníčky",
   "category.pets": "Mazlíčci",
   "category.gifts": "Dárky",
-  "category.other": "Ostatní"
+  "category.other": "Ostatní",
+
+  "settleModal.title": "Urovnat dluh",
+  "settleModal.confirmation": "Opravdu chcete urovnat tento dluh?",
+  "settleModal.action": "Urovnat",
+  "settleModal.settling": "Urovnávám...",
+  "settleModal.success": "Dluh byl úspěšně urovnán.",
+  "settleModal.error": "Nepodařilo se urovnat dluh. Zkuste to prosím znovu."
 }

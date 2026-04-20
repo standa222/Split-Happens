@@ -14,6 +14,8 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import {compressToWebp} from "../../utils/imageUtils";
 import {useUploadGroupImage} from "../../hooks/useUploadGroupImage";
 import {useIntl} from "react-intl";
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
     const intl = useIntl();
@@ -147,6 +149,9 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
                     <IconButton onClick={() => setEditGroupModalOpen(true)}>
                         <SettingsIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
                     </IconButton>
+                    <IconButton onClick={() => setEditGroupModalOpen(true)}>
+                        <PersonAddAlt1Icon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
+                    </IconButton>
                     <IconButton onClick={() => setLeaveGroupModalOpen(true)}>
                         <PersonRemoveIcon  sx={{ fontSize: 40, color: COLORS.RED}} />
                     </IconButton>
@@ -154,55 +159,61 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
             </Stack>
 
             {/* Mobile header */}
-            <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{
-                    display: { xs: 'flex', md: 'none' },
-                    gap: 1.5,
-                    pb: 1,
-                }}
-            >
-                <Stack gap={0.25} flex={1} minWidth={0}>
-                    <Typography
-                        variant="subtitle1"
-                        fontWeight={700}
-                        sx={{
-                            color: COLORS.PRIMARY,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                        }}
-                    >
-                        {group.name}
-                    </Typography>
-                    <BalanceDisplay variant="body2" balance={balance} currency={group.defaultCurrency} />
-                </Stack>
-
-                <Stack direction="row" alignItems="center" gap={0.5}>
-                    <IconButton onClick={onPickImage} disabled={isGroupImageUploading} sx={{ color: COLORS.PRIMARY }}>
-                        <PhotoCameraIcon />
-                    </IconButton>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        hidden
-                        onChange={onImageSelected}
-                    />
-
-                    <Stack sx={{ width: 120 }}>
-                        <AddExpenseButton
-                            variant={{ xs: 'body2', sm: 'body2' }}
-                            group={group}
-                            direction="row"
-                            size={{ xs: 'small', md: 'large' }}
-                        />
+            <Stack sx={{display: { xs: 'flex', md: 'none' }}} gap={1}>
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{
+                        gap: 1.5,
+                        pb: 1,
+                    }}
+                >
+                    <Stack gap={0.25} flex={1} minWidth={0}>
+                        <Typography
+                            variant="subtitle1"
+                            fontWeight={700}
+                            sx={{
+                                color: COLORS.PRIMARY,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            }}
+                        >
+                            {group.name}
+                        </Typography>
+                        <BalanceDisplay variant="body2" balance={balance} currency={group.defaultCurrency} />
                     </Stack>
-                    <IconButton onClick={() => setEditGroupModalOpen(true)}>
-                        <SettingsIcon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
-                    </IconButton>
+
+                    <Stack direction="row" alignItems="center" gap={0.5}>
+                        <IconButton onClick={onPickImage} disabled={isGroupImageUploading} sx={{ color: COLORS.PRIMARY }}>
+                            <AddAPhotoIcon />
+                        </IconButton>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={onImageSelected}
+                        />
+                        <IconButton onClick={() => setEditGroupModalOpen(true)}>
+                            <SettingsIcon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
+                        </IconButton>
+                        <IconButton onClick={() => setEditGroupModalOpen(true)}>
+                            <PersonAddAlt1Icon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
+                        </IconButton>
+                        <IconButton onClick={() => setLeaveGroupModalOpen(true)}>
+                            <PersonRemoveIcon  sx={{ fontSize: 24, color: COLORS.RED}} />
+                        </IconButton>
+                    </Stack>
+                </Stack>
+                <Stack>
+                    <AddExpenseButton
+                        variant={{ xs: 'body2', sm: 'body2' }}
+                        group={group}
+                        direction="row"
+                        size={{ xs: 'small', md: 'large' }}
+                    />
                 </Stack>
             </Stack>
 

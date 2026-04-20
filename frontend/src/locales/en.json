@@ -81,7 +81,7 @@
   "groupDetail.error": "Error loading group details.",
 
   "groupDetail.tabs.expenses": "Expenses",
-  "groupDetail.tabs.members": "Members",
+  "groupDetail.tabs.balances": "Balances",
   "groupDetail.tabs.statistics": "Statistics",
 
   "groupDetail.statistics.placeholder": "Statistics content for {name}",
@@ -159,6 +159,8 @@
   "profile.edit.save": "Save",
   "profile.edit.saving": "Saving...",
   "profile.edit.success": "Profile updated successfully.",
+  "profile.image.change": "Change photo",
+  "group.image.change": "Change image",
 
   "qrPayment.title": "QR payment",
   "qrPayment.subtitle": "Pay {amount} to {creditorName}",
@@ -237,5 +239,12 @@
   "category.hobbies": "Hobbies",
   "category.pets": "Pets",
   "category.gifts": "Gifts",
-  "category.other": "Other"
+  "category.other": "Other",
+
+  "settleModal.title": "Settle a debt",
+  "settleModal.confirmation": "Are you sure you want to settle this debt?",
+  "settleModal.action": "Settle",
+  "settleModal.settling": "Settling...",
+  "settleModal.success": "Debt settled successfully.",
+  "settleModal.error": "Failed to settle the debt. Please try again."
 }
