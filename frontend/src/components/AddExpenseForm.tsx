@@ -208,36 +208,62 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     }, [rowState, currentMembers]);
 
     useEffect(() => {
-        // Only auto-calculate in "fixed" mode.
         if (paidMode !== "fixed" && splitMode !== "fixed") return;
 
         setRowState((prev) => {
             const next = { ...prev };
             const total = Number.isFinite(totalAmount) ? totalAmount : 0;
 
-            // 1. Calculate Paid By distribution
             const activePayers = currentMembers.filter((u) => next[u.id]?.paidEnabled);
-            const perPayer = activePayers.length > 0 ? total / activePayers.length : 0;
-
-            // 2. Calculate Split Between distribution
             const activeSplitters = currentMembers.filter((u) => next[u.id]?.splitEnabled);
+
+            const perPayer = activePayers.length > 0 ? total / activePayers.length : 0;
             const perSplitter = activeSplitters.length > 0 ? total / activeSplitters.length : 0;
 
             currentMembers.forEach((u) => {
                 if (!next[u.id]) return;
-
-                if (paidMode === "fixed") {
-                    next[u.id].paidValue = next[u.id].paidEnabled ? Number(perPayer.toFixed(2)) : 0;
-                }
-                if (splitMode === "fixed") {
-                    next[u.id].splitValue = next[u.id].splitEnabled ? Number(perSplitter.toFixed(2)) : 0;
-                }
+                if (paidMode === "fixed") next[u.id].paidValue = next[u.id].paidEnabled ? Number(perPayer.toFixed(2)) : 0;
+                if (splitMode === "fixed") next[u.id].splitValue = next[u.id].splitEnabled ? Number(perSplitter.toFixed(2)) : 0;
             });
 
             return next;
         });
-        // Added checkboxTrigger here to catch toggle events
-    }, [totalAmount, currentMembers, paidMode, splitMode, checkboxTrigger]);
+    }, [totalAmount, paidMode, splitMode, currentMembers, checkboxTrigger]);
+
+    const handleValueChange = (userId: number, newValue: number, type: 'paid' | 'split') => {
+        const total = Number.isFinite(totalAmount) ? totalAmount : 0;
+        const mode = type === 'paid' ? paidMode : splitMode;
+
+        if (mode !== "fixed") {
+            setRowState(prev => ({
+                ...prev,
+                [userId]: { ...prev[userId], [`${type}Value`]: newValue }
+            }));
+            return;
+        }
+
+        setRowState(prev => {
+            const next = { ...prev };
+            next[userId] = { ...next[userId], [`${type}Value`]: newValue };
+
+            const otherActiveMembers = currentMembers.filter(m =>
+                m.id !== userId && (type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled)
+            );
+
+            if (otherActiveMembers.length > 0) {
+                const remaining = total - newValue;
+                const perPerson = Math.max(0, remaining / otherActiveMembers.length);
+
+                otherActiveMembers.forEach(m => {
+                    next[m.id] = {
+                        ...next[m.id],
+                        [`${type}Value`]: Number(perPerson.toFixed(2))
+                    };
+                });
+            }
+            return next;
+        });
+    };
 
     return (
         <>
@@ -576,16 +602,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!s.paidEnabled}
                                                 value={s.paidEnabled ? s.paidValue : ""}
-                                                onChange={(e) =>
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: { ...s, paidValue: Number(e.target.value) },
-                                                    }))
-                                                }
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), 'paid')}
                                                 slotProps={{
-                                                    input: {
-                                                        endAdornment: unitAdornment(paidMode, currency)
-                                                    }
+                                                    input: { endAdornment: unitAdornment(paidMode, currency) }
                                                 }}
                                             />
                                         </Grid>
@@ -609,16 +628,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!s.splitEnabled}
                                                 value={s.splitEnabled ? s.splitValue : ""}
-                                                onChange={(e) =>
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: { ...s, splitValue: Number(e.target.value) },
-                                                    }))
-                                                }
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), 'split')}
                                                 slotProps={{
-                                                    input: {
-                                                        endAdornment: unitAdornment(splitMode, currency)
-                                                    }
+                                                    input: { endAdornment: unitAdornment(splitMode, currency) }
                                                 }}
                                             />
                                         </Grid>
@@ -976,15 +988,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!enabled}
                                                 value={enabled ? value : ""}
-                                                onChange={(e) => {
-                                                    const n = Number(e.target.value);
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: participantView === 'paid'
-                                                            ? { ...s, paidValue: n }
-                                                            : { ...s, splitValue: n },
-                                                    }))
-                                                }}
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), participantView)}
                                                 slotProps={{
                                                     input: { endAdornment: unitAdornment(mode, currency) }
                                                 }}
