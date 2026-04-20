@@ -102,14 +102,11 @@ export const FriendsPage = () => {
                       shape="circle"
                       iconSize={24}
                     />
-
-                    <Box sx={{ minWidth: 0 }}>
-                      {/* Bigger typography without changing your FriendUserOption layout logic too much */}
+                    <Stack sx={{ minWidth: 0 }} gap={1}>
                       <Typography
                         sx={{
                           typography: { xs: "h6", md: "h5" },
                           fontWeight: 700,
-                          lineHeight: 1.1,
                         }}
                       >
                         {`${f.user.firstName ?? ""} ${f.user.lastName ?? ""}`.trim() ||
@@ -119,34 +116,23 @@ export const FriendsPage = () => {
                         sx={{
                           mt: 0.25,
                           typography: { xs: "body2", md: "body1" },
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: { xs: 190, sm: 320, md: 460 },
                         }}
                       >
                         {f.user.email}
                       </Typography>
-                    </Box>
+                    </Stack>
                   </Stack>
 
-                  {/* Prepared Detail button (same style as GroupList) */}
                   <Button
                     variant="contained"
                     disabled
                     sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
                       padding: { xs: "8px 20px", md: "12px 32px" },
                       fontSize: { xs: 14, md: 20 },
                       borderRadius: 9999,
                       backgroundColor: COLORS.PRIMARY,
                       color: COLORS.SECONDARY,
                       textTransform: "none",
-                      fontWeight: 700,
-                      flexShrink: 0,
-                      opacity: 0.7,
                     }}
                   >
                     <FormattedMessage id="common.detail" defaultMessage="Detail" />
