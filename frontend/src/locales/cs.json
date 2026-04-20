@@ -92,7 +92,7 @@
 
   "groupDetail.expenses.paidBy": "zaplatil/a",
   "groupDetail.expenses.yourSplit": "váš podíl",
-  "groupDetail.expenses.totalPaid": "celkem zaplaceno",
+  "groupDetail.expenses.totalPaid": "celkem",
   "groupDetail.expenses.detail": "Detail",
   "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {Vy} other {{debtorName}}} jste zaplatil/a {amount} {currencySymbol} {creditorIsCurrent, select, true {Vám} other {uživateli {creditorName}}}",
 

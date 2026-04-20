@@ -51,7 +51,13 @@ const PaymentMessage = ({ transaction }: { transaction: TTransaction }) => {
     const creditorIsCurrent = (creditorItem?.user.id ?? -1) === currentUserId;
 
     return (
-        <Typography fontWeight="bold" color={COLORS.PRIMARY}>
+        <Typography
+            color={COLORS.PRIMARY}
+            sx={{
+                typography: {xs: "body2", md: "body1"},
+                fontWeight: {xs: 600, md: 700},
+            }}
+        >
             <FormattedMessage
                 id="groupDetail.expenses.paymentLine"
                 values={{
@@ -82,12 +88,12 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
     return (
         <>
             <Stack direction="row" alignItems="center" py={1.5} gap={2}>
-                <Box sx={{ color: COLORS.PRIMARY, display: "flex", justifyContent: "center" }}>
+                <Box sx={{ color: COLORS.PRIMARY, display: "flex", justifyContent: "center", width: {xs: 30, md: 40}, heigh: {xs: 30, md: 40} }}>
                     {getCategoryIcon(transaction)}
                 </Box>
 
                 {transaction.transactionType === 'PAYMENT' ? (
-                    <Box flex={1} sx={{ px: 5}}>
+                    <Box flex={1} sx={{ px: { md: 5 } }}>
                         <PaymentMessage transaction={transaction} />
                     </Box>
                 ) : (
