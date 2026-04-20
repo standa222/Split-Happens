@@ -72,7 +72,6 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     const [paidMode, setPaidMode] = useState<Mode>("fixed");
     const [splitMode, setSplitMode] = useState<Mode>("fixed");
     const [groupId, setGroupId] = useState<number>(initGroup?.id ?? 0);
-    const [participants, setParticipants] = useState(initGroup?.members || []);
     const [rowState, setRowState] = useState<Record<number, RowState>>({});
     const [participantView, setParticipantView] = useState<ParticipantView>('split');
     const [errorOpen, setErrorOpen] = useState(false);
@@ -84,28 +83,41 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         return [...fetchedGroups.activeGroups, ...fetchedGroups.inactiveGroups];
     }, [isGroupsLoading, isGroupError, fetchedGroups]);
     const { data: groupDetail } = useGroupDetail(groupId);
+    const currentMembers = groupDetail?.members || initGroup?.members || [];
 
     useEffect(() => {
-        setParticipants(groupDetail?.members || []);
-    }, [groupDetail]);
+        if (groupDetail?.members && !isEditMode) {
+            const initialParticipants = groupDetail.members;
 
-    const { mutate: createMutate, isPending: isCreatePending, isError: isCreateError, error: createError } = useAddExpense({
+            // Initialize rowState: All checkboxes for "Split" are TRUE, "Paid" are FALSE
+            const nextRowState: Record<number, RowState> = {};
+            initialParticipants.forEach((u) => {
+                nextRowState[u.id] = {
+                    paidEnabled: false,
+                    paidValue: 0,
+                    splitEnabled: true,
+                    splitValue: 0,
+                };
+            });
+            setRowState(nextRowState);
+        }
+    }, [groupDetail, isEditMode]);
+
+    const { mutate: createMutate, isPending: isCreatePending, error: createError } = useAddExpense({
         onSuccess: () => {
             onSuccess?.("create");
             onClose?.();
         },
+        onError: () => setErrorOpen(true),
     });
 
-    const { mutate: editMutate, isPending: isEditPending, isError: isEditError, error: editError } = useEditExpense({
+    const { mutate: editMutate, isPending: isEditPending, error: editError } = useEditExpense({
         onSuccess: () => {
             onSuccess?.("edit");
             onClose?.();
         },
+        onError: () => setErrorOpen(true),
     });
-
-    useEffect(() => {
-        if (isCreateError || isEditError) setErrorOpen(true);
-    }, [isCreateError, isEditError]);
 
     const apiError = (isEditMode ? editError : createError) as unknown;
 
@@ -131,37 +143,35 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         },
     });
 
-    const currency = useWatch({ control, name: "currency" });
+    const [currency, totalAmount] = useWatch({
+        control,
+        name: ["currency", "totalAmount"]
+    });
 
     useEffect(() => {
-        if (!initTransaction) return;
-
-        // Force group context for edit mode.
-        setGroupId(initGroup?.id ?? 0);
-        reset((prev) => ({
-            ...prev,
-            groupId: initGroup?.id ?? prev.groupId,
-            currency: initGroup?.defaultCurrency ?? prev.currency,
-            title: initTransaction.title,
-            totalAmount: initTransaction.totalAmount,
-            transactionType: initTransaction.transactionType === "PAYMENT" ? "PAYMENT" : "EXPENSE",
-        }));
-
-        // Build rowState from balance changes: positive -> paidBy enabled, negative -> split enabled.
-        const nextRowState: Record<number, RowState> = {};
-        for (const item of initTransaction.items) {
-            nextRowState[item.user.id] = {
-                paidEnabled: item.balanceChange > 0,
-                paidValue: item.balanceChange > 0 ? item.balanceChange : 0,
-                splitEnabled: item.balanceChange < 0,
-                splitValue: item.balanceChange < 0 ? Math.abs(item.balanceChange) : 0,
-            };
+        if (isEditMode && initTransaction) {
+            const nextRowState: Record<number, RowState> = {};
+            initTransaction.items.forEach(item => {
+                nextRowState[item.user.id] = {
+                    paidEnabled: item.balanceChange > 0,
+                    paidValue: item.balanceChange > 0 ? item.balanceChange : 0,
+                    splitEnabled: item.balanceChange < 0,
+                    splitValue: item.balanceChange < 0 ? Math.abs(item.balanceChange) : 0,
+                };
+            });
+            setRowState(nextRowState);
+            reset({ ...initTransaction, groupId: initGroup?.id });
+        } else if (groupDetail?.members) {
+            const nextRowState: Record<number, RowState> = {};
+            groupDetail.members.forEach(u => {
+                nextRowState[u.id] = { paidEnabled: false, paidValue: 0, splitEnabled: true, splitValue: 0 };
+            });
+            setRowState(nextRowState);
         }
-        setRowState(nextRowState);
-    }, [initTransaction, initGroup?.id, initGroup?.defaultCurrency, reset]);
+    }, [groupDetail, initTransaction, isEditMode, reset]);
 
     const onSubmit = (data: TAddExpenseForm) => {
-        const paidBy: TAddExpenseForm["paidBy"] = (participants as unknown as TUser[])
+        const paidBy: TAddExpenseForm["paidBy"] = (currentMembers as unknown as TUser[])
             .map((u) => ({u, s: rowState[u.id]}))
             .filter((x): x is { u: TUser; s: RowState } => !!x.s?.paidEnabled)
             .map(({u, s}) => ({
@@ -169,7 +179,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                 ...asModeValue(paidMode, s.paidValue),
             }));
 
-        const splitBetween: TAddExpenseForm["splitBetween"] = (participants as unknown as TUser[])
+        const splitBetween: TAddExpenseForm["splitBetween"] = (currentMembers as unknown as TUser[])
             .map((u) => ({u, s: rowState[u.id]}))
             .filter((x): x is { u: TUser; s: RowState } => !!x.s?.splitEnabled)
             .map(({u, s}) => ({
@@ -190,6 +200,44 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             createMutate(payload);
         }
     };
+
+    const checkboxTrigger = useMemo(() => {
+        return currentMembers.map(u =>
+            `${rowState[u.id]?.paidEnabled ?? false}-${rowState[u.id]?.splitEnabled ?? false}`
+        ).join(',');
+    }, [rowState, currentMembers]);
+
+    useEffect(() => {
+        // Only auto-calculate in "fixed" mode.
+        if (paidMode !== "fixed" && splitMode !== "fixed") return;
+
+        setRowState((prev) => {
+            const next = { ...prev };
+            const total = Number.isFinite(totalAmount) ? totalAmount : 0;
+
+            // 1. Calculate Paid By distribution
+            const activePayers = currentMembers.filter((u) => next[u.id]?.paidEnabled);
+            const perPayer = activePayers.length > 0 ? total / activePayers.length : 0;
+
+            // 2. Calculate Split Between distribution
+            const activeSplitters = currentMembers.filter((u) => next[u.id]?.splitEnabled);
+            const perSplitter = activeSplitters.length > 0 ? total / activeSplitters.length : 0;
+
+            currentMembers.forEach((u) => {
+                if (!next[u.id]) return;
+
+                if (paidMode === "fixed") {
+                    next[u.id].paidValue = next[u.id].paidEnabled ? Number(perPayer.toFixed(2)) : 0;
+                }
+                if (splitMode === "fixed") {
+                    next[u.id].splitValue = next[u.id].splitEnabled ? Number(perSplitter.toFixed(2)) : 0;
+                }
+            });
+
+            return next;
+        });
+        // Added checkboxTrigger here to catch toggle events
+    }, [totalAmount, currentMembers, paidMode, splitMode, checkboxTrigger]);
 
     return (
         <>
@@ -493,7 +541,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             <Grid size={3.3} />
 
                             {/* Rows */}
-                            {(participants as unknown as TUser[]).map((u) => {
+                            {(currentMembers as unknown as TUser[]).map((u) => {
                                 const s: RowState = rowState[u.id] ?? {
                                     paidEnabled: false,
                                     paidValue: 0,
@@ -883,7 +931,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             </Box>
 
                             <Stack gap={1}>
-                                {(participants as unknown as TUser[]).map((u) => {
+                                {(currentMembers as unknown as TUser[]).map((u) => {
                                     const s: RowState = rowState[u.id] ?? {
                                         paidEnabled: false,
                                         paidValue: 0,
