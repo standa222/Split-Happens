@@ -1,9 +1,11 @@
 import { LoginForm } from "./LoginForm";
-import {Stack} from "@mui/material";
+import {Stack, Box} from "@mui/material";
 import {COLORS} from "../../constants/colors";
 import {useState} from "react";
 import {RegistrationForm} from "./RegistrationForm";
 import {AppSnackbar} from "../../components/AppSnackbar";
+import {useLocaleStore} from "../../store/localeStore";
+import {LanguageSwitch} from "../../components/Navigation";
 
 type ShowForm = "login" | "register";
 
@@ -16,6 +18,8 @@ type SnackbarState = {
 export const LoginPage = () => {
     const [showForm, setShowForm] = useState<ShowForm>("login");
     const [snackbar, setSnackbar] = useState<SnackbarState>({open: false, message: "", severity: "success"});
+    const locale = useLocaleStore((s) => s.locale);
+    const setLocale = useLocaleStore((s) => s.setLocale);
 
     return (
         <Stack
@@ -27,7 +31,22 @@ export const LoginPage = () => {
             }}
             justifyContent="center"
         >
-            <Stack maxWidth="50%">
+            <Box
+                sx={{
+                    position: "absolute",
+                    top: { xs: 16, md: 24 },
+                    right: { xs: 16, md: 100 },
+                    zIndex: 10,
+                }}
+            >
+                <LanguageSwitch value={locale} onChange={setLocale} />
+            </Box>
+
+            <Stack
+                sx={{
+                    width: { xs: "90%", sm: "70%", md: "25%" }
+                }}
+            >
                 {showForm === "login" ? (
                     <LoginForm
                         onSwitchToRegister={() => setShowForm("register")}

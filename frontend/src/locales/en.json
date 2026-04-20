@@ -123,6 +123,9 @@
   "register.submitting": "Registering...",
   "register.haveAccount": "Already have an account?",
   "register.loginCta": "Log in",
+  "register.personalInfo": "Personal information",
+  "register.bankInfo": "Bank account information (optional)",
+  "register.requiredFields": "* Required fields",
 
   "notFound.title": "404 - Page Not Found",
   "notFound.description": "The page you are looking for does not exist.",

@@ -88,7 +88,7 @@ function BellIcon() {
     );
 }
 
-function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChange: (v: "en" | "cs") => void }) {
+export function LanguageSwitch({ value, onChange }: { value: "en" | "cs"; onChange: (v: "en" | "cs") => void }) {
     const options: Array<{ value: "en" | "cs"; label: string }> = [
         { value: "en", label: "EN" },
         { value: "cs", label: "CS" },

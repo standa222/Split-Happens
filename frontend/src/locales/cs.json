@@ -122,6 +122,9 @@
   "register.submitting": "Registruji...",
   "register.haveAccount": "Už máte účet?",
   "register.loginCta": "Přihlásit se",
+  "register.personalInfo": "Osobní informace",
+  "register.bankInfo": "Bankovní informace (nepovinné)",
+  "register.requiredFields": "* Povinné pole",
 
   "notFound.title": "404 - Stránka nenalezena",
   "notFound.description": "Požadovaná stránka neexistuje.",
