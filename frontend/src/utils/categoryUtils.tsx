@@ -58,3 +58,8 @@ export function getCategoryIcon(transaction: TTransaction) {
         <img src={logo} alt="Logo" style={{height: 40, width: "auto"}}/>
     )
 }
+
+export function getCategoryIntlId(categoryName: string) {
+    const category = categories.find(c => c.name === categoryName);
+    return category ? category.intlId : "category.other";
+}

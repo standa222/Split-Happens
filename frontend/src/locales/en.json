@@ -136,7 +136,7 @@
   "expense.detail.createdAt": "Created",
   "expense.detail.total": "Total",
   "expense.detail.yourSplit": "Your split",
-  "expense.detail.type": "Type",
+  "expense.detail.category": "Expense category",
   "expense.detail.type.expense": "Expense",
   "expense.detail.type.payment": "Payment",
   "expense.detail.paidBy": "Paid by",

@@ -135,7 +135,7 @@
   "expense.detail.createdAt": "Vytvořeno",
   "expense.detail.total": "Celkem",
   "expense.detail.yourSplit": "Váš podíl",
-  "expense.detail.type": "Typ",
+  "expense.detail.category": "Kategorie",
   "expense.detail.type.expense": "Výdaj",
   "expense.detail.type.payment": "Platba",
   "expense.detail.paidBy": "Zaplatil/a",
