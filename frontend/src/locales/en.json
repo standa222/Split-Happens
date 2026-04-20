@@ -281,5 +281,9 @@
   "friends.request.rejected": "Friend request rejected.",
 
   "friends.requests.manageAria": "Manage friend requests",
-  "friends.requests.manageTitle": "Friend requests"
+  "friends.requests.manageTitle": "Friend requests",
+
+  "friends.detail.subtitle": "Friend balance",
+  "friends.detail.loading": "Loading...",
+  "friends.detail.error": "Failed to load friend detail."
 }

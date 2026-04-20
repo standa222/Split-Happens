@@ -282,5 +282,9 @@
   "friends.request.rejected": "Žádost o přátelství byla odmítnuta.",
 
   "friends.requests.manageAria": "Spravovat žádosti o přátelství",
-  "friends.requests.manageTitle": "Žádosti o přátelství"
+  "friends.requests.manageTitle": "Žádosti o přátelství",
+
+  "friends.detail.subtitle": "Vyúčtování s přítelem",
+  "friends.detail.loading": "Načítám...",
+  "friends.detail.error": "Nepodařilo se načíst detail přítele."
 }

@@ -14,6 +14,8 @@ import { AppSnackbar } from "../../components/AppSnackbar";
 import { ImageAvatar } from "../../components/ImageAvatar";
 import {useFriendsQuery, useIncomingFriendRequestsQuery} from "../../hooks/useFriends";
 import { FriendRequestsModal } from "../../components/FriendRequestsModal";
+import {NavLink} from "react-router-dom";
+import {ROUTES} from "../../enums/routes";
 
 export const FriendsPage = () => {
   const intl = useIntl();
@@ -30,6 +32,7 @@ export const FriendsPage = () => {
 
   const friends = useFriendsQuery();
   const friendsList = useMemo(() => friends.data ?? [], [friends.data]);
+  console.log(friendsList);
 
   return (
     <Box width="100%" sx={{ py: 2, color: COLORS.PRIMARY }}>
@@ -124,11 +127,12 @@ export const FriendsPage = () => {
                   </Stack>
 
                   <Button
-                    variant="contained"
-                    disabled
+                    component={NavLink}
+                    to={ROUTES.FRIENDS.detail(f.friendGroupId)}
                     sx={{
                       padding: { xs: "8px 20px", md: "12px 32px" },
                       fontSize: { xs: 14, md: 20 },
+                      lineHeight: 1.2,
                       borderRadius: 9999,
                       backgroundColor: COLORS.PRIMARY,
                       color: COLORS.SECONDARY,

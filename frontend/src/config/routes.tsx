@@ -4,6 +4,7 @@ import {HomePage} from "../pages/HomePage/HomePage";
 import {GroupDetailPage} from "../pages/GroupDetailPage/GroupDetailPage";
 import { ProfilePage } from "../pages/ProfilePage/ProfilePage";
 import {FriendsPage} from "../pages/FriendsPage/FriendsPage";
+import { FriendDetailPage } from "../pages/FriendsPage/FriendDetailPage";
 
 export type RouteType = {
     title: string;
@@ -47,6 +48,6 @@ export const navigations: RouteType[] = [
         title: 'Friend detail',
         path: ROUTES.FRIENDS.DETAIL,
         url: ROUTES.FRIENDS.DETAIL,
-        element: <FriendsPage />,
+        element: <FriendDetailPage />,
     }
 ]

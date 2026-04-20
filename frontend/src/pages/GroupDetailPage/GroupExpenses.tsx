@@ -125,6 +125,7 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                                 backgroundColor: COLORS.PRIMARY,
                                 color: COLORS.SECONDARY,
                                 textTransform: "none",
+                                padding: { xs: 0, md: "6px 16px" },
                             }}
                         >
                             <Box component="span" sx={{ display: { xs: "none", md: "inline" }, mx: 1 }}>

@@ -49,7 +49,7 @@ export function AddExpenseButton({
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    padding: {xs: 0, md: "20px"},
+                    padding: {xs: 0, md: 0},
                     width: "100%",
                     transition: "transform 0.1s ease-in-out",
                     "&:hover": {

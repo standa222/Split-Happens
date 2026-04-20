@@ -6,8 +6,8 @@ export type TGroupDetail = {
     id: number;
     name: string;
     defaultCurrency: string;
-    permissionMode: 'hard' | 'soft';
-    groupType: 'group' | 'friend';
+    permissionMode: 'HARD' | 'SOFT';
+    groupType: 'GROUP' | 'FRIEND';
     members: TUser[];
     debts: TDebt[];
     transactions: TTransaction[];

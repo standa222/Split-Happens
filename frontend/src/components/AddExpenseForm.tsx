@@ -9,7 +9,6 @@ import {
     FormLabel,
     Grid,
     InputAdornment,
-    MenuItem,
     Radio,
     RadioGroup,
     Stack,
@@ -111,6 +110,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     const apiError = (isEditMode ? editError : createError) as unknown;
 
     const isPending = isEditMode ? isEditPending : isCreatePending;
+    const isFriendGroup = initGroup?.groupType === "FRIEND";
 
     const {
         control,
@@ -301,45 +301,48 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                         <Box display="flex" gap={3} mt={2} alignItems="center">
                             <Stack flex={1}>
-                                <Controller
-                                    name="groupId"
-                                    control={control}
-                                    defaultValue={initGroup?.id ?? 0}
-                                    render={({ field }) => (
-                                        <Autocomplete
-                                            size="small"
-                                            options={groups}
-                                            getOptionLabel={(o) => o.name}
-                                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                                            value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
-                                            onChange={(_, selected) => {
-                                                if (isEditMode) return;
-                                                field.onChange(selected?.id ?? 0);
-                                                setGroupId(selected?.id ?? 0);
-                                            }}
-                                            onBlur={field.onBlur}
-                                            filterOptions={(options, state) => {
-                                                const q = state.inputValue.trim().toLowerCase();
-                                                if (!q) return options;
-                                                return options.filter((o) => o.name.toLowerCase().includes(q));
-                                            }}
-                                            renderOption={(props, option) => (
-                                                <Box component="li" {...props} key={option.id}>
-                                                    {option.name}
-                                                </Box>
-                                            )}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    label={<FormattedMessage id="expense.fields.group" />}
-                                                    inputRef={field.ref}
-                                                    error={!!errors.groupId}
-                                                    helperText={tError(intl, errors.groupId?.message)}
-                                                />
-                                            )}
-                                        />
-                                    )}
-                                />
+                                {!isFriendGroup && (
+                                        <Controller
+                                        name="groupId"
+                                        control={control}
+                                        defaultValue={initGroup?.id ?? 0}
+                                        render={({ field }) => (
+                                            <Autocomplete
+                                                size="small"
+                                                options={groups}
+                                                disabled={isEditMode}
+                                                getOptionLabel={(o) => o.name}
+                                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                                value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
+                                                onChange={(_, selected) => {
+                                                    if (isEditMode) return;
+                                                    field.onChange(selected?.id ?? 0);
+                                                    setGroupId(selected?.id ?? 0);
+                                                }}
+                                                onBlur={field.onBlur}
+                                                filterOptions={(options, state) => {
+                                                    const q = state.inputValue.trim().toLowerCase();
+                                                    if (!q) return options;
+                                                    return options.filter((o) => o.name.toLowerCase().includes(q));
+                                                }}
+                                                renderOption={(props, option) => (
+                                                    <Box component="li" {...props} key={option.id}>
+                                                        {option.name}
+                                                    </Box>
+                                                )}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label={<FormattedMessage id="expense.fields.group" />}
+                                                        inputRef={field.ref}
+                                                        error={!!errors.groupId}
+                                                        helperText={tError(intl, errors.groupId?.message)}
+                                                    />
+                                                )}
+                                            />
+                                        )}
+                                    />
+                                )}
                             </Stack>
 
                             <Box display="flex" gap={3} flex={1} alignItems="center">
@@ -664,42 +667,44 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                 )}
                             />
 
-                            <Controller
-                                name="groupId"
-                                control={control}
-                                defaultValue={initGroup?.id ?? 0}
-                                render={({ field }) => (
-                                    <Autocomplete
-                                        size="small"
-                                        options={groups}
-                                        getOptionLabel={(o) => o.name}
-                                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                                        value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
-                                        onChange={(_, selected) => {
-                                            if (isEditMode) return;
-                                            field.onChange(selected?.id ?? 0);
-                                            setGroupId(selected?.id ?? 0);
-                                        }}
-                                        onBlur={field.onBlur}
-                                        filterOptions={(options, state) => {
-                                            const q = state.inputValue.trim().toLowerCase();
-                                            if (!q) return options;
-                                            return options.filter((o) => o.name.toLowerCase().includes(q));
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                label={<FormattedMessage id="expense.fields.group" />}
-                                                inputRef={field.ref}
-                                                error={!!errors.groupId}
-                                                helperText={tError(intl, errors.groupId?.message)}
-                                            />
-                                        )}
-                                    />
-                                )}
-                            />
-
+                            {!isFriendGroup ? (
+                                <Controller
+                                    name="groupId"
+                                    control={control}
+                                    defaultValue={initGroup?.id ?? 0}
+                                    render={({ field }) => (
+                                        <Autocomplete
+                                            size="small"
+                                            options={groups}
+                                            disabled={isEditMode}
+                                            getOptionLabel={(o) => o.name}
+                                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                                            value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
+                                            onChange={(_, selected) => {
+                                                if (isEditMode) return;
+                                                field.onChange(selected?.id ?? 0);
+                                                setGroupId(selected?.id ?? 0);
+                                            }}
+                                            onBlur={field.onBlur}
+                                            filterOptions={(options, state) => {
+                                                const q = state.inputValue.trim().toLowerCase();
+                                                if (!q) return options;
+                                                return options.filter((o) => o.name.toLowerCase().includes(q));
+                                            }}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    fullWidth
+                                                    label={<FormattedMessage id="expense.fields.group" />}
+                                                    inputRef={field.ref}
+                                                    error={!!errors.groupId}
+                                                    helperText={tError(intl, errors.groupId?.message)}
+                                                />
+                                            )}
+                                        />
+                                    )}
+                                />
+                            ) : <Box/>}
                             <Controller
                                 name="totalAmount"
                                 control={control}
