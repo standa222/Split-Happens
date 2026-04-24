@@ -177,32 +177,15 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     }, [groupDetail, initTransaction, isEditMode, initGroup?.defaultCurrency, initGroup?.id, reset]);
 
     const onSubmit = (data: TAddExpenseForm) => {
-        const paidBy: TAddExpenseForm["paidBy"] = (currentMembers as unknown as TUser[])
-            .map((u) => ({u, s: rowState[u.id]}))
-            .filter((x): x is { u: TUser; s: RowState } => !!x.s?.paidEnabled)
-            .map(({u, s}) => ({
-                userId: u.id,
-                filledValue: Number.isFinite(s.paidValue) ? s.paidValue : 0,
-            }));
-
-        const splitBetween: TAddExpenseForm["splitBetween"] = (currentMembers as unknown as TUser[])
-            .map((u) => ({u, s: rowState[u.id]}))
-            .filter((x): x is { u: TUser; s: RowState } => !!x.s?.splitEnabled)
-            .map(({u, s}) => ({
-                userId: u.id,
-                filledValue: Number.isFinite(s.splitValue) ? s.splitValue : 0,
-            }));
+        console.log("paidBy:", data.paidBy);
+        console.log("splitBetween:", data.splitBetween);
 
         const payload: TAddExpenseForm = {
             ...data,
-            paidByMode: paidMode,
-            splitBetweenMode: splitMode,
-            paidBy,
-            splitBetween,
             transactionType: "EXPENSE",
         };
 
-        console.log("payload", payload)
+        console.log(payload);
 
         if (isEditMode) {
             editMutate({ transactionId: initTransaction!.id, data: payload });
@@ -254,6 +237,18 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
             calculateNewValues('paid');
             calculateNewValues('split');
+
+            const syncPaidBy = currentMembers
+                .filter(u => next[u.id]?.paidEnabled)
+                .map(u => ({ userId: u.id, filledValue: next[u.id].paidValue }));
+
+            const syncSplitBetween = currentMembers
+                .filter(u => next[u.id]?.splitEnabled)
+                .map(u => ({ userId: u.id, filledValue: next[u.id].splitValue }));
+
+            setValue("paidBy", syncPaidBy, { shouldValidate: true });
+            setValue("splitBetween", syncSplitBetween, { shouldValidate: true });
+
             return next;
         });
     }, [totalAmount, paidMode, splitMode, currentMembers, checkboxTrigger]);
@@ -272,6 +267,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
         setRowState(prev => {
             const next = { ...prev };
+            console.log(next)
             const isPercentage = mode === 'PERCENTAGE';
             const targetTotal = isPercentage ? 100 : total;
 
@@ -340,7 +336,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         <>
             <Box
                 component="form"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(onSubmit, (err) => console.log("Validation Errors:", err))}
                 sx={{
                     px: { xs: 0, md: 2 },
                     pb: 2,
