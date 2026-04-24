@@ -16,7 +16,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import { COLORS } from "../constants/colors";
+import {COLORS} from "../constants/colors";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
 import {Controller, useForm, useWatch} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
@@ -46,8 +46,10 @@ type Mode = "fixed" | "partial" | "percentage";
 type RowState = {
     paidEnabled: boolean;
     paidValue: number;
+    paidLocked: boolean;
     splitEnabled: boolean;
     splitValue: number;
+    splitLocked: boolean;
 };
 
 const asModeValue = (mode: Mode, value: number) => {
@@ -72,7 +74,6 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     const [paidMode, setPaidMode] = useState<Mode>("fixed");
     const [splitMode, setSplitMode] = useState<Mode>("fixed");
     const [groupId, setGroupId] = useState<number>(initGroup?.id ?? 0);
-    const [participants, setParticipants] = useState(initGroup?.members || []);
     const [rowState, setRowState] = useState<Record<number, RowState>>({});
     const [participantView, setParticipantView] = useState<ParticipantView>('split');
     const [errorOpen, setErrorOpen] = useState(false);
@@ -84,28 +85,43 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         return [...fetchedGroups.activeGroups, ...fetchedGroups.inactiveGroups];
     }, [isGroupsLoading, isGroupError, fetchedGroups]);
     const { data: groupDetail } = useGroupDetail(groupId);
+    const currentMembers = groupDetail?.members || initGroup?.members || [];
 
     useEffect(() => {
-        setParticipants(groupDetail?.members || []);
-    }, [groupDetail]);
+        if (groupDetail?.members && !isEditMode) {
+            const initialParticipants = groupDetail.members;
 
-    const { mutate: createMutate, isPending: isCreatePending, isError: isCreateError, error: createError } = useAddExpense({
+            // Initialize rowState: All checkboxes for "Split" are TRUE, "Paid" are FALSE
+            const nextRowState: Record<number, RowState> = {};
+            initialParticipants.forEach((u) => {
+                nextRowState[u.id] = {
+                    paidEnabled: false,
+                    paidValue: 0,
+                    paidLocked: false,
+                    splitEnabled: true,
+                    splitValue: 0,
+                    splitLocked: false,
+                };
+            });
+            setRowState(nextRowState);
+        }
+    }, [groupDetail, isEditMode]);
+
+    const { mutate: createMutate, isPending: isCreatePending, error: createError } = useAddExpense({
         onSuccess: () => {
             onSuccess?.("create");
             onClose?.();
         },
+        onError: () => setErrorOpen(true),
     });
 
-    const { mutate: editMutate, isPending: isEditPending, isError: isEditError, error: editError } = useEditExpense({
+    const { mutate: editMutate, isPending: isEditPending, error: editError } = useEditExpense({
         onSuccess: () => {
             onSuccess?.("edit");
             onClose?.();
         },
+        onError: () => setErrorOpen(true),
     });
-
-    useEffect(() => {
-        if (isCreateError || isEditError) setErrorOpen(true);
-    }, [isCreateError, isEditError]);
 
     const apiError = (isEditMode ? editError : createError) as unknown;
 
@@ -131,37 +147,47 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         },
     });
 
-    const currency = useWatch({ control, name: "currency" });
+    const [currency, totalAmount] = useWatch({
+        control,
+        name: ["currency", "totalAmount"]
+    });
 
     useEffect(() => {
-        if (!initTransaction) return;
+        if (isEditMode && initTransaction) {
+            const nextRowState: Record<number, RowState> = {};
+            initTransaction.items.forEach(item => {
+                const isPayer = item.balanceChange > 0;
+                const isSplitter = item.balanceChange < 0;
 
-        // Force group context for edit mode.
-        setGroupId(initGroup?.id ?? 0);
-        reset((prev) => ({
-            ...prev,
-            groupId: initGroup?.id ?? prev.groupId,
-            currency: initGroup?.defaultCurrency ?? prev.currency,
-            title: initTransaction.title,
-            totalAmount: initTransaction.totalAmount,
-            transactionType: initTransaction.transactionType === "PAYMENT" ? "PAYMENT" : "EXPENSE",
-        }));
-
-        // Build rowState from balance changes: positive -> paidBy enabled, negative -> split enabled.
-        const nextRowState: Record<number, RowState> = {};
-        for (const item of initTransaction.items) {
-            nextRowState[item.user.id] = {
-                paidEnabled: item.balanceChange > 0,
-                paidValue: item.balanceChange > 0 ? item.balanceChange : 0,
-                splitEnabled: item.balanceChange < 0,
-                splitValue: item.balanceChange < 0 ? Math.abs(item.balanceChange) : 0,
-            };
+                nextRowState[item.user.id] = {
+                    paidEnabled: isPayer,
+                    paidValue: isPayer ? item.balanceChange : 0,
+                    paidLocked: isPayer,
+                    splitEnabled: isSplitter,
+                    splitValue: isSplitter ? Math.abs(item.balanceChange) : 0,
+                    splitLocked: isSplitter,
+                };
+            });
+            setRowState(nextRowState);
+            reset({ ...initTransaction, groupId: initGroup?.id });
+        } else if (groupDetail?.members) {
+            const nextRowState: Record<number, RowState> = {};
+            groupDetail.members.forEach(u => {
+                nextRowState[u.id] = {
+                    paidEnabled: false,
+                    paidValue: 0,
+                    paidLocked: false,
+                    splitEnabled: true,
+                    splitValue: splitMode === 'partial' ? 1 : 0,
+                    splitLocked: false
+                };
+            });
+            setRowState(nextRowState);
         }
-        setRowState(nextRowState);
-    }, [initTransaction, initGroup?.id, initGroup?.defaultCurrency, reset]);
+    }, [groupDetail, initTransaction, isEditMode, reset]);
 
     const onSubmit = (data: TAddExpenseForm) => {
-        const paidBy: TAddExpenseForm["paidBy"] = (participants as unknown as TUser[])
+        const paidBy: TAddExpenseForm["paidBy"] = (currentMembers as unknown as TUser[])
             .map((u) => ({u, s: rowState[u.id]}))
             .filter((x): x is { u: TUser; s: RowState } => !!x.s?.paidEnabled)
             .map(({u, s}) => ({
@@ -169,7 +195,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                 ...asModeValue(paidMode, s.paidValue),
             }));
 
-        const splitBetween: TAddExpenseForm["splitBetween"] = (participants as unknown as TUser[])
+        const splitBetween: TAddExpenseForm["splitBetween"] = (currentMembers as unknown as TUser[])
             .map((u) => ({u, s: rowState[u.id]}))
             .filter((x): x is { u: TUser; s: RowState } => !!x.s?.splitEnabled)
             .map(({u, s}) => ({
@@ -190,6 +216,131 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             createMutate(payload);
         }
     };
+
+    const checkboxTrigger = useMemo(() => {
+        return currentMembers.map(u =>
+            `${rowState[u.id]?.paidEnabled ?? false}-${rowState[u.id]?.splitEnabled ?? false}`
+        ).join(',');
+    }, [rowState, currentMembers]);
+
+    useEffect(() => {
+        if (paidMode === "partial" && splitMode === "partial") return;
+
+        setRowState((prev) => {
+            const next = { ...prev };
+            const total = Number.isFinite(totalAmount) ? totalAmount : 0;
+
+            const calculateNewValues = (type: 'paid' | 'split') => {
+                const mode = type === 'paid' ? paidMode : splitMode;
+                if (mode === 'partial') return;
+
+                const isPercentage = mode === 'percentage';
+                const targetTotal = isPercentage ? 100 : total;
+
+                const activeMembers = currentMembers.filter(u => next[u.id]?.[`${type}Enabled`]);
+                const lockedMembers = activeMembers.filter(u => next[u.id]?.[`${type}Locked`]);
+                const unlockedMembers = activeMembers.filter(u => !next[u.id]?.[`${type}Locked`]);
+
+                const sumOfLocked = lockedMembers.reduce((sum, u) => sum + next[u.id][`${type}Value`], 0);
+                const remaining = Math.max(0, targetTotal - sumOfLocked);
+
+                if (unlockedMembers.length > 0) {
+                    const baseValue = isPercentage
+                        ? Math.floor(remaining / unlockedMembers.length)
+                        : Number((remaining / unlockedMembers.length).toFixed(2));
+
+                    unlockedMembers.forEach((u, index) => {
+                        const isLast = index === unlockedMembers.length - 1;
+                        next[u.id][`${type}Value`] = isLast
+                            ? Number((remaining - (baseValue * (unlockedMembers.length - 1))).toFixed(2))
+                            : baseValue;
+                    });
+                }
+            };
+
+            calculateNewValues('paid');
+            calculateNewValues('split');
+            return next;
+        });
+    }, [totalAmount, paidMode, splitMode, currentMembers, checkboxTrigger]);
+
+    const handleValueChange = (userId: number, newValue: number, type: 'paid' | 'split') => {
+        const total = Number.isFinite(totalAmount) ? totalAmount : 0;
+        const mode = type === 'paid' ? paidMode : splitMode;
+
+        if (mode === "partial") {
+            setRowState(prev => ({
+                ...prev,
+                [userId]: { ...prev[userId], [`${type}Value`]: newValue }
+            }));
+            return;
+        }
+
+        setRowState(prev => {
+            const next = { ...prev };
+            const isPercentage = mode === 'percentage';
+            const targetTotal = isPercentage ? 100 : total;
+
+            next[userId] = {
+                ...next[userId],
+                [`${type}Value`]: newValue,
+                [`${type}Locked`]: true
+            };
+
+            const targetMembers = currentMembers.filter(m =>
+                m.id !== userId &&
+                (type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled) &&
+                !(type === 'paid' ? next[m.id]?.paidLocked : next[m.id]?.splitLocked)
+            );
+
+            if (targetMembers.length > 0) {
+                const sumOfLocked = currentMembers.reduce((sum, m) => {
+                    const isLocked = type === 'paid' ? next[m.id]?.paidLocked : next[m.id]?.splitLocked;
+                    const isEnabled = type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled;
+                    return (isLocked && isEnabled) ? sum + (type === 'paid' ? next[m.id].paidValue : next[m.id].splitValue) : sum;
+                }, 0);
+
+                const remaining = Math.max(0, targetTotal - sumOfLocked);
+
+                // Percentage uses Math.floor for whole numbers, Fixed uses toFixed(2)
+                const baseValue = isPercentage
+                    ? Math.floor(remaining / targetMembers.length)
+                    : Number((remaining / targetMembers.length).toFixed(2));
+
+                targetMembers.forEach((m, index) => {
+                    const isLast = index === targetMembers.length - 1;
+                    const value = isLast
+                        ? Number((remaining - (baseValue * (targetMembers.length - 1))).toFixed(2))
+                        : baseValue;
+
+                    next[m.id] = {
+                        ...next[m.id],
+                        [`${type}Value`]: value
+                    };
+                });
+            }
+            return next;
+        });
+    };
+
+    useEffect(() => {
+        setRowState(prev => {
+            const next = { ...prev };
+            currentMembers.forEach(u => {
+                if (next[u.id]) {
+                    if (splitMode === 'partial' && next[u.id].splitEnabled) {
+                        next[u.id].splitValue = 1;
+                        next[u.id].splitLocked = false;
+                    }
+                    if (paidMode === 'partial' && next[u.id].paidEnabled) {
+                        next[u.id].paidValue = 1;
+                        next[u.id].paidLocked = false;
+                    }
+                }
+            });
+            return next;
+        });
+    }, [splitMode, paidMode]);
 
     return (
         <>
@@ -493,12 +644,14 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             <Grid size={3.3} />
 
                             {/* Rows */}
-                            {(participants as unknown as TUser[]).map((u) => {
+                            {(currentMembers as unknown as TUser[]).map((u) => {
                                 const s: RowState = rowState[u.id] ?? {
                                     paidEnabled: false,
                                     paidValue: 0,
+                                    paidLocked: false,
                                     splitEnabled: true,
                                     splitValue: 0,
+                                    splitLocked: false,
                             };
 
                                 return (
@@ -515,7 +668,11 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) =>
                                                     setRowState((prev) => ({
                                                         ...prev,
-                                                        [u.id]: { ...s, paidEnabled: e.target.checked },
+                                                        [u.id]: {
+                                                            ...s,
+                                                            paidEnabled: e.target.checked,
+                                                            paidValue: (paidMode === 'partial' && e.target.checked) ? 1 : 0,
+                                                            paidLocked: false },
                                                     }))
                                                 }
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -528,16 +685,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!s.paidEnabled}
                                                 value={s.paidEnabled ? s.paidValue : ""}
-                                                onChange={(e) =>
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: { ...s, paidValue: Number(e.target.value) },
-                                                    }))
-                                                }
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), 'paid')}
                                                 slotProps={{
-                                                    input: {
-                                                        endAdornment: unitAdornment(paidMode, currency)
-                                                    }
+                                                    input: { endAdornment: unitAdornment(paidMode, currency) }
                                                 }}
                                             />
                                         </Grid>
@@ -548,7 +698,12 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) =>
                                                     setRowState((prev) => ({
                                                         ...prev,
-                                                        [u.id]: { ...s, splitEnabled: e.target.checked },
+                                                        [u.id]: {
+                                                            ...s,
+                                                            splitEnabled: e.target.checked,
+                                                            splitValue: (splitMode === 'partial' && e.target.checked) ? 1 : 0,
+                                                            splitLocked: false
+                                                        },
                                                     }))
                                                 }
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -561,16 +716,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!s.splitEnabled}
                                                 value={s.splitEnabled ? s.splitValue : ""}
-                                                onChange={(e) =>
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: { ...s, splitValue: Number(e.target.value) },
-                                                    }))
-                                                }
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), 'split')}
                                                 slotProps={{
-                                                    input: {
-                                                        endAdornment: unitAdornment(splitMode, currency)
-                                                    }
+                                                    input: { endAdornment: unitAdornment(splitMode, currency) }
                                                 }}
                                             />
                                         </Grid>
@@ -883,12 +1031,14 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             </Box>
 
                             <Stack gap={1}>
-                                {(participants as unknown as TUser[]).map((u) => {
+                                {(currentMembers as unknown as TUser[]).map((u) => {
                                     const s: RowState = rowState[u.id] ?? {
                                         paidEnabled: false,
                                         paidValue: 0,
+                                        paidLocked: false,
                                         splitEnabled: true,
                                         splitValue: 0,
+                                        splitLocked: false,
                                     };
 
                                     const enabled = participantView === 'paid' ? s.paidEnabled : s.splitEnabled;
@@ -913,11 +1063,13 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 checked={enabled}
                                                 onChange={(e) => {
                                                     const checked = e.target.checked;
+                                                    const mode = participantView === 'paid' ? paidMode : splitMode;
+                                                    const initialValue = (mode === 'partial' && checked) ? 1 : 0;
                                                     setRowState((prev) => ({
                                                         ...prev,
                                                         [u.id]: participantView === 'paid'
-                                                            ? { ...s, paidEnabled: checked }
-                                                            : { ...s, splitEnabled: checked },
+                                                            ? { ...s, paidEnabled: checked, paidValue: initialValue, paidLocked: false }
+                                                            : { ...s, splitEnabled: checked, splitValue: initialValue, splitLocked: false },
                                                     }))
                                                 }}
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -928,15 +1080,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!enabled}
                                                 value={enabled ? value : ""}
-                                                onChange={(e) => {
-                                                    const n = Number(e.target.value);
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: participantView === 'paid'
-                                                            ? { ...s, paidValue: n }
-                                                            : { ...s, splitValue: n },
-                                                    }))
-                                                }}
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), participantView)}
                                                 slotProps={{
                                                     input: { endAdornment: unitAdornment(mode, currency) }
                                                 }}
