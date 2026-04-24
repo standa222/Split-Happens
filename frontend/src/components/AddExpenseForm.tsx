@@ -34,15 +34,6 @@ import {formatApiError} from "../utils/apiErrorUtils";
 import {categories} from "../utils/categoryUtils";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
-type Props = {
-    onClose?: () => void;
-    initGroup?: TGroupDetail;
-    initTransaction?: TTransaction;
-    onSuccess?: (mode: "create" | "edit") => void;
-};
-
-type Mode = "fixed" | "partial" | "percentage";
-
 type RowState = {
     paidEnabled: boolean;
     paidValue: number;
@@ -52,17 +43,19 @@ type RowState = {
     splitLocked: boolean;
 };
 
-const asModeValue = (mode: Mode, value: number) => {
-    const n = Number.isFinite(value) ? value : 0;
-    if (mode === "fixed") return { fixed: n } as const;
-    if (mode === "partial") return { partial: n } as const;
-    return { percentage: n } as const;
+type Props = {
+    onClose?: () => void;
+    initGroup?: TGroupDetail;
+    initTransaction?: TTransaction;
+    onSuccess?: (mode: "create" | "edit") => void;
 };
 
+type Mode = "FIXED" | "PARTIAL" | "PERCENTAGE";
+
 const unitAdornment = (mode: Mode, currencyCode?: string) => {
-    if (mode === "fixed") return <InputAdornment position="end">{getCurrencySymbol(currencyCode ?? "")}</InputAdornment>;
-    if (mode === "partial") return <InputAdornment position="end">parts</InputAdornment>;
-    if (mode === "percentage") return <InputAdornment position="end">%</InputAdornment>;
+    if (mode === "FIXED") return <InputAdornment position="end">{getCurrencySymbol(currencyCode ?? "")}</InputAdornment>;
+    if (mode === "PARTIAL") return <InputAdornment position="end">parts</InputAdornment>;
+    if (mode === "PERCENTAGE") return <InputAdornment position="end">%</InputAdornment>;
     return null;
 }
 
@@ -71,8 +64,6 @@ type ParticipantView = 'paid' | 'split';
 export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess }: Props) => {
     const isEditMode = Boolean(initTransaction);
 
-    const [paidMode, setPaidMode] = useState<Mode>("fixed");
-    const [splitMode, setSplitMode] = useState<Mode>("fixed");
     const [groupId, setGroupId] = useState<number>(initGroup?.id ?? 0);
     const [rowState, setRowState] = useState<Record<number, RowState>>({});
     const [participantView, setParticipantView] = useState<ParticipantView>('split');
@@ -86,26 +77,6 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     }, [isGroupsLoading, isGroupError, fetchedGroups]);
     const { data: groupDetail } = useGroupDetail(groupId);
     const currentMembers = groupDetail?.members || initGroup?.members || [];
-
-    useEffect(() => {
-        if (groupDetail?.members && !isEditMode) {
-            const initialParticipants = groupDetail.members;
-
-            // Initialize rowState: All checkboxes for "Split" are TRUE, "Paid" are FALSE
-            const nextRowState: Record<number, RowState> = {};
-            initialParticipants.forEach((u) => {
-                nextRowState[u.id] = {
-                    paidEnabled: false,
-                    paidValue: 0,
-                    paidLocked: false,
-                    splitEnabled: true,
-                    splitValue: 0,
-                    splitLocked: false,
-                };
-            });
-            setRowState(nextRowState);
-        }
-    }, [groupDetail, isEditMode]);
 
     const { mutate: createMutate, isPending: isCreatePending, error: createError } = useAddExpense({
         onSuccess: () => {
@@ -133,6 +104,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         handleSubmit,
         formState: { errors },
         reset,
+        setValue,
     } = useForm<TAddExpenseForm>({
         resolver: zodResolver(addExpenseFormSchema),
         defaultValues: {
@@ -141,35 +113,53 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             groupId: initGroup?.id ?? 0,
             totalAmount: initTransaction?.totalAmount ?? 0,
             currency: initGroup?.defaultCurrency ?? "",
+            paidByMode: ((initTransaction?.paidByMode as TAddExpenseForm["paidByMode"]) ?? "FIXED"),
+            splitBetweenMode: ((initTransaction?.splitBetweenMode as TAddExpenseForm["splitBetweenMode"]) ?? "FIXED"),
             paidBy: [],
             splitBetween: [],
             transactionType: "EXPENSE",
         },
     });
 
-    const [currency, totalAmount] = useWatch({
+    const [currency, totalAmount, paidMode, splitMode] = useWatch({
         control,
-        name: ["currency", "totalAmount"]
+        name: ["currency", "totalAmount", "paidByMode", "splitBetweenMode"]
     });
 
     useEffect(() => {
         if (isEditMode && initTransaction) {
             const nextRowState: Record<number, RowState> = {};
             initTransaction.items.forEach(item => {
+                const userId = item.user.id;
                 const isPayer = item.balanceChange > 0;
                 const isSplitter = item.balanceChange < 0;
 
-                nextRowState[item.user.id] = {
-                    paidEnabled: isPayer,
-                    paidValue: isPayer ? item.balanceChange : 0,
-                    paidLocked: isPayer,
-                    splitEnabled: isSplitter,
-                    splitValue: isSplitter ? Math.abs(item.balanceChange) : 0,
-                    splitLocked: isSplitter,
-                };
+                if (!nextRowState[userId]) {
+                    nextRowState[userId] = {
+                        paidEnabled: false,
+                        paidValue: 0,
+                        paidLocked: false,
+                        splitEnabled: false,
+                        splitValue: 0,
+                        splitLocked: false,
+                    };
+                }
+
+                if (isPayer) {
+                    nextRowState[userId].paidEnabled = true;
+                    nextRowState[userId].paidValue = item.filledValue;
+                    nextRowState[userId].paidLocked = true;
+                } else if (isSplitter) {
+                    nextRowState[userId].splitEnabled = true;
+                    nextRowState[userId].splitValue = item.filledValue;
+                    nextRowState[userId].splitLocked = true;
+                }
             });
             setRowState(nextRowState);
-            reset({ ...initTransaction, groupId: initGroup?.id });
+            reset({
+                ...initTransaction,
+                groupId: initGroup?.id ?? 0,
+            });
         } else if (groupDetail?.members) {
             const nextRowState: Record<number, RowState> = {};
             groupDetail.members.forEach(u => {
@@ -178,13 +168,13 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                     paidValue: 0,
                     paidLocked: false,
                     splitEnabled: true,
-                    splitValue: splitMode === 'partial' ? 1 : 0,
+                    splitValue: splitMode === 'PARTIAL' ? 1 : 0,
                     splitLocked: false
                 };
             });
             setRowState(nextRowState);
         }
-    }, [groupDetail, initTransaction, isEditMode, reset]);
+    }, [groupDetail, initTransaction, isEditMode, initGroup?.defaultCurrency, initGroup?.id, reset]);
 
     const onSubmit = (data: TAddExpenseForm) => {
         const paidBy: TAddExpenseForm["paidBy"] = (currentMembers as unknown as TUser[])
@@ -192,7 +182,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             .filter((x): x is { u: TUser; s: RowState } => !!x.s?.paidEnabled)
             .map(({u, s}) => ({
                 userId: u.id,
-                ...asModeValue(paidMode, s.paidValue),
+                filledValue: Number.isFinite(s.paidValue) ? s.paidValue : 0,
             }));
 
         const splitBetween: TAddExpenseForm["splitBetween"] = (currentMembers as unknown as TUser[])
@@ -200,15 +190,19 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             .filter((x): x is { u: TUser; s: RowState } => !!x.s?.splitEnabled)
             .map(({u, s}) => ({
                 userId: u.id,
-                ...asModeValue(splitMode, s.splitValue),
+                filledValue: Number.isFinite(s.splitValue) ? s.splitValue : 0,
             }));
 
         const payload: TAddExpenseForm = {
             ...data,
+            paidByMode: paidMode,
+            splitBetweenMode: splitMode,
             paidBy,
             splitBetween,
             transactionType: "EXPENSE",
         };
+
+        console.log("payload", payload)
 
         if (isEditMode) {
             editMutate({ transactionId: initTransaction!.id, data: payload });
@@ -224,7 +218,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     }, [rowState, currentMembers]);
 
     useEffect(() => {
-        if (paidMode === "partial" && splitMode === "partial") return;
+        if (paidMode === "PARTIAL" && splitMode === "PARTIAL") return;
 
         setRowState((prev) => {
             const next = { ...prev };
@@ -232,9 +226,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
             const calculateNewValues = (type: 'paid' | 'split') => {
                 const mode = type === 'paid' ? paidMode : splitMode;
-                if (mode === 'partial') return;
+                if (mode === 'PARTIAL') return;
 
-                const isPercentage = mode === 'percentage';
+                const isPercentage = mode === 'PERCENTAGE';
                 const targetTotal = isPercentage ? 100 : total;
 
                 const activeMembers = currentMembers.filter(u => next[u.id]?.[`${type}Enabled`]);
@@ -268,7 +262,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         const total = Number.isFinite(totalAmount) ? totalAmount : 0;
         const mode = type === 'paid' ? paidMode : splitMode;
 
-        if (mode === "partial") {
+        if (mode === "PARTIAL") {
             setRowState(prev => ({
                 ...prev,
                 [userId]: { ...prev[userId], [`${type}Value`]: newValue }
@@ -278,7 +272,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
         setRowState(prev => {
             const next = { ...prev };
-            const isPercentage = mode === 'percentage';
+            const isPercentage = mode === 'PERCENTAGE';
             const targetTotal = isPercentage ? 100 : total;
 
             next[userId] = {
@@ -328,11 +322,11 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             const next = { ...prev };
             currentMembers.forEach(u => {
                 if (next[u.id]) {
-                    if (splitMode === 'partial' && next[u.id].splitEnabled) {
+                    if (splitMode === 'PARTIAL' && next[u.id].splitEnabled) {
                         next[u.id].splitValue = 1;
                         next[u.id].splitLocked = false;
                     }
-                    if (paidMode === 'partial' && next[u.id].paidEnabled) {
+                    if (paidMode === 'PARTIAL' && next[u.id].paidEnabled) {
                         next[u.id].paidValue = 1;
                         next[u.id].paidLocked = false;
                     }
@@ -441,10 +435,10 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                             <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
                                         </Tooltip>
                                     </Stack>
-                                    <RadioGroup row value={paidMode} onChange={(e) => setPaidMode(e.target.value as Mode)}>
-                                        <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                        <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                        <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                    <RadioGroup row value={paidMode} onChange={(e) => setValue("paidByMode", e.target.value as Mode)}>
+                                        <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                        <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                        <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                                     </RadioGroup>
                                 </FormControl>
                             </Stack>
@@ -567,10 +561,10 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                             <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
                                         </Tooltip>
                                     </Stack>
-                                    <RadioGroup row value={splitMode} onChange={(e) => setSplitMode(e.target.value as Mode)}>
-                                        <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                        <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                        <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                    <RadioGroup row value={splitMode} onChange={(e) => setValue("splitBetweenMode", e.target.value as Mode)}>
+                                        <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                        <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                        <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                                     </RadioGroup>
                                 </FormControl>
                             </Stack>
@@ -671,7 +665,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                         [u.id]: {
                                                             ...s,
                                                             paidEnabled: e.target.checked,
-                                                            paidValue: (paidMode === 'partial' && e.target.checked) ? 1 : 0,
+                                                            paidValue: (paidMode === 'PARTIAL' && e.target.checked) ? 1 : 0,
                                                             paidLocked: false },
                                                     }))
                                                 }
@@ -701,7 +695,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                         [u.id]: {
                                                             ...s,
                                                             splitEnabled: e.target.checked,
-                                                            splitValue: (splitMode === 'partial' && e.target.checked) ? 1 : 0,
+                                                            splitValue: (splitMode === 'PARTIAL' && e.target.checked) ? 1 : 0,
                                                             splitLocked: false
                                                         },
                                                     }))
@@ -923,12 +917,12 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             <RadioGroup
                                 row
                                 value={paidMode}
-                                onChange={(e) => setPaidMode(e.target.value as Mode)}
+                                onChange={(e) => setValue("paidByMode", e.target.value as Mode)}
                                 sx={{ justifyContent: 'space-between' }}
                             >
-                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                             </RadioGroup>
                         </FormControl>
 
@@ -950,12 +944,12 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             <RadioGroup
                                 row
                                 value={splitMode}
-                                onChange={(e) => setSplitMode(e.target.value as Mode)}
+                                onChange={(e) => setValue("splitBetweenMode", e.target.value as Mode)}
                                 sx={{ justifyContent: 'space-between' }}
                             >
-                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                             </RadioGroup>
                         </FormControl>
 
@@ -1064,7 +1058,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) => {
                                                     const checked = e.target.checked;
                                                     const mode = participantView === 'paid' ? paidMode : splitMode;
-                                                    const initialValue = (mode === 'partial' && checked) ? 1 : 0;
+                                                    const initialValue = (mode === 'PARTIAL' && checked) ? 1 : 0;
                                                     setRowState((prev) => ({
                                                         ...prev,
                                                         [u.id]: participantView === 'paid'
