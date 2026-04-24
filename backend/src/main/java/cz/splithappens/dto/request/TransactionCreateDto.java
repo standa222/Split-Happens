@@ -2,6 +2,7 @@ package cz.splithappens.dto.request;
 
 import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.ExpenseCategory;
+import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.model.enums.TransactionType;
 import cz.splithappens.validation.ValidTransactionSplits;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,7 +23,7 @@ public class TransactionCreateDto {
     @NotBlank
     @Schema(description = "Transaction title.", example = "Dinner")
     private String title;
-//    private Category category; TODO categories
+
     @NotNull
     @Schema(description = "Group id where the transaction is created.", example = "5")
     private Long groupId;
@@ -39,6 +40,14 @@ public class TransactionCreateDto {
     @NotNull
     @Schema(description = "Transaction type. Possible values: EXPENSE (for expenses) and PAYMENT (for settlements).")
     private TransactionType transactionType;
+
+    @NotNull
+    @Schema(description = "Mode used for the paidBy list.", example = "FIXED")
+    private TransactionSplitMode paidByMode;
+
+    @NotNull
+    @Schema(description = "Mode used for the splitBetween list.", example = "PERCENTAGE")
+    private TransactionSplitMode splitBetweenMode;
 
     @NotEmpty
     @Valid

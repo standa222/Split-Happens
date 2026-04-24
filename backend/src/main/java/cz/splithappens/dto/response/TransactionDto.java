@@ -2,6 +2,7 @@ package cz.splithappens.dto.response;
 
 import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.ExpenseCategory;
+import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.model.enums.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -27,6 +28,12 @@ public class TransactionDto {
 
     @Schema(description = "Type of the transaction. Possible values: EXPENSE (for expenses) and SETTLEMENT (for settlements).")
     private TransactionType transactionType;
+
+    @Schema(description = "Mode used for paidBy.")
+    private TransactionSplitMode paidByMode;
+
+    @Schema(description = "Mode used for splitBetween.")
+    private TransactionSplitMode splitBetweenMode;
 
     @Schema(description = "Per-user balance changes for this transaction.")
     private List<TransactionItemDto> items;

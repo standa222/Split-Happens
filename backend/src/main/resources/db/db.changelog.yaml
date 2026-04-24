@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/updates/007-update-categories.sql
   - include:
       file: db/updates/008-add-friend-requests.sql
+  - include:
+      file: db/updates/009-add-transaction-split-modes-and-filled-value.sql
