@@ -200,6 +200,19 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         ).join(',');
     }, [rowState, currentMembers]);
 
+    function syncParticipants(next: { [p: number]: RowState }) {
+        const syncPaidBy = currentMembers
+            .filter(u => next[u.id]?.paidEnabled)
+            .map(u => ({userId: u.id, filledValue: next[u.id].paidValue}));
+
+        const syncSplitBetween = currentMembers
+            .filter(u => next[u.id]?.splitEnabled)
+            .map(u => ({userId: u.id, filledValue: next[u.id].splitValue}));
+
+        setValue("paidBy", syncPaidBy, {shouldValidate: true});
+        setValue("splitBetween", syncSplitBetween, {shouldValidate: true});
+    }
+
     useEffect(() => {
         if (paidMode === "PARTIAL" && splitMode === "PARTIAL") return;
 
@@ -238,16 +251,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             calculateNewValues('paid');
             calculateNewValues('split');
 
-            const syncPaidBy = currentMembers
-                .filter(u => next[u.id]?.paidEnabled)
-                .map(u => ({ userId: u.id, filledValue: next[u.id].paidValue }));
-
-            const syncSplitBetween = currentMembers
-                .filter(u => next[u.id]?.splitEnabled)
-                .map(u => ({ userId: u.id, filledValue: next[u.id].splitValue }));
-
-            setValue("paidBy", syncPaidBy, { shouldValidate: true });
-            setValue("splitBetween", syncSplitBetween, { shouldValidate: true });
+            syncParticipants(next);
 
             return next;
         });
@@ -309,6 +313,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                     };
                 });
             }
+
+            syncParticipants(next)
+
             return next;
         });
     };
@@ -639,7 +646,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                     paidEnabled: false,
                                     paidValue: 0,
                                     paidLocked: false,
-                                    splitEnabled: true,
+                                    splitEnabled: !isEditMode,
                                     splitValue: 0,
                                     splitLocked: false,
                             };

@@ -36,9 +36,20 @@ function mapValidationFieldErrorToMessageId(fe: BackendFieldError): ApiErrorMess
   const field = fe.field ?? "";
   const msg = fe.message ?? "";
 
+  // Required list constraints from @NotEmpty.
+  // Example: {field=paidBy, message=must not be empty, rejectedValue=[]}
+  if (msg === "must not be empty") {
+    if (field === "paidBy") {
+      return { id: "validation.transaction.paidByMustNotBeEmpty" };
+    }
+    if (field === "splitBetween") {
+      return { id: "validation.transaction.splitBetweenMustNotBeEmpty" };
+    }
+  }
+
   // Numeric positive constraints from @Positive (BigDecimal/Integer).
   // Hibernate Validator message: "must be greater than 0".
-  if (msg === "must be greater than 0" || msg === "must be greater than or equal to 1") {
+  if (msg === "filledValue must be > 0" || msg === "must be greater than or equal to 1") {
     return { id: "validation.transaction.splitValueMustBePositive" };
   }
 
