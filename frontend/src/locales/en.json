@@ -207,7 +207,9 @@
   "validation.transaction.splitBetweenSumMismatch": "Split between amounts must add up to the total amount.",
   "validation.transaction.paidByPercentageSumMismatch": "Paid by percentages must add up to 100%.",
   "validation.transaction.splitBetweenPercentageSumMismatch": "Split between percentages must add up to 100%.",
-  "validation.transaction.splitValueMustBePositive": "Split value must be greater than 0.",
+  "validation.transaction.splitValueMustBePositive": "Split and Paid values must be greater than 0.",
+  "validation.transaction.paidByMustNotBeEmpty": "Select at least one person who paid.",
+  "validation.transaction.splitBetweenMustNotBeEmpty": "Select at least one person to split the expense with.",
 
   "auth.login.error.invalidCredentials": "Invalid email or password.",
   "api.error.network": "Can’t reach the server. Please check your connection and try again.",

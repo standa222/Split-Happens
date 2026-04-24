@@ -206,7 +206,9 @@
   "validation.transaction.splitBetweenSumMismatch": "Částky v \"Rozdělit\" musí dohromady dát celkovou částku.",
   "validation.transaction.paidByPercentageSumMismatch": "Procenta v \"Zaplaceno\" musí dohromady dát 100 %.",
   "validation.transaction.splitBetweenPercentageSumMismatch": "Procenta v \"Rozdělit\" musí dohromady dát 100 %.",
-  "validation.transaction.splitValueMustBePositive": "Hodnota rozdělení musí být větší než 0.",
+  "validation.transaction.splitValueMustBePositive": "Hodnota Rozdělení a Zaplacení musí být větší než 0.",
+  "validation.transaction.paidByMustNotBeEmpty": "Vyberte alespoň jednu osobu, která zaplatila.",
+  "validation.transaction.splitBetweenMustNotBeEmpty": "Vyberte alespoň jednu osobu, mezi kterou se výdaj rozdělí.",
 
   "auth.login.error.invalidCredentials": "Neplatný email nebo heslo.",
   "api.error.network": "Server je nedostupný. Zkontrolujte připojení a zkuste to znovu.",

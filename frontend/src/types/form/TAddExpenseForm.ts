@@ -6,18 +6,24 @@ export const addExpenseFormSchema = z.object({
     groupId: z.number().min(1, "validation.requiredField"),
     totalAmount: z.number().min(1, "validation.requiredField"),
     currency: z.string().trim().min(1, "validation.requiredField"),
-    paidBy: z.array(z.object({
-        userId: z.number(),
-        fixed: z.number().optional(),
-        partial: z.number().optional(),
-        percentage: z.number().optional(),
-    })),
-    splitBetween: z.array(z.object({
-        userId: z.number(),
-        fixed: z.number().optional(),
-        partial: z.number().optional(),
-        percentage: z.number().optional(),
-    })),
+
+    // Backend expects modes on the transaction and a single filledValue per split row.
+    paidByMode: z.enum(["FIXED", "PERCENTAGE", "PARTIAL"]),
+    splitBetweenMode: z.enum(["FIXED", "PERCENTAGE", "PARTIAL"]),
+
+    paidBy: z.array(
+        z.object({
+            userId: z.number(),
+            filledValue: z.number(),
+        }),
+    ),
+    splitBetween: z.array(
+        z.object({
+            userId: z.number(),
+            filledValue: z.number(),
+        }),
+    ),
+
     transactionType: z.enum(["EXPENSE", "PAYMENT"]),
 });
 
