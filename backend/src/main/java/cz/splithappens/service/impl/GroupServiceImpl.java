@@ -12,6 +12,7 @@ import cz.splithappens.mapper.GroupMapper;
 import cz.splithappens.model.Debt;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.User;
+import cz.splithappens.model.enums.GroupType;
 import cz.splithappens.repository.DebtRepository;
 import cz.splithappens.repository.GroupRepository;
 import cz.splithappens.repository.UserRepository;
@@ -51,7 +52,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public List<GroupLightDto> getUserGroups(User user) {
-        List<Group> groups = groupRepository.findByMembersIdOrderByLastActivityDesc(user.getId());
+        List<Group> groups = groupRepository.findByMembersIdAndGroupTypeOrderByLastActivityDesc(user.getId(), GroupType.GROUP);
         List<Long> groupIds = groups.stream().map(Group::getId).toList();
 
         Map<Long, List<Debt>> debtsByGroupId = debtRepository.findByGroupIdIn(groupIds).stream()

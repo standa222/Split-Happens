@@ -2,19 +2,14 @@ package cz.splithappens.validation;
 
 import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.request.TransactionSplitCreateDto;
+import cz.splithappens.model.enums.TransactionSplitMode;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 
 public class ValidTransactionSplitsValidator implements ConstraintValidator<ValidTransactionSplits, TransactionCreateDto> {
-
-    private enum Mode {
-        FIXED, PARTIAL, PERCENTAGE
-    }
-
     @Override
     public boolean isValid(TransactionCreateDto value, ConstraintValidatorContext context) {
         if (value == null) {
@@ -24,14 +19,15 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
         boolean ok = true;
         context.disableDefaultConstraintViolation();
 
-        ok &= validateSplitList("paidBy", value.getPaidBy(), value.getTotalAmount(), context);
-        ok &= validateSplitList("splitBetween", value.getSplitBetween(), value.getTotalAmount(), context);
+        ok &= validateSplitList("paidBy", value.getPaidByMode(), value.getPaidBy(), value.getTotalAmount(), context);
+        ok &= validateSplitList("splitBetween", value.getSplitBetweenMode(), value.getSplitBetween(), value.getTotalAmount(), context);
 
         return ok;
     }
 
     private boolean validateSplitList(
             String fieldName,
+            TransactionSplitMode mode,
             List<TransactionSplitCreateDto> splits,
             BigDecimal totalAmount,
             ConstraintValidatorContext context
@@ -41,7 +37,11 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
             return true;
         }
 
-        Mode mode = null;
+        if (mode == null) {
+            addViolation(context, fieldName, "Split mode must be provided");
+            return false;
+        }
+
         BigDecimal fixedSum = BigDecimal.ZERO;
         int percentageSum = 0;
 
@@ -52,28 +52,25 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
                 return false;
             }
 
-            Mode splitMode = detectMode(split);
-            if (splitMode == null) {
-                // ExactlyOneSplitMode validator should catch this; add fallback.
-                addViolation(context, fieldName + "[" + i + "]", "Exactly one of fixed, partial or percentage must be provided");
+            BigDecimal filled = split.getFilledValue();
+            if (filled == null) {
+                addViolation(context, fieldName + "[" + i + "]", "filledValue must be provided");
                 return false;
             }
 
-            if (mode == null) {
-                mode = splitMode;
-            } else if (mode != splitMode) {
-                addViolation(context, fieldName, "All splits in " + fieldName + " must use the same mode (fixed, partial or percentage)");
+            if (filled.compareTo(BigDecimal.ZERO) <= 0) {
+                addViolation(context, fieldName + "[" + i + "]", "filledValue must be > 0");
                 return false;
             }
 
-            if (splitMode == Mode.FIXED) {
-                fixedSum = fixedSum.add(Objects.requireNonNull(split.getFixed()));
-            } else if (splitMode == Mode.PERCENTAGE) {
-                percentageSum += Objects.requireNonNull(split.getPercentage());
+            if (mode == TransactionSplitMode.FIXED) {
+                fixedSum = fixedSum.add(filled);
+            } else if (mode == TransactionSplitMode.PERCENTAGE) {
+                percentageSum += filled.intValue();
             }
         }
 
-        if (mode == Mode.FIXED) {
+        if (mode == TransactionSplitMode.FIXED) {
             if (totalAmount == null) {
                 // @NotNull should handle; we keep it valid here.
                 return true;
@@ -84,7 +81,7 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
             }
         }
 
-        if (mode == Mode.PERCENTAGE) {
+        if (mode == TransactionSplitMode.PERCENTAGE) {
             if (percentageSum != 100) {
                 addViolation(context, fieldName, "Sum of percentage values in " + fieldName + " must be 100");
                 return false;
@@ -94,12 +91,6 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
         return true;
     }
 
-    private Mode detectMode(TransactionSplitCreateDto split) {
-        if (split.getFixed() != null) return Mode.FIXED;
-        if (split.getPartial() != null) return Mode.PARTIAL;
-        if (split.getPercentage() != null) return Mode.PERCENTAGE;
-        return null;
-    }
 
     private void addViolation(ConstraintValidatorContext context, String property, String message) {
         context.buildConstraintViolationWithTemplate(message)

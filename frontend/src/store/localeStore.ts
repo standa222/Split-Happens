@@ -13,10 +13,17 @@ export const useLocaleStore = create<LocaleState>()(
   persist(
     (set, get) => ({
       locale: DEFAULT_LOCALE,
-      setLocale: (locale) => set({ locale }),
+      setLocale: (locale) => {
+        // Prevent redundant updates (setting same value) which can cause render loops
+        // when combined with persist rehydration + providers.
+        if (get().locale === locale) return;
+        set({ locale });
+      },
       toggleLocale: () => {
         const current = get().locale;
-        set({ locale: current === "en" ? "cs" : "en" });
+        const next: AppLocale = current === "en" ? "cs" : "en";
+        if (current === next) return;
+        set({ locale: next });
       },
     }),
     { name: "locale-storage" }

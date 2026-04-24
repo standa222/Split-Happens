@@ -2,7 +2,7 @@ import {useRegisterUser} from "../../hooks/useRegisterUser";
 import {useForm} from "react-hook-form";
 import {registerFormSchema, TRegisterForm} from "../../types/form/TRegisterForm";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {Box, TextField, Button, Typography} from "@mui/material";
+import {Box, TextField, Button, Typography, Stack} from "@mui/material";
 import {COLORS} from "../../constants/colors";
 import { FormattedMessage, useIntl } from "react-intl";
 import { tError } from "../../utils/localeUtils";
@@ -62,6 +62,14 @@ export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegiste
             flexDirection="column"
             gap={2}
         >
+            <Stack>
+                <Typography variant="h6" fontWeight={700}>
+                    <FormattedMessage id="register.personalInfo" />
+                </Typography>
+                <Typography>
+                    <FormattedMessage id="register.requiredFields" />
+                </Typography>
+            </Stack>
             <TextField
                 label={<FormattedMessage id="register.firstName" />}
                 type="text"
@@ -94,6 +102,9 @@ export function RegistrationForm({ onSwitchToLogin, onRegisterSuccess, onRegiste
                 error={!!errors.password}
                 helperText={tError(intl, errors.password?.message)}
             />
+            <Typography variant="h6" fontWeight={700}>
+                <FormattedMessage id="register.bankInfo" />
+            </Typography>
             <TextField
                 label={<FormattedMessage id="register.bankAccountPrefix" />}
                 type="text"

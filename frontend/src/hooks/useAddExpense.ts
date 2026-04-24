@@ -6,6 +6,7 @@ import type { AxiosError } from "axios";
 
 type Options = {
     onSuccess?: () => void;
+    onError?: () => void;
 };
 
 export function useAddExpense(options?: Options) {
@@ -19,6 +20,9 @@ export function useAddExpense(options?: Options) {
             queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
             options?.onSuccess?.();
         },
-        onError: (error) => console.error('Error adding expense:', error)
+        onError: (error) => {
+            console.error('Error adding expense:', error)
+            options?.onError?.();
+        }
     })
 }

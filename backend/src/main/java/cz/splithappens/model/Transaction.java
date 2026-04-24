@@ -2,13 +2,13 @@ package cz.splithappens.model;
 
 import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.ExpenseCategory;
+import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.model.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,6 +35,14 @@ public class Transaction {
 
     @Enumerated(EnumType.STRING)
     private TransactionType transactionType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "paid_by_mode", nullable = false)
+    private TransactionSplitMode paidByMode;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "split_between_mode", nullable = false)
+    private TransactionSplitMode splitBetweenMode;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransactionItem> items;

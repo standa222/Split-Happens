@@ -26,6 +26,7 @@ import {ImageAvatar} from "../../components/ImageAvatar";
 import {compressToWebp} from "../../utils/imageUtils";
 import {useUploadUserImage} from "../../hooks/useUploadUserImage";
 import {AppSnackbar} from "../../components/AppSnackbar";
+import CloseIcon from "@mui/icons-material/Close";
 
 function formatBankAccount(bankAccount: { prefix: string; accountNumber: string; bankCode: string }) {
     const prefix = bankAccount.prefix?.trim();
@@ -131,11 +132,7 @@ export function ProfilePage() {
     const onImageSelected = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
-        // Reset input value so selecting the same file again triggers onChange.
         e.target.value = "";
-
-        // Local immediate preview (before compression/upload).
         setLocalPreviewUrl((prev) => {
             if (prev) URL.revokeObjectURL(prev);
             return URL.createObjectURL(file);
@@ -175,7 +172,7 @@ export function ProfilePage() {
                         color: COLORS.PRIMARY,
                     }}
                 >
-                    <EditIcon />
+                    <EditIcon sx={{ fontSize: {xs: 32, md: 40 } }}/>
                 </IconButton>
             </Stack>
 
@@ -308,6 +305,13 @@ export function ProfilePage() {
                     },
                 }}
             >
+                <IconButton
+                    aria-label="close"
+                    onClick={closeEdit}
+                    sx={{ position: "absolute", right: 12, top: 12, color: COLORS.PRIMARY }}
+                >
+                    <CloseIcon sx={{ fontSize: 40 }} />
+                </IconButton>
                 <DialogTitle sx={{ color: COLORS.PRIMARY }}>
                     <FormattedMessage id="profile.edit.title" defaultMessage="Edit profile" />
                 </DialogTitle>

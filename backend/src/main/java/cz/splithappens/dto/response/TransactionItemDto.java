@@ -19,4 +19,7 @@ public class TransactionItemDto {
 
     @Schema(description = "Balance change converted to group's default currency.", example = "-300.00")
     private BigDecimal defaultCurrencyBalanceChange; // Balance change converted to group's default currency, used for easier balance calculations
+
+    @Schema(description = "User-entered value for the selected split mode (fixed / percentage / partial).", example = "25")
+    private BigDecimal filledValue;
 }

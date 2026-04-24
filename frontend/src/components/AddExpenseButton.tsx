@@ -49,7 +49,7 @@ export function AddExpenseButton({
                     background: "none",
                     border: "none",
                     cursor: "pointer",
-                    padding: "20px",
+                    padding: {xs: 0, md: 0},
                     width: "100%",
                     transition: "transform 0.1s ease-in-out",
                     "&:hover": {
@@ -89,20 +89,32 @@ export function AddExpenseButton({
                     </>
                 )}
                 {resolvedSize === "small" && (
-                    <Box
-                        sx={{
-                            width: 28,
-                            height: 28,
-                            backgroundColor: COLORS.PRIMARY,
-                            borderRadius: "50%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-                        }}
-                    >
-                        <AddIcon sx={{ color: COLORS.SECONDARY, fontSize: 18 }} />
-                    </Box>
+                    <>
+                        <Box
+                            sx={{
+                                width: 24,
+                                height: 24,
+                                backgroundColor: COLORS.PRIMARY,
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+                            }}
+                        >
+                            <AddIcon sx={{ color: COLORS.SECONDARY, fontSize: 18 }} />
+                        </Box>
+                        <Typography
+                            variant={resolvedVariant}
+                            sx={{
+                                color: COLORS.PRIMARY,
+                                fontWeight: 500,
+                                textAlign: "center",
+                            }}
+                        >
+                            <FormattedMessage id="expense.action.add" />
+                        </Typography>
+                    </>
                 )}
             </Stack>
 

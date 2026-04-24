@@ -5,7 +5,7 @@ import {useAuthStore} from "../../store/authStore";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import {useState} from "react";
-import { FormattedMessage } from "react-intl";
+import {FormattedMessage, useIntl} from "react-intl";
 import {ExpenseDetailModal} from "./ExpenseDetailModal";
 import {TGroupDetail} from "../../types/dto/TGroupDetail";
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -51,7 +51,13 @@ const PaymentMessage = ({ transaction }: { transaction: TTransaction }) => {
     const creditorIsCurrent = (creditorItem?.user.id ?? -1) === currentUserId;
 
     return (
-        <Typography fontWeight="bold" color={COLORS.PRIMARY}>
+        <Typography
+            color={COLORS.PRIMARY}
+            sx={{
+                typography: {xs: "body2", md: "body1"},
+                fontWeight: {xs: 600, md: 700},
+            }}
+        >
             <FormattedMessage
                 id="groupDetail.expenses.paymentLine"
                 values={{
@@ -82,12 +88,12 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
     return (
         <>
             <Stack direction="row" alignItems="center" py={1.5} gap={2}>
-                <Box sx={{ color: COLORS.PRIMARY, display: "flex", justifyContent: "center" }}>
+                <Box sx={{ color: COLORS.PRIMARY, display: "flex", justifyContent: "center", width: {xs: 30, md: 40}, heigh: {xs: 30, md: 40} }}>
                     {getCategoryIcon(transaction)}
                 </Box>
 
                 {transaction.transactionType === 'PAYMENT' ? (
-                    <Box flex={1} sx={{ px: 5}}>
+                    <Box flex={1} sx={{ px: { md: 5 } }}>
                         <PaymentMessage transaction={transaction} />
                     </Box>
                 ) : (
@@ -125,6 +131,7 @@ const TransactionRow= ({ transaction, onOpenDetail }: { transaction: TTransactio
                                 backgroundColor: COLORS.PRIMARY,
                                 color: COLORS.SECONDARY,
                                 textTransform: "none",
+                                padding: { xs: 0, md: "6px 16px" },
                             }}
                         >
                             <Box component="span" sx={{ display: { xs: "none", md: "inline" }, mx: 1 }}>
@@ -172,12 +179,14 @@ const MonthSection = ({ month, transactions, onOpenDetail }: { month: string; tr
 export const GroupExpenses = ({ transactions, group }: Props) => {
     const [detailOpen, setDetailOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<TTransaction | null>(null);
+    const intl = useIntl();
 
     const groupTransactionsByMonth = transactions.reduce((acc, transaction) => {
-        const month = new Date(transaction.createdAt).toLocaleString("default", {
+        const month = new Intl.DateTimeFormat(intl.locale, {
             month: "long",
             year: "numeric",
-        });
+        }).format(new Date(transaction.createdAt));
+
         if (!acc[month]) acc[month] = [];
         acc[month].push(transaction);
         return acc;

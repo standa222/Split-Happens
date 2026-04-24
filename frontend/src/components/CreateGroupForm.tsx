@@ -10,6 +10,7 @@ import {
     RadioGroup,
     Stack,
     TextField,
+    Tooltip,
     Typography
 } from "@mui/material";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
@@ -25,6 +26,8 @@ import {useCreateGroupMutation, useEditGroupMutation} from "../hooks/useGroupMut
 import {FormattedMessage, useIntl} from "react-intl";
 import { tError } from "../utils/localeUtils";
 import {useUsersSearchQuery} from "../hooks/useUsersSearchQuery";
+import { useFriendsQuery } from "../hooks/useFriends";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 type Props = {
     onClose?: () => void;
@@ -45,6 +48,14 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
         query: searchTerm,
         limit: 20,
     });
+
+    const { data: friends = [], isLoading: friendsLoading } = useFriendsQuery();
+
+    const initialFriendUsers = friends.map((f) => f.user);
+
+    const showSearchResults = searchTerm.trim().length >= 2;
+    const memberOptionsToShow = showSearchResults ? memberOptions : initialFriendUsers;
+    const isOptionsLoading = showSearchResults ? membersLoading : friendsLoading;
 
     const {
         control,
@@ -151,9 +162,20 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             render={({ field }) => (
                                 <>
                                     <FormControl>
-                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
-                                            <FormattedMessage id="group.form.fields.permissionMode" />
-                                        </FormLabel>
+                                        <Stack direction="row" alignItems="center" gap={0.5}>
+                                            <FormLabel sx={{ color: `${COLORS.PRIMARY} !important`, fontWeight: 700, fontSize: 12 }}>
+                                                <FormattedMessage id="group.form.fields.permissionMode" />
+                                            </FormLabel>
+                                            <Tooltip
+                                                title={<FormattedMessage id="group.form.permissionMode.tooltip" />}
+                                                placement="top"
+                                                arrow
+                                                enterTouchDelay={0}
+                                                leaveTouchDelay={5000}
+                                            >
+                                                <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                            </Tooltip>
+                                        </Stack>
                                         <RadioGroup
                                             row
                                             value={field.value}
@@ -194,8 +216,8 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                             <Autocomplete
                                 multiple
                                 disableCloseOnSelect
-                                options={memberOptions}
-                                loading={membersLoading}
+                                options={memberOptionsToShow}
+                                loading={isOptionsLoading}
                                 value={selectedUsers}
                                 onInputChange={(_, value) => setSearchTerm(value)}
                                 getOptionLabel={(u) => `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email}
@@ -239,7 +261,7 @@ export const CreateGroupForm = ({ onClose, initGroup }: Props ) => {
                                                 ...params.InputProps,
                                                 endAdornment: (
                                                     <>
-                                                        {membersLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                        {isOptionsLoading ? <CircularProgress color="inherit" size={20} /> : null}
                                                         {params.InputProps.endAdornment}
                                                     </>
                                                 ),

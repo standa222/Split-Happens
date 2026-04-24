@@ -3,6 +3,8 @@ import {GroupsPage} from "../pages/GroupsPage/GroupsPage";
 import {HomePage} from "../pages/HomePage/HomePage";
 import {GroupDetailPage} from "../pages/GroupDetailPage/GroupDetailPage";
 import { ProfilePage } from "../pages/ProfilePage/ProfilePage";
+import {FriendsPage} from "../pages/FriendsPage/FriendsPage";
+import { FriendDetailPage } from "../pages/FriendsPage/FriendDetailPage";
 
 export type RouteType = {
     title: string;
@@ -35,5 +37,17 @@ export const navigations: RouteType[] = [
         path: ROUTES.GROUPS.DETAIL,
         url: ROUTES.GROUPS.DETAIL,
         element: <GroupDetailPage />,
+    },
+    {
+        title: 'Friends',
+        path: ROUTES.FRIENDS.LIST,
+        url: ROUTES.FRIENDS.LIST,
+        element: <FriendsPage />,
+    },
+    {
+        title: 'Friend detail',
+        path: ROUTES.FRIENDS.DETAIL,
+        url: ROUTES.FRIENDS.DETAIL,
+        element: <FriendDetailPage />,
     }
 ]

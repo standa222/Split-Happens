@@ -105,7 +105,7 @@ async function cropPayliboLabel(blob: Blob): Promise<Blob> {
     }
 }
 
-export function buildPayliboQrUrl(params: PaymentParams): string {
+function buildPayliboQrUrl(params: PaymentParams): string {
     const search = new URLSearchParams();
 
     if (params.accountPrefix) {
@@ -139,4 +139,31 @@ export async function getQr(params: PaymentParams): Promise<QrImageResult> {
         objectUrl,
         blob: croppedBlob
     };
+}
+
+export async function addBackgroundToQr(transparentBlob: Blob, backgroundColor: string = "#FFFFFF"): Promise<Blob> {
+    const objectUrl = URL.createObjectURL(transparentBlob);
+
+    try {
+        const img = await loadImage(objectUrl);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return transparentBlob;
+
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.drawImage(img, 0, 0);
+
+        const resultBlob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/png")
+        );
+
+        return resultBlob ?? transparentBlob;
+    } finally {
+        URL.revokeObjectURL(objectUrl);
+    }
 }

@@ -12,11 +12,14 @@ import cz.splithappens.model.Group;
 import cz.splithappens.model.Transaction;
 import cz.splithappens.model.TransactionItem;
 import cz.splithappens.model.User;
+import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.repository.GroupRepository;
 import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.SettlementEngine;
 import cz.splithappens.service.TransactionService;
+import cz.splithappens.strategy.transaction.SplitComputationStrategy;
+import cz.splithappens.strategy.transaction.SplitComputationStrategyFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +38,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionMapper transactionMapper;
     private final UserRepository userRepository;
     private final SettlementEngine settlementEngine;
+    private final SplitComputationStrategyFactory splitComputationStrategyFactory;
 
     @Override
     @Transactional
@@ -80,6 +86,8 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new TransactionNotFoundException(transactionId));
         transaction.setTitle(updateDto.getTitle());
         transaction.setTotalAmount(updateDto.getTotalAmount());
+        transaction.setPaidByMode(updateDto.getPaidByMode());
+        transaction.setSplitBetweenMode(updateDto.getSplitBetweenMode());
         transaction.getItems().clear();
         transaction.getItems().addAll(createTransactionsItems(updateDto, transaction));
 //        transaction.setCurrency(updateDto.getCurrency());
@@ -105,15 +113,53 @@ public class TransactionServiceImpl implements TransactionService {
         // TODO calculate exchange rates if transaction currency is different from group default currency
         List<TransactionItem> result = new ArrayList<>();
 
-        result.addAll(extractItems(createDto.getPaidBy(), transaction, true, createDto.getTotalAmount()));
-        result.addAll(extractItems(createDto.getSplitBetween(), transaction, false, createDto.getTotalAmount()));
+        result.addAll(extractItems(createDto.getPaidByMode(), createDto.getPaidBy(), transaction, true, createDto.getTotalAmount()));
+        result.addAll(extractItems(createDto.getSplitBetweenMode(), createDto.getSplitBetween(), transaction, false, createDto.getTotalAmount()));
 
         return result;
     }
 
-    private List<TransactionItem> extractItems(List<TransactionSplitCreateDto> splits, Transaction transaction, boolean positiveBalance, BigDecimal totalAmount) {
+    private List<TransactionItem> extractItems(TransactionSplitMode mode,
+                                              List<TransactionSplitCreateDto> splits,
+                                              Transaction transaction,
+                                              boolean positiveBalance,
+                                              BigDecimal totalAmount) {
+
+        Map<Long, User> usersById = validateInputAndLoadUsers(mode, splits);
+
+        SplitComputationStrategy strategy = splitComputationStrategyFactory.get(mode);
+        if (strategy == null) {
+            throw new BadRequestException("UNSUPPORTED_SPLIT_MODE", "Unsupported split mode: " + mode);
+        }
+
+        List<BigDecimal> computedAmounts = strategy.computeAmounts(splits, totalAmount);
+        if (computedAmounts.size() != splits.size()) {
+            throw new IllegalStateException("Split strategy returned invalid number of computed amounts");
+        }
+
+        List<TransactionItem> items = new ArrayList<>(splits.size());
+        for (int i = 0; i < splits.size(); i++) {
+            TransactionSplitCreateDto split = splits.get(i);
+            BigDecimal amount = computedAmounts.get(i);
+            BigDecimal signed = positiveBalance ? amount : amount.negate();
+            items.add(new TransactionItem(
+                    usersById.get(split.getUserId()),
+                    transaction,
+                    signed,
+                    signed, // TODO convert to default currency if needed
+                    split.getFilledValue()
+            ));
+        }
+        return items;
+    }
+
+    private Map<Long, User> validateInputAndLoadUsers(TransactionSplitMode mode, List<TransactionSplitCreateDto> splits) {
         if (splits == null || splits.isEmpty()) {
             throw new BadRequestException("EMPTY_SPLITS", "Transaction must have at least one payer and at least one participant");
+        }
+
+        if (mode == null) {
+            throw new BadRequestException("EMPTY_SPLIT_MODE", "Split mode must be provided");
         }
 
         List<Long> userIds = splits.stream()
@@ -121,8 +167,8 @@ public class TransactionServiceImpl implements TransactionService {
                 .distinct()
                 .toList();
 
-        java.util.Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
-                .collect(java.util.stream.Collectors.toMap(User::getId, u -> u));
+        Map<Long, User> usersById = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u));
 
         if (usersById.size() != userIds.size()) {
             List<Long> missing = userIds.stream()
@@ -130,60 +176,6 @@ public class TransactionServiceImpl implements TransactionService {
                     .toList();
             throw new UserNotFoundException("User not found: " + missing);
         }
-
-        boolean fixedMode = splits.stream().allMatch(s -> s.getFixed() != null);
-        boolean partialMode = splits.stream().allMatch(s -> s.getPartial() != null);
-
-        if (fixedMode) {
-            return splits.stream()
-                    .map(split -> {
-                        BigDecimal amount = split.getFixed();
-                        return new TransactionItem(
-                                usersById.get(split.getUserId()),
-                                transaction,
-                                positiveBalance ? amount : amount.negate(),
-                                positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
-                        );
-                    })
-                    .toList();
-        }
-
-        if (partialMode) {
-            int totalParts = splits.stream()
-                    .map(TransactionSplitCreateDto::getPartial)
-                    .reduce(0, Integer::sum);
-
-            if (totalParts <=0) {
-                throw new BadRequestException("INVALID_PARTIAL_SPLIT", "Total parts must be greater than 0");
-            }
-
-            return splits.stream()
-                    .map(split -> {
-                        BigDecimal amount = totalAmount .multiply(BigDecimal.valueOf(split.getPartial()))
-                                .divide(BigDecimal.valueOf(totalParts),2, java.math.RoundingMode.HALF_UP);
-
-                        return new TransactionItem(
-                                usersById.get(split.getUserId()),
-                                transaction,
-                                positiveBalance ? amount : amount.negate(),
-                                positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
-                        );
-                    })
-                    .toList();
-        }
-
-        return splits.stream()
-                .map(split -> {
-                    BigDecimal amount = totalAmount .multiply(BigDecimal.valueOf(split.getPercentage()))
-                            .divide(BigDecimal.valueOf(100),2, java.math.RoundingMode.HALF_UP);
-
-                    return new TransactionItem(
-                            usersById.get(split.getUserId()),
-                            transaction,
-                            positiveBalance ? amount : amount.negate(),
-                            positiveBalance ? amount : amount.negate() // TODO convert to default currency if needed
-                    );
-                })
-                .toList();
+        return usersById;
     }
 }

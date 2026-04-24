@@ -9,14 +9,14 @@ import {
     FormLabel,
     Grid,
     InputAdornment,
-    MenuItem,
     Radio,
     RadioGroup,
     Stack,
     TextField,
+    Tooltip,
     Typography,
 } from "@mui/material";
-import { COLORS } from "../constants/colors";
+import {COLORS} from "../constants/colors";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
 import {Controller, useForm, useWatch} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
@@ -32,6 +32,16 @@ import {tError} from "../utils/localeUtils";
 import {AppSnackbar} from "./AppSnackbar";
 import {formatApiError} from "../utils/apiErrorUtils";
 import {categories} from "../utils/categoryUtils";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+
+type RowState = {
+    paidEnabled: boolean;
+    paidValue: number;
+    paidLocked: boolean;
+    splitEnabled: boolean;
+    splitValue: number;
+    splitLocked: boolean;
+};
 
 type Props = {
     onClose?: () => void;
@@ -40,26 +50,12 @@ type Props = {
     onSuccess?: (mode: "create" | "edit") => void;
 };
 
-type Mode = "fixed" | "partial" | "percentage";
-
-type RowState = {
-    paidEnabled: boolean;
-    paidValue: number;
-    splitEnabled: boolean;
-    splitValue: number;
-};
-
-const asModeValue = (mode: Mode, value: number) => {
-    const n = Number.isFinite(value) ? value : 0;
-    if (mode === "fixed") return { fixed: n } as const;
-    if (mode === "partial") return { partial: n } as const;
-    return { percentage: n } as const;
-};
+type Mode = "FIXED" | "PARTIAL" | "PERCENTAGE";
 
 const unitAdornment = (mode: Mode, currencyCode?: string) => {
-    if (mode === "fixed") return <InputAdornment position="end">{getCurrencySymbol(currencyCode ?? "")}</InputAdornment>;
-    if (mode === "partial") return <InputAdornment position="end">parts</InputAdornment>;
-    if (mode === "percentage") return <InputAdornment position="end">%</InputAdornment>;
+    if (mode === "FIXED") return <InputAdornment position="end">{getCurrencySymbol(currencyCode ?? "")}</InputAdornment>;
+    if (mode === "PARTIAL") return <InputAdornment position="end">parts</InputAdornment>;
+    if (mode === "PERCENTAGE") return <InputAdornment position="end">%</InputAdornment>;
     return null;
 }
 
@@ -68,10 +64,7 @@ type ParticipantView = 'paid' | 'split';
 export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess }: Props) => {
     const isEditMode = Boolean(initTransaction);
 
-    const [paidMode, setPaidMode] = useState<Mode>("fixed");
-    const [splitMode, setSplitMode] = useState<Mode>("fixed");
     const [groupId, setGroupId] = useState<number>(initGroup?.id ?? 0);
-    const [participants, setParticipants] = useState(initGroup?.members || []);
     const [rowState, setRowState] = useState<Record<number, RowState>>({});
     const [participantView, setParticipantView] = useState<ParticipantView>('split');
     const [errorOpen, setErrorOpen] = useState(false);
@@ -83,38 +76,35 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         return [...fetchedGroups.activeGroups, ...fetchedGroups.inactiveGroups];
     }, [isGroupsLoading, isGroupError, fetchedGroups]);
     const { data: groupDetail } = useGroupDetail(groupId);
+    const currentMembers = groupDetail?.members || initGroup?.members || [];
 
-    useEffect(() => {
-        setParticipants(groupDetail?.members || []);
-    }, [groupDetail]);
-
-    const { mutate: createMutate, isPending: isCreatePending, isError: isCreateError, error: createError } = useAddExpense({
+    const { mutate: createMutate, isPending: isCreatePending, error: createError } = useAddExpense({
         onSuccess: () => {
             onSuccess?.("create");
             onClose?.();
         },
+        onError: () => setErrorOpen(true),
     });
 
-    const { mutate: editMutate, isPending: isEditPending, isError: isEditError, error: editError } = useEditExpense({
+    const { mutate: editMutate, isPending: isEditPending, error: editError } = useEditExpense({
         onSuccess: () => {
             onSuccess?.("edit");
             onClose?.();
         },
+        onError: () => setErrorOpen(true),
     });
-
-    useEffect(() => {
-        if (isCreateError || isEditError) setErrorOpen(true);
-    }, [isCreateError, isEditError]);
 
     const apiError = (isEditMode ? editError : createError) as unknown;
 
     const isPending = isEditMode ? isEditPending : isCreatePending;
+    const isFriendGroup = initGroup?.groupType === "FRIEND";
 
     const {
         control,
         handleSubmit,
         formState: { errors },
         reset,
+        setValue,
     } = useForm<TAddExpenseForm>({
         resolver: zodResolver(addExpenseFormSchema),
         defaultValues: {
@@ -123,64 +113,79 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             groupId: initGroup?.id ?? 0,
             totalAmount: initTransaction?.totalAmount ?? 0,
             currency: initGroup?.defaultCurrency ?? "",
+            paidByMode: ((initTransaction?.paidByMode as TAddExpenseForm["paidByMode"]) ?? "FIXED"),
+            splitBetweenMode: ((initTransaction?.splitBetweenMode as TAddExpenseForm["splitBetweenMode"]) ?? "FIXED"),
             paidBy: [],
             splitBetween: [],
             transactionType: "EXPENSE",
         },
     });
 
-    const currency = useWatch({ control, name: "currency" });
+    const [currency, totalAmount, paidMode, splitMode] = useWatch({
+        control,
+        name: ["currency", "totalAmount", "paidByMode", "splitBetweenMode"]
+    });
 
     useEffect(() => {
-        if (!initTransaction) return;
+        if (isEditMode && initTransaction) {
+            const nextRowState: Record<number, RowState> = {};
+            initTransaction.items.forEach(item => {
+                const userId = item.user.id;
+                const isPayer = item.balanceChange > 0;
+                const isSplitter = item.balanceChange < 0;
 
-        // Force group context for edit mode.
-        setGroupId(initGroup?.id ?? 0);
-        reset((prev) => ({
-            ...prev,
-            groupId: initGroup?.id ?? prev.groupId,
-            currency: initGroup?.defaultCurrency ?? prev.currency,
-            title: initTransaction.title,
-            totalAmount: initTransaction.totalAmount,
-            transactionType: initTransaction.transactionType === "PAYMENT" ? "PAYMENT" : "EXPENSE",
-        }));
+                if (!nextRowState[userId]) {
+                    nextRowState[userId] = {
+                        paidEnabled: false,
+                        paidValue: 0,
+                        paidLocked: false,
+                        splitEnabled: false,
+                        splitValue: 0,
+                        splitLocked: false,
+                    };
+                }
 
-        // Build rowState from balance changes: positive -> paidBy enabled, negative -> split enabled.
-        const nextRowState: Record<number, RowState> = {};
-        for (const item of initTransaction.items) {
-            nextRowState[item.user.id] = {
-                paidEnabled: item.balanceChange > 0,
-                paidValue: item.balanceChange > 0 ? item.balanceChange : 0,
-                splitEnabled: item.balanceChange < 0,
-                splitValue: item.balanceChange < 0 ? Math.abs(item.balanceChange) : 0,
-            };
+                if (isPayer) {
+                    nextRowState[userId].paidEnabled = true;
+                    nextRowState[userId].paidValue = item.filledValue;
+                    nextRowState[userId].paidLocked = true;
+                } else if (isSplitter) {
+                    nextRowState[userId].splitEnabled = true;
+                    nextRowState[userId].splitValue = item.filledValue;
+                    nextRowState[userId].splitLocked = true;
+                }
+            });
+            setRowState(nextRowState);
+            reset({
+                ...initTransaction,
+                groupId: initGroup?.id ?? 0,
+            });
+        } else if (groupDetail?.members) {
+            const nextRowState: Record<number, RowState> = {};
+            groupDetail.members.forEach(u => {
+                nextRowState[u.id] = {
+                    paidEnabled: false,
+                    paidValue: 0,
+                    paidLocked: false,
+                    splitEnabled: true,
+                    splitValue: splitMode === 'PARTIAL' ? 1 : 0,
+                    splitLocked: false
+                };
+            });
+            setRowState(nextRowState);
         }
-        setRowState(nextRowState);
-    }, [initTransaction, initGroup?.id, initGroup?.defaultCurrency, reset]);
+    }, [groupDetail, initTransaction, isEditMode, initGroup?.defaultCurrency, initGroup?.id, reset]);
 
     const onSubmit = (data: TAddExpenseForm) => {
-        const paidBy: TAddExpenseForm["paidBy"] = (participants as unknown as TUser[])
-            .map((u) => ({u, s: rowState[u.id]}))
-            .filter((x): x is { u: TUser; s: RowState } => !!x.s?.paidEnabled)
-            .map(({u, s}) => ({
-                userId: u.id,
-                ...asModeValue(paidMode, s.paidValue),
-            }));
-
-        const splitBetween: TAddExpenseForm["splitBetween"] = (participants as unknown as TUser[])
-            .map((u) => ({u, s: rowState[u.id]}))
-            .filter((x): x is { u: TUser; s: RowState } => !!x.s?.splitEnabled)
-            .map(({u, s}) => ({
-                userId: u.id,
-                ...asModeValue(splitMode, s.splitValue),
-            }));
+        console.log("paidBy:", data.paidBy);
+        console.log("splitBetween:", data.splitBetween);
 
         const payload: TAddExpenseForm = {
             ...data,
-            paidBy,
-            splitBetween,
             transactionType: "EXPENSE",
         };
+
+        console.log(payload);
 
         if (isEditMode) {
             editMutate({ transactionId: initTransaction!.id, data: payload });
@@ -189,11 +194,156 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         }
     };
 
+    const checkboxTrigger = useMemo(() => {
+        return currentMembers.map(u =>
+            `${rowState[u.id]?.paidEnabled ?? false}-${rowState[u.id]?.splitEnabled ?? false}`
+        ).join(',');
+    }, [rowState, currentMembers]);
+
+    function syncParticipants(next: { [p: number]: RowState }) {
+        const syncPaidBy = currentMembers
+            .filter(u => next[u.id]?.paidEnabled)
+            .map(u => ({userId: u.id, filledValue: next[u.id].paidValue}));
+
+        const syncSplitBetween = currentMembers
+            .filter(u => next[u.id]?.splitEnabled)
+            .map(u => ({userId: u.id, filledValue: next[u.id].splitValue}));
+
+        setValue("paidBy", syncPaidBy, {shouldValidate: true});
+        setValue("splitBetween", syncSplitBetween, {shouldValidate: true});
+    }
+
+    useEffect(() => {
+        if (paidMode === "PARTIAL" && splitMode === "PARTIAL") return;
+
+        setRowState((prev) => {
+            const next = { ...prev };
+            const total = Number.isFinite(totalAmount) ? totalAmount : 0;
+
+            const calculateNewValues = (type: 'paid' | 'split') => {
+                const mode = type === 'paid' ? paidMode : splitMode;
+                if (mode === 'PARTIAL') return;
+
+                const isPercentage = mode === 'PERCENTAGE';
+                const targetTotal = isPercentage ? 100 : total;
+
+                const activeMembers = currentMembers.filter(u => next[u.id]?.[`${type}Enabled`]);
+                const lockedMembers = activeMembers.filter(u => next[u.id]?.[`${type}Locked`]);
+                const unlockedMembers = activeMembers.filter(u => !next[u.id]?.[`${type}Locked`]);
+
+                const sumOfLocked = lockedMembers.reduce((sum, u) => sum + next[u.id][`${type}Value`], 0);
+                const remaining = Math.max(0, targetTotal - sumOfLocked);
+
+                if (unlockedMembers.length > 0) {
+                    const baseValue = isPercentage
+                        ? Math.floor(remaining / unlockedMembers.length)
+                        : Number((remaining / unlockedMembers.length).toFixed(2));
+
+                    unlockedMembers.forEach((u, index) => {
+                        const isLast = index === unlockedMembers.length - 1;
+                        next[u.id][`${type}Value`] = isLast
+                            ? Number((remaining - (baseValue * (unlockedMembers.length - 1))).toFixed(2))
+                            : baseValue;
+                    });
+                }
+            };
+
+            calculateNewValues('paid');
+            calculateNewValues('split');
+
+            syncParticipants(next);
+
+            return next;
+        });
+    }, [totalAmount, paidMode, splitMode, currentMembers, checkboxTrigger]);
+
+    const handleValueChange = (userId: number, newValue: number, type: 'paid' | 'split') => {
+        const total = Number.isFinite(totalAmount) ? totalAmount : 0;
+        const mode = type === 'paid' ? paidMode : splitMode;
+
+        if (mode === "PARTIAL") {
+            setRowState(prev => ({
+                ...prev,
+                [userId]: { ...prev[userId], [`${type}Value`]: newValue }
+            }));
+            return;
+        }
+
+        setRowState(prev => {
+            const next = { ...prev };
+            console.log(next)
+            const isPercentage = mode === 'PERCENTAGE';
+            const targetTotal = isPercentage ? 100 : total;
+
+            next[userId] = {
+                ...next[userId],
+                [`${type}Value`]: newValue,
+                [`${type}Locked`]: true
+            };
+
+            const targetMembers = currentMembers.filter(m =>
+                m.id !== userId &&
+                (type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled) &&
+                !(type === 'paid' ? next[m.id]?.paidLocked : next[m.id]?.splitLocked)
+            );
+
+            if (targetMembers.length > 0) {
+                const sumOfLocked = currentMembers.reduce((sum, m) => {
+                    const isLocked = type === 'paid' ? next[m.id]?.paidLocked : next[m.id]?.splitLocked;
+                    const isEnabled = type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled;
+                    return (isLocked && isEnabled) ? sum + (type === 'paid' ? next[m.id].paidValue : next[m.id].splitValue) : sum;
+                }, 0);
+
+                const remaining = Math.max(0, targetTotal - sumOfLocked);
+
+                // Percentage uses Math.floor for whole numbers, Fixed uses toFixed(2)
+                const baseValue = isPercentage
+                    ? Math.floor(remaining / targetMembers.length)
+                    : Number((remaining / targetMembers.length).toFixed(2));
+
+                targetMembers.forEach((m, index) => {
+                    const isLast = index === targetMembers.length - 1;
+                    const value = isLast
+                        ? Number((remaining - (baseValue * (targetMembers.length - 1))).toFixed(2))
+                        : baseValue;
+
+                    next[m.id] = {
+                        ...next[m.id],
+                        [`${type}Value`]: value
+                    };
+                });
+            }
+
+            syncParticipants(next)
+
+            return next;
+        });
+    };
+
+    useEffect(() => {
+        setRowState(prev => {
+            const next = { ...prev };
+            currentMembers.forEach(u => {
+                if (next[u.id]) {
+                    if (splitMode === 'PARTIAL' && next[u.id].splitEnabled) {
+                        next[u.id].splitValue = 1;
+                        next[u.id].splitLocked = false;
+                    }
+                    if (paidMode === 'PARTIAL' && next[u.id].paidEnabled) {
+                        next[u.id].paidValue = 1;
+                        next[u.id].paidLocked = false;
+                    }
+                }
+            });
+            return next;
+        });
+    }, [splitMode, paidMode]);
+
     return (
         <>
             <Box
                 component="form"
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(onSubmit, (err) => console.log("Validation Errors:", err))}
                 sx={{
                     px: { xs: 0, md: 2 },
                     pb: 2,
@@ -274,13 +424,24 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                             <Stack flex={1}>
                                 <FormControl>
-                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                        <FormattedMessage id="expense.mode.paidBy" />
-                                    </FormLabel>
-                                    <RadioGroup row value={paidMode} onChange={(e) => setPaidMode(e.target.value as Mode)}>
-                                        <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                        <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                        <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                    <Stack direction="row" alignItems="center" gap={0.5}>
+                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                            <FormattedMessage id="expense.mode.paidBy" />
+                                        </FormLabel>
+                                        <Tooltip
+                                            title={<FormattedMessage id="expense.mode.tooltip" />}
+                                            placement="top"
+                                            arrow
+                                            enterTouchDelay={0}
+                                            leaveTouchDelay={5000}
+                                        >
+                                            <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                        </Tooltip>
+                                    </Stack>
+                                    <RadioGroup row value={paidMode} onChange={(e) => setValue("paidByMode", e.target.value as Mode)}>
+                                        <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                        <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                        <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                                     </RadioGroup>
                                 </FormControl>
                             </Stack>
@@ -288,45 +449,48 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                         <Box display="flex" gap={3} mt={2} alignItems="center">
                             <Stack flex={1}>
-                                <Controller
-                                    name="groupId"
-                                    control={control}
-                                    defaultValue={initGroup?.id ?? 0}
-                                    render={({ field }) => (
-                                        <Autocomplete
-                                            size="small"
-                                            options={groups}
-                                            getOptionLabel={(o) => o.name}
-                                            isOptionEqualToValue={(option, value) => option.id === value.id}
-                                            value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
-                                            onChange={(_, selected) => {
-                                                if (isEditMode) return;
-                                                field.onChange(selected?.id ?? 0);
-                                                setGroupId(selected?.id ?? 0);
-                                            }}
-                                            onBlur={field.onBlur}
-                                            filterOptions={(options, state) => {
-                                                const q = state.inputValue.trim().toLowerCase();
-                                                if (!q) return options;
-                                                return options.filter((o) => o.name.toLowerCase().includes(q));
-                                            }}
-                                            renderOption={(props, option) => (
-                                                <Box component="li" {...props} key={option.id}>
-                                                    {option.name}
-                                                </Box>
-                                            )}
-                                            renderInput={(params) => (
-                                                <TextField
-                                                    {...params}
-                                                    label={<FormattedMessage id="expense.fields.group" />}
-                                                    inputRef={field.ref}
-                                                    error={!!errors.groupId}
-                                                    helperText={tError(intl, errors.groupId?.message)}
-                                                />
-                                            )}
-                                        />
-                                    )}
-                                />
+                                {!isFriendGroup && (
+                                        <Controller
+                                        name="groupId"
+                                        control={control}
+                                        defaultValue={initGroup?.id ?? 0}
+                                        render={({ field }) => (
+                                            <Autocomplete
+                                                size="small"
+                                                options={groups}
+                                                disabled={isEditMode}
+                                                getOptionLabel={(o) => o.name}
+                                                isOptionEqualToValue={(option, value) => option.id === value.id}
+                                                value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
+                                                onChange={(_, selected) => {
+                                                    if (isEditMode) return;
+                                                    field.onChange(selected?.id ?? 0);
+                                                    setGroupId(selected?.id ?? 0);
+                                                }}
+                                                onBlur={field.onBlur}
+                                                filterOptions={(options, state) => {
+                                                    const q = state.inputValue.trim().toLowerCase();
+                                                    if (!q) return options;
+                                                    return options.filter((o) => o.name.toLowerCase().includes(q));
+                                                }}
+                                                renderOption={(props, option) => (
+                                                    <Box component="li" {...props} key={option.id}>
+                                                        {option.name}
+                                                    </Box>
+                                                )}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label={<FormattedMessage id="expense.fields.group" />}
+                                                        inputRef={field.ref}
+                                                        error={!!errors.groupId}
+                                                        helperText={tError(intl, errors.groupId?.message)}
+                                                    />
+                                                )}
+                                            />
+                                        )}
+                                    />
+                                )}
                             </Stack>
 
                             <Box display="flex" gap={3} flex={1} alignItems="center">
@@ -386,13 +550,24 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
                             <Stack flex={1}>
                                 <FormControl>
-                                    <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                        <FormattedMessage id="expense.mode.splitBetween" />
-                                    </FormLabel>
-                                    <RadioGroup row value={splitMode} onChange={(e) => setSplitMode(e.target.value as Mode)}>
-                                        <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                        <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                        <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                    <Stack direction="row" alignItems="center" gap={0.5}>
+                                        <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                            <FormattedMessage id="expense.mode.splitBetween" />
+                                        </FormLabel>
+                                        <Tooltip
+                                            title={<FormattedMessage id="expense.mode.tooltip" />}
+                                            placement="top"
+                                            arrow
+                                            enterTouchDelay={0}
+                                            leaveTouchDelay={5000}
+                                        >
+                                            <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                        </Tooltip>
+                                    </Stack>
+                                    <RadioGroup row value={splitMode} onChange={(e) => setValue("splitBetweenMode", e.target.value as Mode)}>
+                                        <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                        <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                        <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                                     </RadioGroup>
                                 </FormControl>
                             </Stack>
@@ -466,12 +641,14 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             <Grid size={3.3} />
 
                             {/* Rows */}
-                            {(participants as unknown as TUser[]).map((u) => {
+                            {(currentMembers as unknown as TUser[]).map((u) => {
                                 const s: RowState = rowState[u.id] ?? {
                                     paidEnabled: false,
                                     paidValue: 0,
-                                    splitEnabled: true,
+                                    paidLocked: false,
+                                    splitEnabled: !isEditMode,
                                     splitValue: 0,
+                                    splitLocked: false,
                             };
 
                                 return (
@@ -488,7 +665,11 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) =>
                                                     setRowState((prev) => ({
                                                         ...prev,
-                                                        [u.id]: { ...s, paidEnabled: e.target.checked },
+                                                        [u.id]: {
+                                                            ...s,
+                                                            paidEnabled: e.target.checked,
+                                                            paidValue: (paidMode === 'PARTIAL' && e.target.checked) ? 1 : 0,
+                                                            paidLocked: false },
                                                     }))
                                                 }
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -501,16 +682,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!s.paidEnabled}
                                                 value={s.paidEnabled ? s.paidValue : ""}
-                                                onChange={(e) =>
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: { ...s, paidValue: Number(e.target.value) },
-                                                    }))
-                                                }
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), 'paid')}
                                                 slotProps={{
-                                                    input: {
-                                                        endAdornment: unitAdornment(paidMode, currency)
-                                                    }
+                                                    input: { endAdornment: unitAdornment(paidMode, currency) }
                                                 }}
                                             />
                                         </Grid>
@@ -521,7 +695,12 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) =>
                                                     setRowState((prev) => ({
                                                         ...prev,
-                                                        [u.id]: { ...s, splitEnabled: e.target.checked },
+                                                        [u.id]: {
+                                                            ...s,
+                                                            splitEnabled: e.target.checked,
+                                                            splitValue: (splitMode === 'PARTIAL' && e.target.checked) ? 1 : 0,
+                                                            splitLocked: false
+                                                        },
                                                     }))
                                                 }
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -534,16 +713,9 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!s.splitEnabled}
                                                 value={s.splitEnabled ? s.splitValue : ""}
-                                                onChange={(e) =>
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: { ...s, splitValue: Number(e.target.value) },
-                                                    }))
-                                                }
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), 'split')}
                                                 slotProps={{
-                                                    input: {
-                                                        endAdornment: unitAdornment(splitMode, currency)
-                                                    }
+                                                    input: { endAdornment: unitAdornment(splitMode, currency) }
                                                 }}
                                             />
                                         </Grid>
@@ -640,42 +812,44 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                 )}
                             />
 
-                            <Controller
-                                name="groupId"
-                                control={control}
-                                defaultValue={initGroup?.id ?? 0}
-                                render={({ field }) => (
-                                    <Autocomplete
-                                        size="small"
-                                        options={groups}
-                                        getOptionLabel={(o) => o.name}
-                                        isOptionEqualToValue={(option, value) => option.id === value.id}
-                                        value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
-                                        onChange={(_, selected) => {
-                                            if (isEditMode) return;
-                                            field.onChange(selected?.id ?? 0);
-                                            setGroupId(selected?.id ?? 0);
-                                        }}
-                                        onBlur={field.onBlur}
-                                        filterOptions={(options, state) => {
-                                            const q = state.inputValue.trim().toLowerCase();
-                                            if (!q) return options;
-                                            return options.filter((o) => o.name.toLowerCase().includes(q));
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                fullWidth
-                                                label={<FormattedMessage id="expense.fields.group" />}
-                                                inputRef={field.ref}
-                                                error={!!errors.groupId}
-                                                helperText={tError(intl, errors.groupId?.message)}
-                                            />
-                                        )}
-                                    />
-                                )}
-                            />
-
+                            {!isFriendGroup ? (
+                                <Controller
+                                    name="groupId"
+                                    control={control}
+                                    defaultValue={initGroup?.id ?? 0}
+                                    render={({ field }) => (
+                                        <Autocomplete
+                                            size="small"
+                                            options={groups}
+                                            disabled={isEditMode}
+                                            getOptionLabel={(o) => o.name}
+                                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                                            value={groups.find((g) => g.id === (field.value ?? 0)) ?? null}
+                                            onChange={(_, selected) => {
+                                                if (isEditMode) return;
+                                                field.onChange(selected?.id ?? 0);
+                                                setGroupId(selected?.id ?? 0);
+                                            }}
+                                            onBlur={field.onBlur}
+                                            filterOptions={(options, state) => {
+                                                const q = state.inputValue.trim().toLowerCase();
+                                                if (!q) return options;
+                                                return options.filter((o) => o.name.toLowerCase().includes(q));
+                                            }}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    fullWidth
+                                                    label={<FormattedMessage id="expense.fields.group" />}
+                                                    inputRef={field.ref}
+                                                    error={!!errors.groupId}
+                                                    helperText={tError(intl, errors.groupId?.message)}
+                                                />
+                                            )}
+                                        />
+                                    )}
+                                />
+                            ) : <Box/>}
                             <Controller
                                 name="totalAmount"
                                 control={control}
@@ -729,34 +903,56 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                         </Box>
 
                         <FormControl fullWidth>
-                            <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                <FormattedMessage id="expense.mode.paidBy" />
-                            </FormLabel>
+                            <Stack direction="row" alignItems="center" gap={0.5}>
+                                <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                    <FormattedMessage id="expense.mode.paidBy" />
+                                </FormLabel>
+                                <Tooltip
+                                    title={<FormattedMessage id="expense.mode.tooltip" />}
+                                    placement="top"
+                                    arrow
+                                    enterTouchDelay={0}
+                                    leaveTouchDelay={5000}
+                                >
+                                    <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                </Tooltip>
+                            </Stack>
                             <RadioGroup
                                 row
                                 value={paidMode}
-                                onChange={(e) => setPaidMode(e.target.value as Mode)}
+                                onChange={(e) => setValue("paidByMode", e.target.value as Mode)}
                                 sx={{ justifyContent: 'space-between' }}
                             >
-                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                             </RadioGroup>
                         </FormControl>
 
                         <FormControl fullWidth>
-                            <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
-                                <FormattedMessage id="expense.mode.splitBetween" />
-                            </FormLabel>
+                            <Stack direction="row" alignItems="center" gap={0.5}>
+                                <FormLabel sx={{ color: `${COLORS.PRIMARY} \!important`, fontWeight: 700, fontSize: 12 }}>
+                                    <FormattedMessage id="expense.mode.splitBetween" />
+                                </FormLabel>
+                                <Tooltip
+                                    title={<FormattedMessage id="expense.mode.tooltip" />}
+                                    placement="top"
+                                    arrow
+                                    enterTouchDelay={0}
+                                    leaveTouchDelay={5000}
+                                >
+                                    <InfoOutlinedIcon sx={{ fontSize: 16, color: COLORS.PRIMARY, cursor: 'help' }} />
+                                </Tooltip>
+                            </Stack>
                             <RadioGroup
                                 row
                                 value={splitMode}
-                                onChange={(e) => setSplitMode(e.target.value as Mode)}
+                                onChange={(e) => setValue("splitBetweenMode", e.target.value as Mode)}
                                 sx={{ justifyContent: 'space-between' }}
                             >
-                                <FormControlLabel value="fixed" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
-                                <FormControlLabel value="partial" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
-                                <FormControlLabel value="percentage" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
+                                <FormControlLabel value="FIXED" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.fixed" />} />
+                                <FormControlLabel value="PARTIAL" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.partial" />} />
+                                <FormControlLabel value="PERCENTAGE" control={<Radio size="small" />} label={<FormattedMessage id="expense.mode.percentage" />} />
                             </RadioGroup>
                         </FormControl>
 
@@ -832,12 +1028,14 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                             </Box>
 
                             <Stack gap={1}>
-                                {(participants as unknown as TUser[]).map((u) => {
+                                {(currentMembers as unknown as TUser[]).map((u) => {
                                     const s: RowState = rowState[u.id] ?? {
                                         paidEnabled: false,
                                         paidValue: 0,
+                                        paidLocked: false,
                                         splitEnabled: true,
                                         splitValue: 0,
+                                        splitLocked: false,
                                     };
 
                                     const enabled = participantView === 'paid' ? s.paidEnabled : s.splitEnabled;
@@ -862,11 +1060,13 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 checked={enabled}
                                                 onChange={(e) => {
                                                     const checked = e.target.checked;
+                                                    const mode = participantView === 'paid' ? paidMode : splitMode;
+                                                    const initialValue = (mode === 'PARTIAL' && checked) ? 1 : 0;
                                                     setRowState((prev) => ({
                                                         ...prev,
                                                         [u.id]: participantView === 'paid'
-                                                            ? { ...s, paidEnabled: checked }
-                                                            : { ...s, splitEnabled: checked },
+                                                            ? { ...s, paidEnabled: checked, paidValue: initialValue, paidLocked: false }
+                                                            : { ...s, splitEnabled: checked, splitValue: initialValue, splitLocked: false },
                                                     }))
                                                 }}
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -877,15 +1077,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 inputMode="decimal"
                                                 disabled={!enabled}
                                                 value={enabled ? value : ""}
-                                                onChange={(e) => {
-                                                    const n = Number(e.target.value);
-                                                    setRowState((prev) => ({
-                                                        ...prev,
-                                                        [u.id]: participantView === 'paid'
-                                                            ? { ...s, paidValue: n }
-                                                            : { ...s, splitValue: n },
-                                                    }))
-                                                }}
+                                                onChange={(e) => handleValueChange(u.id, Number(e.target.value), participantView)}
                                                 slotProps={{
                                                     input: { endAdornment: unitAdornment(mode, currency) }
                                                 }}
