@@ -16,7 +16,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import { COLORS } from "../constants/colors";
+import {COLORS} from "../constants/colors";
 import {TGroupDetail} from "../types/dto/TGroupDetail";
 import {Controller, useForm, useWatch} from "react-hook-form";
 import {addExpenseFormSchema, TAddExpenseForm} from "../types/form/TAddExpenseForm";
@@ -173,7 +173,14 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         } else if (groupDetail?.members) {
             const nextRowState: Record<number, RowState> = {};
             groupDetail.members.forEach(u => {
-                nextRowState[u.id] = { paidEnabled: false, paidValue: 0, paidLocked: false, splitEnabled: true, splitValue: 0, splitLocked: false };
+                nextRowState[u.id] = {
+                    paidEnabled: false,
+                    paidValue: 0,
+                    paidLocked: false,
+                    splitEnabled: true,
+                    splitValue: splitMode === 'partial' ? 1 : 0,
+                    splitLocked: false
+                };
             });
             setRowState(nextRowState);
         }
@@ -217,35 +224,42 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     }, [rowState, currentMembers]);
 
     useEffect(() => {
-        if (paidMode !== "fixed" && splitMode !== "fixed") return;
+        if (paidMode === "partial" && splitMode === "partial") return;
 
         setRowState((prev) => {
             const next = { ...prev };
             const total = Number.isFinite(totalAmount) ? totalAmount : 0;
 
             const calculateNewValues = (type: 'paid' | 'split') => {
+                const mode = type === 'paid' ? paidMode : splitMode;
+                if (mode === 'partial') return;
+
+                const isPercentage = mode === 'percentage';
+                const targetTotal = isPercentage ? 100 : total;
+
                 const activeMembers = currentMembers.filter(u => next[u.id]?.[`${type}Enabled`]);
                 const lockedMembers = activeMembers.filter(u => next[u.id]?.[`${type}Locked`]);
                 const unlockedMembers = activeMembers.filter(u => !next[u.id]?.[`${type}Locked`]);
 
                 const sumOfLocked = lockedMembers.reduce((sum, u) => sum + next[u.id][`${type}Value`], 0);
-                const remaining = Math.max(0, total - sumOfLocked);
-                const perPerson = unlockedMembers.length > 0 ? remaining / unlockedMembers.length : 0;
+                const remaining = Math.max(0, targetTotal - sumOfLocked);
 
-                unlockedMembers.forEach(u => {
-                    next[u.id][`${type}Value`] = Number(perPerson.toFixed(2));
-                });
+                if (unlockedMembers.length > 0) {
+                    const baseValue = isPercentage
+                        ? Math.floor(remaining / unlockedMembers.length)
+                        : Number((remaining / unlockedMembers.length).toFixed(2));
 
-                // Ensure disabled members are always 0
-                currentMembers.filter(u => !next[u.id]?.[`${type}Enabled`]).forEach(u => {
-                    next[u.id][`${type}Value`] = 0;
-                    next[u.id][`${type}Locked`] = false; // Reset lock if they are unchecked
-                });
+                    unlockedMembers.forEach((u, index) => {
+                        const isLast = index === unlockedMembers.length - 1;
+                        next[u.id][`${type}Value`] = isLast
+                            ? Number((remaining - (baseValue * (unlockedMembers.length - 1))).toFixed(2))
+                            : baseValue;
+                    });
+                }
             };
 
-            if (paidMode === "fixed") calculateNewValues('paid');
-            if (splitMode === "fixed") calculateNewValues('split');
-
+            calculateNewValues('paid');
+            calculateNewValues('split');
             return next;
         });
     }, [totalAmount, paidMode, splitMode, currentMembers, checkboxTrigger]);
@@ -254,7 +268,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
         const total = Number.isFinite(totalAmount) ? totalAmount : 0;
         const mode = type === 'paid' ? paidMode : splitMode;
 
-        if (mode !== "fixed") {
+        if (mode === "partial") {
             setRowState(prev => ({
                 ...prev,
                 [userId]: { ...prev[userId], [`${type}Value`]: newValue }
@@ -264,14 +278,15 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
 
         setRowState(prev => {
             const next = { ...prev };
-            // Lock this field because of manual change
+            const isPercentage = mode === 'percentage';
+            const targetTotal = isPercentage ? 100 : total;
+
             next[userId] = {
                 ...next[userId],
                 [`${type}Value`]: newValue,
                 [`${type}Locked`]: true
             };
 
-            // Find members who are active but NOT locked and NOT the one we just edited
             const targetMembers = currentMembers.filter(m =>
                 m.id !== userId &&
                 (type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled) &&
@@ -279,26 +294,53 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
             );
 
             if (targetMembers.length > 0) {
-                // Subtract all locked values from the total
                 const sumOfLocked = currentMembers.reduce((sum, m) => {
                     const isLocked = type === 'paid' ? next[m.id]?.paidLocked : next[m.id]?.splitLocked;
                     const isEnabled = type === 'paid' ? next[m.id]?.paidEnabled : next[m.id]?.splitEnabled;
                     return (isLocked && isEnabled) ? sum + (type === 'paid' ? next[m.id].paidValue : next[m.id].splitValue) : sum;
                 }, 0);
 
-                const remaining = total - sumOfLocked;
-                const perPerson = Math.max(0, remaining / targetMembers.length);
+                const remaining = Math.max(0, targetTotal - sumOfLocked);
 
-                targetMembers.forEach(m => {
+                // Percentage uses Math.floor for whole numbers, Fixed uses toFixed(2)
+                const baseValue = isPercentage
+                    ? Math.floor(remaining / targetMembers.length)
+                    : Number((remaining / targetMembers.length).toFixed(2));
+
+                targetMembers.forEach((m, index) => {
+                    const isLast = index === targetMembers.length - 1;
+                    const value = isLast
+                        ? Number((remaining - (baseValue * (targetMembers.length - 1))).toFixed(2))
+                        : baseValue;
+
                     next[m.id] = {
                         ...next[m.id],
-                        [`${type}Value`]: Number(perPerson.toFixed(2))
+                        [`${type}Value`]: value
                     };
                 });
             }
             return next;
         });
     };
+
+    useEffect(() => {
+        setRowState(prev => {
+            const next = { ...prev };
+            currentMembers.forEach(u => {
+                if (next[u.id]) {
+                    if (splitMode === 'partial' && next[u.id].splitEnabled) {
+                        next[u.id].splitValue = 1;
+                        next[u.id].splitLocked = false;
+                    }
+                    if (paidMode === 'partial' && next[u.id].paidEnabled) {
+                        next[u.id].paidValue = 1;
+                        next[u.id].paidLocked = false;
+                    }
+                }
+            });
+            return next;
+        });
+    }, [splitMode, paidMode]);
 
     return (
         <>
@@ -626,7 +668,11 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) =>
                                                     setRowState((prev) => ({
                                                         ...prev,
-                                                        [u.id]: { ...s, paidEnabled: e.target.checked, paidLocked: false },
+                                                        [u.id]: {
+                                                            ...s,
+                                                            paidEnabled: e.target.checked,
+                                                            paidValue: (paidMode === 'partial' && e.target.checked) ? 1 : 0,
+                                                            paidLocked: false },
                                                     }))
                                                 }
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -652,7 +698,12 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 onChange={(e) =>
                                                     setRowState((prev) => ({
                                                         ...prev,
-                                                        [u.id]: { ...s, splitEnabled: e.target.checked, splitLocked: false },
+                                                        [u.id]: {
+                                                            ...s,
+                                                            splitEnabled: e.target.checked,
+                                                            splitValue: (splitMode === 'partial' && e.target.checked) ? 1 : 0,
+                                                            splitLocked: false
+                                                        },
                                                     }))
                                                 }
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
@@ -1012,11 +1063,13 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
                                                 checked={enabled}
                                                 onChange={(e) => {
                                                     const checked = e.target.checked;
+                                                    const mode = participantView === 'paid' ? paidMode : splitMode;
+                                                    const initialValue = (mode === 'partial' && checked) ? 1 : 0;
                                                     setRowState((prev) => ({
                                                         ...prev,
                                                         [u.id]: participantView === 'paid'
-                                                            ? { ...s, paidEnabled: checked, paidLocked: false }
-                                                            : { ...s, splitEnabled: checked, splitLocked: false },
+                                                            ? { ...s, paidEnabled: checked, paidValue: initialValue, paidLocked: false }
+                                                            : { ...s, splitEnabled: checked, splitValue: initialValue, splitLocked: false },
                                                     }))
                                                 }}
                                                 sx={{ color: COLORS.PRIMARY, "&.Mui-checked": { color: COLORS.PRIMARY } }}
