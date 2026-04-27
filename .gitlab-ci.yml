@@ -13,7 +13,7 @@ cache:
     - backend/.m2/repository
 
 # Build the backend
-build:
+build-backend:
   stage: build
   image: maven:3.9-eclipse-temurin-21
   script:
@@ -23,6 +23,14 @@ build:
     paths:
       - backend/target/*.jar
     expire_in: 1 hour
+
+build_frontend:
+  stage: build
+  image: node:20-alpine
+  script:
+    - cd frontend
+    - npm install
+    - npm run build
 
 # Run tests
 test:
