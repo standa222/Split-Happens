@@ -32,7 +32,6 @@ build_frontend:
     - npm install
     - npm run build
 
-# Run tests
 test-backend:
   stage: test
   image: maven:3.9-eclipse-temurin-21
@@ -49,6 +48,26 @@ test-backend:
   script:
     - cd backend
     - mvn $MAVEN_CLI_OPTS test
+    - echo "Extracting coverage percentage..."
+    - awk -F"," '{ instructions += $4 + $5; covered += $5 } END { print "Total coverage:", 100*covered/instructions, "%" }' target/site/jacoco/jacoco.csv
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-maven"
+    paths:
+      - backend/.m2/repository
+    policy: pull
+  artifacts:
+    when: always
+    paths:
+      - backend/target/surefire-reports/
+      - backend/target/site/jacoco/
+    reports:
+      junit:
+        - backend/target/surefire-reports/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/target/site/jacoco/jacoco.xml
+    expire_in: 7 days
+  coverage: "/Total coverage: ([0-9.]+)/"
 
 publish_backend:
   stage: publish
