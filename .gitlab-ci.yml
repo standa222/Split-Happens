@@ -33,7 +33,7 @@ build_frontend:
     - npm run build
 
 # Run tests
-test:
+test-backend:
   stage: test
   image: maven:3.9-eclipse-temurin-21
   services:
