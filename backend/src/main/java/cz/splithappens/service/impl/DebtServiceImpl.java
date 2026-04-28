@@ -12,8 +12,6 @@ import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.DebtService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +20,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class DebtServiceImpl implements DebtService {
-    private static final Logger logger = LoggerFactory.getLogger(DebtServiceImpl.class);
-
     private final TransactionRepository transactionRepository;
     private final DebtRepository debtRepository;
     private final UserRepository userRepository;

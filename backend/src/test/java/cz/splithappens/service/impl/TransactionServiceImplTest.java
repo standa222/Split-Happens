@@ -6,6 +6,7 @@ import cz.splithappens.dto.response.TransactionDto;
 import cz.splithappens.exception.BadRequestException;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.TransactionNotFoundException;
+import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.mapper.TransactionMapper;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Transaction;
@@ -107,6 +108,43 @@ class TransactionServiceImplTest {
 
         assertThatThrownBy(() -> transactionService.createTransaction(dto))
                 .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void createTransaction_emptySplits_throwsBadRequest() {
+        when(groupRepository.findById(G_ID)).thenReturn(Optional.of(testGroup));
+
+        TransactionCreateDto dto = createBaseDto(TransactionSplitMode.FIXED);
+        dto.setPaidBy(List.of());
+        dto.setSplitBetween(List.of());
+
+        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void createTransaction_unsupportedSplitMode_throwsBadRequest() {
+        when(groupRepository.findById(G_ID)).thenReturn(Optional.of(testGroup));
+
+        TransactionCreateDto dto = createBaseDto(null);
+        dto.setPaidBy(List.of(split(1L, "60"), split(2L, "40")));
+        dto.setSplitBetween(List.of(split(1L, "60"), split(2L, "40")));
+
+        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+                .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void createTransaction_userInSplitsNotFound_throws() {
+        when(groupRepository.findById(G_ID)).thenReturn(Optional.of(testGroup));
+        when(userRepository.findAllById(any())).thenReturn(List.of(user(1L))); // missing user 2
+
+        TransactionCreateDto dto = createBaseDto(TransactionSplitMode.FIXED);
+        dto.setPaidBy(List.of(split(1L, "60"), split(2L, "40")));
+        dto.setSplitBetween(List.of(split(1L, "60"), split(2L, "40")));
+
+        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
