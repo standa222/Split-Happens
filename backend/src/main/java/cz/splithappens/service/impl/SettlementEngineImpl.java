@@ -32,23 +32,43 @@ public class SettlementEngineImpl implements SettlementEngine {
         debtRepository.deleteByGroupId(groupId);
 
         List<Transaction> transactions = transactionRepository.findByGroupId(groupId);
-        Map<User, BigDecimal> balances = new HashMap<>();
-
-        for (User member : group.getMembers()) {
-            balances.put(member, BigDecimal.ZERO);
-        }
-
-        for (Transaction transaction : transactions) {
-            for (TransactionItem item : transaction.getItems()) {
-                User user = item.getUser();
-                BigDecimal currentBalance = balances.getOrDefault(user, BigDecimal.ZERO);
-                balances.put(user, currentBalance.add(item.getDefaultCurrencyBalanceChange()));
-            }
-        }
+        Map<User, BigDecimal> balances = computeGroupBalances(transactions);
 
         List<UserBalance> debtors = new ArrayList<>();
         List<UserBalance> creditors = new ArrayList<>();
+        divideMembers(balances, debtors, creditors);
 
+        while (!debtors.isEmpty() && !creditors.isEmpty()) {
+            recordDebt(debtors, creditors, group);
+        }
+    }
+
+    private void recordDebt(List<UserBalance> debtors, List<UserBalance> creditors, Group group) {
+        UserBalance d = debtors.removeLast();
+        UserBalance c = creditors.removeLast();
+
+        BigDecimal amount = d.getBalance().abs().min(c.getBalance());
+
+        Debt debt = Debt.builder()
+                .debtor(d.getUser())
+                .group(group)
+                .creditor(c.getUser())
+                .amount(amount)
+                .build();
+        debtRepository.save(debt);
+
+        d.setBalance(d.getBalance().add(amount));
+        c.setBalance(c.getBalance().subtract(amount));
+
+        if (d.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+            insertSorted(debtors, d, Comparator.comparing(UserBalance::getBalance));
+        }
+        if (c.getBalance().compareTo(BigDecimal.ZERO) != 0) {
+            insertSorted(creditors, c, Comparator.comparing(UserBalance::getBalance).reversed());
+        }
+    }
+
+    private void divideMembers(Map<User, BigDecimal> balances, List<UserBalance> debtors, List<UserBalance> creditors) {
         for (Map.Entry<User, BigDecimal> entry : balances.entrySet()) {
             BigDecimal balance = entry.getValue();
             if (balance.compareTo(BigDecimal.ZERO) < 0) {
@@ -60,30 +80,19 @@ public class SettlementEngineImpl implements SettlementEngine {
 
         debtors.sort(Comparator.comparing(UserBalance::getBalance));
         creditors.sort(Comparator.comparing(UserBalance::getBalance).reversed());
+    }
 
-        while (!debtors.isEmpty() && !creditors.isEmpty()) {
-            UserBalance d = debtors.removeLast();
-            UserBalance c = creditors.removeLast();
+    private Map<User, BigDecimal> computeGroupBalances(List<Transaction> transactions) {
+        Map<User, BigDecimal> balances = new HashMap<>();
 
-            BigDecimal amount = d.getBalance().abs().min(c.getBalance());
-
-            Debt debt = new Debt();
-            debt.setDebtor(d.getUser());
-            debt.setGroup(group);
-            debt.setCreditor(c.getUser());
-            debt.setAmount(amount);
-            debtRepository.save(debt);
-
-            d.setBalance(d.getBalance().add(amount));
-            c.setBalance(c.getBalance().subtract(amount));
-
-            if (d.getBalance().compareTo(BigDecimal.ZERO) != 0) {
-                insertSorted(debtors, d, Comparator.comparing(UserBalance::getBalance));
-            }
-            if (c.getBalance().compareTo(BigDecimal.ZERO) != 0) {
-                insertSorted(creditors, c, Comparator.comparing(UserBalance::getBalance).reversed());
+        for (Transaction transaction : transactions) {
+            for (TransactionItem item : transaction.getItems()) {
+                User user = item.getUser();
+                BigDecimal currentBalance = balances.getOrDefault(user, BigDecimal.ZERO);
+                balances.put(user, currentBalance.add(item.getDefaultCurrencyBalanceChange()));
             }
         }
+        return balances;
     }
 
     private void insertSorted(List<UserBalance> list, UserBalance item, Comparator<UserBalance> comparator) {

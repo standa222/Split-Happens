@@ -33,7 +33,6 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
             ConstraintValidatorContext context
     ) {
         if (splits == null || splits.isEmpty()) {
-            // Let @NotEmpty / @NotNull handle this if present; otherwise accept.
             return true;
         }
 
@@ -72,7 +71,6 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
 
         if (mode == TransactionSplitMode.FIXED) {
             if (totalAmount == null) {
-                // @NotNull should handle; we keep it valid here.
                 return true;
             }
             if (fixedSum.compareTo(totalAmount) != 0) {
@@ -94,7 +92,6 @@ public class ValidTransactionSplitsValidator implements ConstraintValidator<Vali
 
     private void addViolation(ConstraintValidatorContext context, String property, String message) {
         context.buildConstraintViolationWithTemplate(message)
-                // Best-effort: propertyNode supports simple paths; for indexed paths we keep message only.
                 .addPropertyNode(property)
                 .addConstraintViolation();
     }
