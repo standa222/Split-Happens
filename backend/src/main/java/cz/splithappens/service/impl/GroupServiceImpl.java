@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -137,8 +138,18 @@ public class GroupServiceImpl implements GroupService {
                         .build())
                 .toList();
 
+        List<GroupStatisticsDto.MonthlySpendingDto> monthlyTrend = transactionRepository
+                .sumExpensesByMonth(groupId)
+                .stream()
+                .map(row -> GroupStatisticsDto.MonthlySpendingDto.builder()
+                        .month(YearMonth.of(row.getMonthDate().getYear(), row.getMonthDate().getMonthValue()))
+                        .total(row.getTotal())
+                        .build())
+                .toList();
+
         return GroupStatisticsDto.builder()
                 .spendingByCategory(spendingByCategory)
+                .monthlyTrend(monthlyTrend)
                 .build();
     }
 

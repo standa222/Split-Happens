@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import cz.splithappens.model.enums.ExpenseCategory;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.List;
 
 @Data
@@ -20,6 +21,9 @@ public class GroupStatisticsDto {
     @Schema(description = "Total spending grouped by expense category (only EXPENSE transactions).")
     private List<CategorySpendingDto> spendingByCategory;
 
+    @Schema(description = "Monthly spending trend (only EXPENSE transactions).")
+    private List<MonthlySpendingDto> monthlyTrend;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -27,6 +31,19 @@ public class GroupStatisticsDto {
     @Schema(description = "Aggregated spending for a single category")
     public static class CategorySpendingDto {
         private ExpenseCategory category;
+        private BigDecimal total;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "Aggregated spending for a month")
+    public static class MonthlySpendingDto {
+        @Schema(description = "Month the spending belongs to", example = "2026-05")
+        private YearMonth month;
+
+        @Schema(description = "Total amount spent during the month")
         private BigDecimal total;
     }
 }
