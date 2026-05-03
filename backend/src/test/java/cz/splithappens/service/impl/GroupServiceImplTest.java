@@ -308,11 +308,12 @@ class GroupServiceImplTest {
         group.setMembers(new LinkedHashSet<>(List.of(current, user(2L))));
         when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
 
-        when(transactionRepository.sumExpensesByCategory(10L))
-                .thenReturn(List.of(mockCategory()));
-
-        when(transactionRepository.sumExpensesByMonth(10L))
-                .thenReturn(List.of(mockMonth()));
+        TransactionRepository.CategoryTotalProjection catProj = mockCategory();
+        TransactionRepository.MonthTotalProjection monthProj = mockMonth();
+        TransactionRepository.UserTotalProjection userProj = mockUser();
+        when(transactionRepository.sumExpensesByCategory(10L)).thenReturn(List.of(catProj));
+        when(transactionRepository.sumExpensesByMonth(10L)).thenReturn(List.of(monthProj));
+        when(transactionRepository.sumUserSpending(10L)).thenReturn(List.of(userProj));
 
         GroupStatisticsDto result = groupService.getGroupStatistics(10L, current);
 
@@ -324,8 +325,13 @@ class GroupServiceImplTest {
         assertThat(result.getMonthlyTrend().getFirst().getMonth()).hasToString("2026-05");
         assertThat(result.getMonthlyTrend().getFirst().getTotal()).isEqualByComparingTo("999.00");
 
+        assertThat(result.getSpendingByUser()).hasSize(1);
+        assertThat(result.getSpendingByUser().getFirst().getUserId()).isEqualTo(1L);
+        assertThat(result.getSpendingByUser().getFirst().getTotal()).isEqualByComparingTo("50.00");
+
         verify(transactionRepository).sumExpensesByCategory(10L);
         verify(transactionRepository).sumExpensesByMonth(10L);
+        verify(transactionRepository).sumUserSpending(10L);
     }
 
     private static GroupCreateDto createGroupDto(List<Long> memberIds) {
@@ -363,6 +369,13 @@ class GroupServiceImplTest {
         TransactionRepository.MonthTotalProjection p = mock(TransactionRepository.MonthTotalProjection.class);
         when(p.getMonthDate()).thenReturn(OffsetDateTime.parse("2026-05-01T00:00:00Z"));
         when(p.getTotal()).thenReturn(new BigDecimal("999.00"));
+        return p;
+    }
+
+    private TransactionRepository.UserTotalProjection mockUser() {
+        TransactionRepository.UserTotalProjection p = mock(TransactionRepository.UserTotalProjection.class);
+        when(p.getUserId()).thenReturn(1L);
+        when(p.getTotal()).thenReturn(new BigDecimal("50.00"));
         return p;
     }
 }

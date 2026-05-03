@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -36,6 +35,17 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             """)
     List<MonthTotalProjection> sumExpensesByMonth(@Param("groupId") Long groupId);
 
+    @Query("""
+            select ti.user.id as userId, sum(-ti.defaultCurrencyBalanceChange) as total
+            from TransactionItem ti
+            where ti.transaction.group.id = :groupId
+              and ti.transaction.transactionType = cz.splithappens.model.enums.TransactionType.EXPENSE
+              and ti.defaultCurrencyBalanceChange < 0
+            group by ti.user.id
+            order by total desc
+            """)
+    List<UserTotalProjection> sumUserSpending(@Param("groupId") Long groupId);
+
     interface CategoryTotalProjection {
         ExpenseCategory getCategory();
         BigDecimal getTotal();
@@ -43,6 +53,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     interface MonthTotalProjection {
         OffsetDateTime getMonthDate();
+        BigDecimal getTotal();
+    }
+
+    interface UserTotalProjection {
+        Long getUserId();
         BigDecimal getTotal();
     }
 }

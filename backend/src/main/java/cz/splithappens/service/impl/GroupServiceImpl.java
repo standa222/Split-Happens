@@ -147,9 +147,19 @@ public class GroupServiceImpl implements GroupService {
                         .build())
                 .toList();
 
+        List<GroupStatisticsDto.UserSpendingDto> spendingByUser = transactionRepository
+                .sumUserSpending(groupId)
+                .stream()
+                .map(row -> GroupStatisticsDto.UserSpendingDto.builder()
+                        .userId(row.getUserId())
+                        .total(row.getTotal())
+                        .build())
+                .toList();
+
         return GroupStatisticsDto.builder()
                 .spendingByCategory(spendingByCategory)
                 .monthlyTrend(monthlyTrend)
+                .spendingByUser(spendingByUser)
                 .build();
     }
 

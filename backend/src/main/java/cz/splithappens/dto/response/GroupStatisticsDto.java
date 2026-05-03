@@ -24,6 +24,9 @@ public class GroupStatisticsDto {
     @Schema(description = "Monthly spending trend (only EXPENSE transactions).")
     private List<MonthlySpendingDto> monthlyTrend;
 
+    @Schema(description = "Total spending per user (participants only) in the group's default currency. This sums only negative transaction items for EXPENSE transactions.")
+    private List<UserSpendingDto> spendingByUser;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -44,6 +47,19 @@ public class GroupStatisticsDto {
         private YearMonth month;
 
         @Schema(description = "Total amount spent during the month")
+        private BigDecimal total;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Schema(description = "Aggregated spending for a user")
+    public static class UserSpendingDto {
+        @Schema(description = "User identifier")
+        private Long userId;
+
+        @Schema(description = "Total amount spent by the user in the group's default currency (sum of negative items, returned as positive value)")
         private BigDecimal total;
     }
 }
