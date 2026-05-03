@@ -4,6 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.DebtDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
+import cz.splithappens.dto.response.GroupStatisticsDto;
 import cz.splithappens.dto.response.TransactionDto;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.NotGroupMemberException;
@@ -115,6 +116,19 @@ public class GroupServiceImpl implements GroupService {
         group.getMembers().removeIf(member -> member.getId().equals(user.getId()));
         group.updateLastActivity();
         groupRepository.save(group);
+    }
+
+    @Override
+    @Transactional
+    public GroupStatisticsDto getGroupStatistics(Long groupId, User user) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+
+        if (group.getMembers().stream().noneMatch(m -> m.getId().equals(user.getId()))) {
+            throw new NotGroupMemberException(groupId);
+        }
+
+        return GroupStatisticsDto.builder().build();
     }
 
     @Override

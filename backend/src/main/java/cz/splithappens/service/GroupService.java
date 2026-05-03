@@ -3,6 +3,7 @@ package cz.splithappens.service;
 import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
+import cz.splithappens.dto.response.GroupStatisticsDto;
 import cz.splithappens.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +16,7 @@ public interface GroupService {
     GroupDto getGroupDetails(Long groupId, User user);
     GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user);
     void leaveGroup(Long groupId, User user);
+    GroupStatisticsDto getGroupStatistics(Long groupId, User user);
     byte[] getGroupImage(Long groupId);
     void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException;
 }
