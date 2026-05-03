@@ -24,8 +24,8 @@ public class GroupStatisticsDto {
     @Schema(description = "Monthly spending trend (only EXPENSE transactions).")
     private List<MonthlySpendingDto> monthlyTrend;
 
-    @Schema(description = "Total spending per user (participants only) in the group's default currency. This sums only negative transaction items for EXPENSE transactions.")
-    private List<UserSpendingDto> spendingByUser;
+    @Schema(description = "Per-user statistics in the group's default currency. Includes spending (participants only), paying (payers only), and a spending-to-paying ratio.")
+    private List<UserStatsDto> userStats;
 
     @Data
     @Builder
@@ -54,13 +54,19 @@ public class GroupStatisticsDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @Schema(description = "Aggregated spending for a user")
-    public static class UserSpendingDto {
+    @Schema(description = "Per-user spending and paying totals with a spending-to-paying ratio")
+    public static class UserStatsDto {
         @Schema(description = "User identifier")
         private Long userId;
 
-        @Schema(description = "Total amount spent by the user in the group's default currency (sum of negative items, returned as positive value)")
-        private BigDecimal total;
+        @Schema(description = "Total amount spent by the user in the group's default currency (participants only; stored as positive number)")
+        private BigDecimal spending;
+
+        @Schema(description = "Total amount paid by the user in the group's default currency (payers only; stored as positive number)")
+        private BigDecimal paying;
+
+        @Schema(description = "Spending-to-paying ratio for the user (spending / paying). Null if paying is 0.")
+        private Double spendingToPayingRatio;
     }
 }
 

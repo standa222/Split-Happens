@@ -314,6 +314,7 @@ class GroupServiceImplTest {
         when(transactionRepository.sumExpensesByCategory(10L)).thenReturn(List.of(catProj));
         when(transactionRepository.sumExpensesByMonth(10L)).thenReturn(List.of(monthProj));
         when(transactionRepository.sumUserSpending(10L)).thenReturn(List.of(userProj));
+        when(transactionRepository.sumUserPaying(10L)).thenReturn(List.of());
 
         GroupStatisticsDto result = groupService.getGroupStatistics(10L, current);
 
@@ -325,13 +326,16 @@ class GroupServiceImplTest {
         assertThat(result.getMonthlyTrend().getFirst().getMonth()).hasToString("2026-05");
         assertThat(result.getMonthlyTrend().getFirst().getTotal()).isEqualByComparingTo("999.00");
 
-        assertThat(result.getSpendingByUser()).hasSize(1);
-        assertThat(result.getSpendingByUser().getFirst().getUserId()).isEqualTo(1L);
-        assertThat(result.getSpendingByUser().getFirst().getTotal()).isEqualByComparingTo("50.00");
+        assertThat(result.getUserStats()).hasSize(1);
+        assertThat(result.getUserStats().getFirst().getUserId()).isEqualTo(1L);
+        assertThat(result.getUserStats().getFirst().getSpending()).isEqualByComparingTo("50.00");
+        assertThat(result.getUserStats().getFirst().getPaying()).isEqualByComparingTo("0");
+        assertThat(result.getUserStats().getFirst().getSpendingToPayingRatio()).isNull();
 
         verify(transactionRepository).sumExpensesByCategory(10L);
         verify(transactionRepository).sumExpensesByMonth(10L);
         verify(transactionRepository).sumUserSpending(10L);
+        verify(transactionRepository).sumUserPaying(10L);
     }
 
     private static GroupCreateDto createGroupDto(List<Long> memberIds) {

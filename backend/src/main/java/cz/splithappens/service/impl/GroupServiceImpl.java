@@ -25,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 import java.time.YearMonth;
 import java.util.*;
@@ -129,16 +131,19 @@ public class GroupServiceImpl implements GroupService {
             throw new NotGroupMemberException(groupId);
         }
 
-        List<GroupStatisticsDto.CategorySpendingDto> spendingByCategory = transactionRepository
-                .sumExpensesByCategory(groupId)
-                .stream()
-                .map(row -> GroupStatisticsDto.CategorySpendingDto.builder()
-                        .category(row.getCategory())
-                        .total(row.getTotal())
-                        .build())
-                .toList();
+        List<GroupStatisticsDto.CategorySpendingDto> spendingByCategory = getCategorySpendingDtos(groupId);
+        List<GroupStatisticsDto.MonthlySpendingDto> monthlyTrend = getMonthlySpendingDtos(groupId);
+        List<GroupStatisticsDto.UserStatsDto> userStats = getUserStatsDtos(groupId);
 
-        List<GroupStatisticsDto.MonthlySpendingDto> monthlyTrend = transactionRepository
+        return GroupStatisticsDto.builder()
+                .spendingByCategory(spendingByCategory)
+                .monthlyTrend(monthlyTrend)
+                .userStats(userStats)
+                .build();
+    }
+
+    private List<GroupStatisticsDto.MonthlySpendingDto> getMonthlySpendingDtos(Long groupId) {
+        return transactionRepository
                 .sumExpensesByMonth(groupId)
                 .stream()
                 .map(row -> GroupStatisticsDto.MonthlySpendingDto.builder()
@@ -146,21 +151,47 @@ public class GroupServiceImpl implements GroupService {
                         .total(row.getTotal())
                         .build())
                 .toList();
+    }
 
-        List<GroupStatisticsDto.UserSpendingDto> spendingByUser = transactionRepository
-                .sumUserSpending(groupId)
+    private List<GroupStatisticsDto.CategorySpendingDto> getCategorySpendingDtos(Long groupId) {
+        return transactionRepository
+                .sumExpensesByCategory(groupId)
                 .stream()
-                .map(row -> GroupStatisticsDto.UserSpendingDto.builder()
-                        .userId(row.getUserId())
+                .map(row -> GroupStatisticsDto.CategorySpendingDto.builder()
+                        .category(row.getCategory())
                         .total(row.getTotal())
                         .build())
                 .toList();
+    }
 
-        return GroupStatisticsDto.builder()
-                .spendingByCategory(spendingByCategory)
-                .monthlyTrend(monthlyTrend)
-                .spendingByUser(spendingByUser)
-                .build();
+    private List<GroupStatisticsDto.UserStatsDto> getUserStatsDtos(Long groupId) {
+        Map<Long, BigDecimal> spendingMap = transactionRepository.sumUserSpending(groupId).stream()
+                .collect(Collectors.toMap(TransactionRepository.UserTotalProjection::getUserId, TransactionRepository.UserTotalProjection::getTotal));
+
+        Map<Long, BigDecimal> payingMap = transactionRepository.sumUserPaying(groupId).stream()
+                .collect(Collectors.toMap(TransactionRepository.UserTotalProjection::getUserId, TransactionRepository.UserTotalProjection::getTotal));
+
+        Set<Long> userIds = new HashSet<>();
+        userIds.addAll(spendingMap.keySet());
+        userIds.addAll(payingMap.keySet());
+
+        return userIds.stream()
+                .sorted()
+                .map(userId -> {
+                    BigDecimal spending = spendingMap.getOrDefault(userId, BigDecimal.ZERO);
+                    BigDecimal paying = payingMap.getOrDefault(userId, BigDecimal.ZERO);
+                    Double ratio = paying.compareTo(BigDecimal.ZERO) == 0
+                            ? null
+                            : spending.divide(paying, 4, RoundingMode.HALF_UP).doubleValue();
+
+                    return GroupStatisticsDto.UserStatsDto.builder()
+                            .userId(userId)
+                            .spending(spending)
+                            .paying(paying)
+                            .spendingToPayingRatio(ratio)
+                            .build();
+                })
+                .toList();
     }
 
     @Override

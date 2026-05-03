@@ -46,6 +46,18 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             """)
     List<UserTotalProjection> sumUserSpending(@Param("groupId") Long groupId);
 
+    @Query("""
+            select ti.user.id as userId, sum(ti.defaultCurrencyBalanceChange) as total
+            from TransactionItem ti
+            where ti.transaction.group.id = :groupId
+              and ti.transaction.transactionType = cz.splithappens.model.enums.TransactionType.EXPENSE
+              and ti.defaultCurrencyBalanceChange > 0
+            group by ti.user.id
+            order by total desc
+            """)
+    List<UserTotalProjection> sumUserPaying(@Param("groupId") Long groupId);
+
+
     interface CategoryTotalProjection {
         ExpenseCategory getCategory();
         BigDecimal getTotal();
