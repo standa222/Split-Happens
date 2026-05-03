@@ -22,7 +22,7 @@ public class PartialSplitComputationStrategy implements SplitComputationStrategy
         return getAmounts(splits, totalAmount, totalParts);
     }
 
-    private static List<BigDecimal> getAmounts(List<TransactionSplitCreateDto> splits, BigDecimal totalAmount, BigDecimal totalParts) {
+    private List<BigDecimal> getAmounts(List<TransactionSplitCreateDto> splits, BigDecimal totalAmount, BigDecimal totalParts) {
         List<BigDecimal> computedAmounts = new ArrayList<>();
         BigDecimal runningSum = BigDecimal.ZERO;
 
