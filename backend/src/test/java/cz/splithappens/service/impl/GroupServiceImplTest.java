@@ -4,6 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.DebtDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
+import cz.splithappens.dto.response.GroupStatisticsDto;
 import cz.splithappens.dto.response.TransactionDto;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.NotGroupMemberException;
@@ -12,11 +13,13 @@ import cz.splithappens.mapper.GroupMapper;
 import cz.splithappens.model.Debt;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.User;
+import cz.splithappens.model.enums.ExpenseCategory;
 import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.GroupType;
 import cz.splithappens.model.enums.PermissionMode;
 import cz.splithappens.repository.DebtRepository;
 import cz.splithappens.repository.GroupRepository;
+import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.TransactionService;
 import org.junit.jupiter.api.Test;
@@ -27,6 +30,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +45,7 @@ import static org.mockito.Mockito.*;
 class GroupServiceImplTest {
 
     @Mock private TransactionService transactionService;
+    @Mock private TransactionRepository transactionRepository;
     @Mock private GroupRepository groupRepository;
     @Mock private UserRepository userRepository;
     @Mock private GroupMapper groupMapper;
@@ -271,6 +277,67 @@ class GroupServiceImplTest {
         verify(groupRepository).save(group);
     }
 
+    @Test
+    void getGroupStatistics_groupNotFound_throws() {
+        when(groupRepository.findById(10L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> groupService.getGroupStatistics(10L, user(1L)))
+                .isInstanceOf(GroupNotFoundException.class);
+
+        verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void getGroupStatistics_userNotMember_throws() {
+        Group group = new Group();
+        group.setId(10L);
+        group.setMembers(new LinkedHashSet<>(List.of(user(2L), user(3L))));
+        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+
+        assertThatThrownBy(() -> groupService.getGroupStatistics(10L, user(1L)))
+                .isInstanceOf(NotGroupMemberException.class);
+
+        verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void getGroupStatistics_happyPath_mapsCategoryAndMonthlyTrend() {
+        User current = user(1L);
+        Group group = new Group();
+        group.setId(10L);
+        group.setMembers(new LinkedHashSet<>(List.of(current, user(2L))));
+        when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
+
+        TransactionRepository.CategoryTotalProjection catProj = mockCategory();
+        TransactionRepository.MonthTotalProjection monthProj = mockMonth();
+        TransactionRepository.UserTotalProjection userProj = mockUser();
+        when(transactionRepository.sumExpensesByCategory(10L)).thenReturn(List.of(catProj));
+        when(transactionRepository.sumExpensesByMonth(10L)).thenReturn(List.of(monthProj));
+        when(transactionRepository.sumUserSpending(10L)).thenReturn(List.of(userProj));
+        when(transactionRepository.sumUserPaying(10L)).thenReturn(List.of());
+
+        GroupStatisticsDto result = groupService.getGroupStatistics(10L, current);
+
+        assertThat(result.getSpendingByCategory()).hasSize(1);
+        assertThat(result.getSpendingByCategory().getFirst().getCategory()).isEqualTo(ExpenseCategory.COFFEE);
+        assertThat(result.getSpendingByCategory().getFirst().getTotal()).isEqualByComparingTo("123.45");
+
+        assertThat(result.getMonthlyTrend()).hasSize(1);
+        assertThat(result.getMonthlyTrend().getFirst().getMonth()).hasToString("2026-05");
+        assertThat(result.getMonthlyTrend().getFirst().getTotal()).isEqualByComparingTo("999.00");
+
+        assertThat(result.getUserStats()).hasSize(1);
+        assertThat(result.getUserStats().getFirst().getUserId()).isEqualTo(1L);
+        assertThat(result.getUserStats().getFirst().getSpending()).isEqualByComparingTo("50.00");
+        assertThat(result.getUserStats().getFirst().getPaying()).isEqualByComparingTo("0");
+        assertThat(result.getUserStats().getFirst().getSpendingToPayingRatio()).isNull();
+
+        verify(transactionRepository).sumExpensesByCategory(10L);
+        verify(transactionRepository).sumExpensesByMonth(10L);
+        verify(transactionRepository).sumUserSpending(10L);
+        verify(transactionRepository).sumUserPaying(10L);
+    }
+
     private static GroupCreateDto createGroupDto(List<Long> memberIds) {
         GroupCreateDto dto = new GroupCreateDto();
         dto.setName("Test");
@@ -293,6 +360,27 @@ class GroupServiceImplTest {
         d.setCreditor(user(creditorId));
         d.setDebtor(user(debtorId));
         return d;
+    }
+
+    private TransactionRepository.CategoryTotalProjection mockCategory() {
+        TransactionRepository.CategoryTotalProjection p = mock(TransactionRepository.CategoryTotalProjection.class);
+        when(p.getCategory()).thenReturn(ExpenseCategory.COFFEE);
+        when(p.getTotal()).thenReturn(new BigDecimal("123.45"));
+        return p;
+    }
+
+    private TransactionRepository.MonthTotalProjection mockMonth() {
+        TransactionRepository.MonthTotalProjection p = mock(TransactionRepository.MonthTotalProjection.class);
+        when(p.getMonthDate()).thenReturn(OffsetDateTime.parse("2026-05-01T00:00:00Z"));
+        when(p.getTotal()).thenReturn(new BigDecimal("999.00"));
+        return p;
+    }
+
+    private TransactionRepository.UserTotalProjection mockUser() {
+        TransactionRepository.UserTotalProjection p = mock(TransactionRepository.UserTotalProjection.class);
+        when(p.getUserId()).thenReturn(1L);
+        when(p.getTotal()).thenReturn(new BigDecimal("50.00"));
+        return p;
     }
 }
 
