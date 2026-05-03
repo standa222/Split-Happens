@@ -1,11 +1,9 @@
 package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.request.GroupCreateDto;
-import cz.splithappens.dto.response.DebtDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
-import cz.splithappens.dto.response.TransactionDto;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.NotGroupMemberException;
 import cz.splithappens.mapper.DebtMapper;
@@ -16,6 +14,7 @@ import cz.splithappens.model.User;
 import cz.splithappens.model.enums.GroupType;
 import cz.splithappens.repository.DebtRepository;
 import cz.splithappens.repository.GroupRepository;
+import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
@@ -34,6 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupServiceImpl implements GroupService {
     private final TransactionService transactionService;
+    private final TransactionRepository transactionRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final GroupMapper groupMapper;
@@ -128,7 +128,18 @@ public class GroupServiceImpl implements GroupService {
             throw new NotGroupMemberException(groupId);
         }
 
-        return GroupStatisticsDto.builder().build();
+        List<GroupStatisticsDto.CategorySpendingDto> spendingByCategory = transactionRepository
+                .sumExpensesByCategory(groupId)
+                .stream()
+                .map(row -> GroupStatisticsDto.CategorySpendingDto.builder()
+                        .category(row.getCategory())
+                        .total(row.getTotal())
+                        .build())
+                .toList();
+
+        return GroupStatisticsDto.builder()
+                .spendingByCategory(spendingByCategory)
+                .build();
     }
 
     @Override
