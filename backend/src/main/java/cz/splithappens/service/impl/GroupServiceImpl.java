@@ -180,15 +180,15 @@ public class GroupServiceImpl implements GroupService {
                 .map(userId -> {
                     BigDecimal spending = spendingMap.getOrDefault(userId, BigDecimal.ZERO);
                     BigDecimal paying = payingMap.getOrDefault(userId, BigDecimal.ZERO);
-                    Double ratio = paying.compareTo(BigDecimal.ZERO) == 0
+                    Double ratio = spending.compareTo(BigDecimal.ZERO) == 0
                             ? null
-                            : spending.divide(paying, 4, RoundingMode.HALF_UP).doubleValue();
+                            : paying.divide(spending, 4, RoundingMode.HALF_UP).doubleValue();
 
                     return GroupStatisticsDto.UserStatsDto.builder()
                             .userId(userId)
                             .spending(spending)
                             .paying(paying)
-                            .spendingToPayingRatio(ratio)
+                            .kIndex(ratio)
                             .build();
                 })
                 .toList();

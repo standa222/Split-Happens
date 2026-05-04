@@ -65,8 +65,8 @@ public class GroupStatisticsDto {
         @Schema(description = "Total amount paid by the user in the group's default currency (payers only; stored as positive number)")
         private BigDecimal paying;
 
-        @Schema(description = "Spending-to-paying ratio for the user (spending / paying). Null if paying is 0.")
-        private Double spendingToPayingRatio;
+        @Schema(description = "K-index for the user (Paying / spending). Null if spending is 0.")
+        private Double kIndex;
     }
 }
 

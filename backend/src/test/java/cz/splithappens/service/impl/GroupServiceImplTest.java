@@ -330,7 +330,7 @@ class GroupServiceImplTest {
         assertThat(result.getUserStats().getFirst().getUserId()).isEqualTo(1L);
         assertThat(result.getUserStats().getFirst().getSpending()).isEqualByComparingTo("50.00");
         assertThat(result.getUserStats().getFirst().getPaying()).isEqualByComparingTo("0");
-        assertThat(result.getUserStats().getFirst().getSpendingToPayingRatio()).isNull();
+        assertThat(result.getUserStats().getFirst().getKIndex()).isEqualTo(0.0);
 
         verify(transactionRepository).sumExpensesByCategory(10L);
         verify(transactionRepository).sumExpensesByMonth(10L);
