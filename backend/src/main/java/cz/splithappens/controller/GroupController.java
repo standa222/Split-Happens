@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +51,18 @@ public class GroupController {
     })
     public ResponseEntity<List<GroupLightDto>> getMyGroups(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(groupService.getUserGroups(userDetails.getUser()));
+    }
+
+    @GetMapping("/admin")
+    @Operation(summary = "Get all groups (admin)", description = "Returns a list of all groups in the system. Admin-only endpoint.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin only")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<GroupLightDto>> getAllGroupsAdmin(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(groupService.getAllGroupsAdmin(userDetails.getUser()));
     }
 
     @GetMapping("/{groupId}")

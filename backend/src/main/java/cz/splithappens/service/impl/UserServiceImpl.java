@@ -3,6 +3,7 @@ package cz.splithappens.service.impl;
 import cz.splithappens.dto.request.BankAccountCreateDto;
 import cz.splithappens.dto.request.UserCreateDto;
 import cz.splithappens.dto.response.UserDto;
+import cz.splithappens.exception.AdminOnlyException;
 import cz.splithappens.exception.EmailAlreadyExistsException;
 import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.mapper.BankAccountMapper;
@@ -72,6 +73,17 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(0, limit);
         List<User> users = userRepository.searchUsers(query, pageable);
         return users.stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<UserDto> getAllUsersAdmin(User user, int limit) {
+        if (user == null || !user.isAdmin()) {
+            throw new AdminOnlyException();
+        }
+        Pageable pageable = PageRequest.of(0, limit);
+        return userRepository.findAll(pageable).stream()
                 .map(userMapper::toDto)
                 .toList();
     }

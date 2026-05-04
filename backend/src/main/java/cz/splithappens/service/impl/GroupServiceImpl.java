@@ -4,6 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
+import cz.splithappens.exception.AdminOnlyException;
 import cz.splithappens.exception.BadRequestException;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.NotGroupMemberException;
@@ -21,9 +22,7 @@ import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -75,6 +74,17 @@ public class GroupServiceImpl implements GroupService {
                     dto.setUserDebts(debtMapper.toDtoList(groupDebts));
                     return dto;
                 })
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<GroupLightDto> getAllGroupsAdmin(User user) {
+        if (user == null || !user.isAdmin()) {
+            throw new AdminOnlyException();
+        }
+        return groupRepository.findAll().stream()
+                .map(groupMapper::toLightDto)
                 .toList();
     }
 
