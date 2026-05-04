@@ -40,6 +40,9 @@ public class User implements UserDetails {
     @Column(name = "profile_image")
     private byte[] profileImage;
 
+    @Column(name = "is_admin", nullable = false)
+    private boolean isAdmin;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
