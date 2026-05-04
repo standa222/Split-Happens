@@ -1,4 +1,5 @@
-import {Box, CircularProgress, FormControl, InputLabel, MenuItem, Select, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography} from "@mui/material";
+import {Box, CircularProgress,
+    Divider, FormControl, InputLabel, MenuItem, Select, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography} from "@mui/material";
 import {ReactNode, useMemo, useState} from "react";
 import {FormattedMessage, useIntl} from "react-intl";
 import {
@@ -15,8 +16,6 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 type Props = {
     group: TGroupDetail;
 }
-
-type StatsRangeMode = "ALL" | "YEAR" | "MONTH";
 
 type StatsQueryParams = {
     groupId: number;
@@ -37,8 +36,6 @@ const PIE_COLORS = [
     "#e91e63",
 ];
 
-const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const;
-
 const formatMonthLabel = (ym: string, locale: string) => {
     const [y, m] = ym.split("-").map(Number);
     if (!y || !m) return ym;
@@ -46,7 +43,7 @@ const formatMonthLabel = (ym: string, locale: string) => {
 };
 
 const StatSection = ({ title, children }: { title: ReactNode; children: ReactNode }) => (
-    <Box sx={{ border: `2px solid ${COLORS.PRIMARY}`, borderRadius: 3, p: { xs: 2, md: 3 } }}>
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
         <Stack gap={2}>
             <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY}>
                 {title}
@@ -99,28 +96,31 @@ const DonutChart = ({ data, valueFormatter }: {
 };
 
 const StatisticsRangePicker = ({
-    mode,
-    setMode,
     year,
     setYear,
     month,
     setMonth,
     years,
+    months,
 }: {
-    mode: StatsRangeMode;
-    setMode: (m: StatsRangeMode) => void;
-    year: number;
-    setYear: (y: number) => void;
-    month: number;
-    setMonth: (m: number) => void;
-    years: number[];
+    year: string;
+    setYear: (y: string) => void;
+    month: string;
+    setMonth: (m: string) => void;
+    years: string[];
+    months: string[];
 }) => {
     const intl = useIntl();
 
     const monthLabel = (monthNumber: number) => intl.formatDate(new Date(2000, monthNumber - 1, 1), {month: "long"});
 
+    const allTimeLabel = intl.formatMessage({id: "groupDetail.statistics.allTime"});
+    const wholeYearLabel = intl.formatMessage({id: "groupDetail.statistics.wholeYear"});
+    const selectYearLabel = intl.formatMessage({id: "groupDetail.statistics.selectYear"});
+    const selectMonthLabel = intl.formatMessage({id: "groupDetail.statistics.selectMonth"});
+
     return (
-        <Box sx={{border: `2px solid ${COLORS.PRIMARY}`, borderRadius: 3, p: {xs: 2, md: 3}}}>
+        <Box sx={{p: {xs: 2, md: 3}}}>
             <Stack gap={2}>
                 <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY}>
                     <FormattedMessage id="groupDetail.statistics.range" />
@@ -128,66 +128,60 @@ const StatisticsRangePicker = ({
 
                 <Stack direction={{xs: "column", md: "row"}} alignItems={{xs: "stretch", md: "center"}} gap={2}>
                     <FormControl fullWidth>
-                        <InputLabel id="stats-mode-label">
-                            <FormattedMessage id="groupDetail.statistics.mode" />
-                        </InputLabel>
+                        <InputLabel id="stats-year-label" shrink>{selectYearLabel}</InputLabel>
                         <Select
-                            labelId="stats-mode-label"
-                            value={mode}
-                            label={intl.formatMessage({id: "groupDetail.statistics.mode", defaultMessage: "Range"})}
-                            onChange={(e) => setMode(e.target.value as StatsRangeMode)}
+                            id="stats-year"
+                            labelId="stats-year-label"
+                            label={selectYearLabel}
+                            notched
+                            value={year}
+                            displayEmpty
+                            renderValue={(selected) => {
+                                const v = String(selected ?? "");
+                                return v === "" ? allTimeLabel : v;
+                            }}
+                            onChange={(e) => {
+                                const nextYear = String(e.target.value);
+                                setYear(nextYear);
+                                if (nextYear === "") setMonth("");
+                            }}
                         >
-                            <MenuItem value="ALL">
+                            <MenuItem value="">
                                 <FormattedMessage id="groupDetail.statistics.allTime" />
                             </MenuItem>
-                            <MenuItem value="YEAR">
-                                <FormattedMessage id="groupDetail.statistics.year" />
-                            </MenuItem>
-                            <MenuItem value="MONTH">
-                                <FormattedMessage id="groupDetail.statistics.month" />
-                            </MenuItem>
+                            {years.map((y) => (
+                                <MenuItem key={y} value={y}>
+                                    {y}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
 
-                    {(mode === "YEAR" || mode === "MONTH") && (
-                        <FormControl fullWidth>
-                            <InputLabel id="stats-year-label">
-                                <FormattedMessage id="groupDetail.statistics.selectYear" />
-                            </InputLabel>
-                            <Select
-                                labelId="stats-year-label"
-                                value={year}
-                                label={intl.formatMessage({id: "groupDetail.statistics.selectYear"})}
-                                onChange={(e) => setYear(Number(e.target.value))}
-                            >
-                                {years.map((y) => (
-                                    <MenuItem key={y} value={y}>
-                                        {y}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    )}
-
-                    {mode === "MONTH" && (
-                        <FormControl fullWidth>
-                            <InputLabel id="stats-month-label">
-                                <FormattedMessage id="groupDetail.statistics.selectMonth" />
-                            </InputLabel>
-                            <Select
-                                labelId="stats-month-label"
-                                value={month}
-                                label={intl.formatMessage({id: "groupDetail.statistics.selectMonth"})}
-                                onChange={(e) => setMonth(Number(e.target.value))}
-                            >
-                                {months.map((m) => (
-                                    <MenuItem key={m} value={m}>
-                                        {monthLabel(m)}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    )}
+                    <FormControl fullWidth disabled={year === ""}>
+                        <InputLabel id="stats-month-label" shrink>{selectMonthLabel}</InputLabel>
+                        <Select
+                            id="stats-month"
+                            labelId="stats-month-label"
+                            label={selectMonthLabel}
+                            notched
+                            value={month}
+                            displayEmpty
+                            renderValue={(selected) => {
+                                const v = String(selected ?? "");
+                                return v === "" ? wholeYearLabel : monthLabel(Number(v));
+                            }}
+                            onChange={(e) => setMonth(String(e.target.value))}
+                        >
+                            <MenuItem value="">
+                                <FormattedMessage id="groupDetail.statistics.wholeYear" />
+                            </MenuItem>
+                            {months.map((m) => (
+                                <MenuItem key={m} value={m}>
+                                    {monthLabel(Number(m))}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Stack>
             </Stack>
         </Box>
@@ -340,22 +334,66 @@ export const GroupStatistics = ({group}: Props) => {
     const intl = useIntl();
     const currencyCode = group.defaultCurrency;
 
-    const currentYear = new Date().getFullYear();
-    const years = useMemo(() => {
-        const out: number[] = [];
-        for (let y = currentYear; y >= currentYear - 10; y--) out.push(y);
-        return out;
-    }, [currentYear]);
+    const [year, setYear] = useState<string>("");
+    const [month, setMonth] = useState<string>("");
 
-    const [mode, setMode] = useState<StatsRangeMode>("ALL");
-    const [year, setYear] = useState<number>(currentYear);
-    const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+    const availableYears = useMemo(() => {
+        const yearsSet = new Set<string>();
+        for (const t of group.transactions ?? []) {
+            if (t.transactionType !== "EXPENSE") continue;
+            const d = new Date(t.createdAt);
+            if (Number.isNaN(d.getTime())) continue;
+            yearsSet.add(String(d.getFullYear()));
+        }
+        return Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+    }, [group.transactions]);
+
+    const availableMonthsByYear = useMemo(() => {
+        const sets = new Map<string, Set<string>>();
+
+        for (const t of group.transactions ?? []) {
+            if (t.transactionType !== "EXPENSE") continue;
+            const d = new Date(t.createdAt);
+            if (Number.isNaN(d.getTime())) continue;
+
+            const y = String(d.getFullYear());
+            const m = String(d.getMonth() + 1); // 1-12
+
+            if (!sets.has(y)) sets.set(y, new Set<string>());
+            sets.get(y)!.add(m);
+        }
+
+        const out = new Map<string, string[]>();
+        for (const [y, set] of sets.entries()) {
+            out.set(y, Array.from(set).sort((a, b) => Number(a) - Number(b)));
+        }
+        return out;
+    }, [group.transactions]);
+
+    const sanitizedYear = useMemo(() => {
+        if (year === "") return "";
+        return availableYears.includes(year) ? year : "";
+    }, [availableYears, year]);
+
+    const availableMonths = useMemo(() => {
+        if (sanitizedYear === "") return [];
+        return availableMonthsByYear.get(sanitizedYear) ?? [];
+    }, [availableMonthsByYear, sanitizedYear]);
+
+    const sanitizedMonth = useMemo(() => {
+        if (sanitizedYear === "") return "";
+        if (month === "") return "";
+        return availableMonths.includes(month) ? month : "";
+    }, [availableMonths, month, sanitizedYear]);
 
     const queryParams: StatsQueryParams = useMemo(() => {
-        if (mode === "ALL") return {groupId: group.id};
-        if (mode === "YEAR") return {groupId: group.id, year};
-        return {groupId: group.id, year, month};
-    }, [group.id, mode, year, month]);
+        const yearNum = sanitizedYear === "" ? undefined : Number(sanitizedYear);
+        const monthNum = sanitizedMonth === "" ? undefined : Number(sanitizedMonth);
+
+        if (!yearNum) return {groupId: group.id};
+        if (!monthNum) return {groupId: group.id, year: yearNum};
+        return {groupId: group.id, year: yearNum, month: monthNum};
+    }, [group.id, sanitizedMonth, sanitizedYear]);
 
     const {data, isLoading, isError} = useGroupStatisticsQuery(queryParams);
 
@@ -427,19 +465,15 @@ export const GroupStatistics = ({group}: Props) => {
             });
     }, [userStatsRows]);
 
-    console.log("userStatsRows", userStatsRows);
-    console.log("ratioTableRows", ratioTableRows);
-
     return (
         <Stack gap={2} sx={{pb: 2}}>
             <StatisticsRangePicker
-                mode={mode}
-                setMode={setMode}
-                year={year}
+                year={sanitizedYear}
                 setYear={setYear}
-                month={month}
+                month={sanitizedMonth}
                 setMonth={setMonth}
-                years={years}
+                years={availableYears}
+                months={availableMonths}
             />
 
             {isError && (
@@ -453,9 +487,17 @@ export const GroupStatistics = ({group}: Props) => {
             {!isLoading && data && (
                 <Stack gap={2}>
                     <SpendingByCategorySection data={spendingByCategoryData} currencyCode={currencyCode}/>
-                    <MonthlyTrendSection data={monthlyTrendData} currencyCode={currencyCode}/>
+                    <Divider />
+                    {!(sanitizedYear !== "" && sanitizedMonth !== "") &&
+                        <>
+                            <MonthlyTrendSection data={monthlyTrendData} currencyCode={currencyCode}/>
+                            <Divider />
+                        </>
+                    }
                     <PayingByUsersSection data={payingDonut} currencyCode={currencyCode}/>
+                    <Divider />
                     <SpendingByUsersSection data={spendingDonut} currencyCode={currencyCode}/>
+                    <Divider />
                     <UserIndexTableSection rows={ratioTableRows} currencyCode={currencyCode}/>
                 </Stack>
             )}
