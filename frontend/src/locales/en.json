@@ -86,8 +86,6 @@
   "groupDetail.tabs.balances": "Balances",
   "groupDetail.tabs.statistics": "Statistics",
 
-  "groupDetail.statistics.placeholder": "Statistics content for {name}",
-
   "groupDetail.members.you": "(You)",
   "groupDetail.members.showDebts": "Show debts",
 
@@ -290,13 +288,11 @@
   "friends.detail.loading": "Loading...",
   "friends.detail.error": "Failed to load friend detail.",
 
-  "groupDetail.statistics.range": "Statistics range",
-  "groupDetail.statistics.mode": "Range",
+  "groupDetail.statistics.title": "{hasYear, select, no {Statistics} other {{hasMonth, select, no {Statistics for {year}} other {Statistics for {monthName} {year}}}}}",
   "groupDetail.statistics.allTime": "All time",
+  "groupDetail.statistics.wholeYear": "Whole year",
   "groupDetail.statistics.year": "Year",
   "groupDetail.statistics.month": "Month",
-  "groupDetail.statistics.selectYear": "Year",
-  "groupDetail.statistics.selectMonth": "Month",
   "groupDetail.statistics.loading": "Loading…",
   "groupDetail.statistics.calculating": "Calculating statistics…",
   "groupDetail.statistics.error": "Could not load statistics",

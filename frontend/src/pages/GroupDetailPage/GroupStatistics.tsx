@@ -1,6 +1,6 @@
 import {Box, CircularProgress,
     Divider, FormControl, InputLabel, MenuItem, Select, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography} from "@mui/material";
-import {ReactNode, useMemo, useState} from "react";
+import {createContext, ReactNode, useContext, useMemo, useState} from "react";
 import {FormattedMessage, useIntl} from "react-intl";
 import {
     Bar, BarChart, CartesianGrid, Legend, Pie, PieChart, ResponsiveContainer,
@@ -17,11 +17,36 @@ type Props = {
     group: TGroupDetail;
 }
 
-type StatsQueryParams = {
-    groupId: number;
-    year?: number;
-    month?: number;
-}
+const CurrencyContext = createContext("");
+const useCurrency = () => useContext(CurrencyContext);
+
+const useDateOptions = (transactions: TGroupDetail["transactions"]) => {
+    return useMemo(() => {
+        const yearsMap = new Map<string, Set<string>>();
+
+        transactions?.forEach(t => {
+            if (t.transactionType !== "EXPENSE") return;
+            const d = new Date(t.createdAt);
+            if (isNaN(d.getTime())) return;
+
+            const y = String(d.getFullYear());
+            const m = String(d.getMonth() + 1);
+
+            if (!yearsMap.has(y)) yearsMap.set(y, new Set());
+            yearsMap.get(y)!.add(m);
+        });
+
+        const years = Array.from(yearsMap.keys()).sort((a, b) => Number(b) - Number(a));
+        const monthsByYear = Object.fromEntries(
+            Array.from(yearsMap.entries()).map(([y, mSet]) => [
+                y,
+                Array.from(mSet).sort((a, b) => Number(a) - Number(b))
+            ])
+        );
+
+        return { years, monthsByYear };
+    }, [transactions]);
+};
 
 const PIE_COLORS = [
     "#1976d2",
@@ -111,34 +136,21 @@ const StatisticsRangePicker = ({
     months: string[];
 }) => {
     const intl = useIntl();
-
     const monthLabel = (monthNumber: number) => intl.formatDate(new Date(2000, monthNumber - 1, 1), {month: "long"});
 
-    const allTimeLabel = intl.formatMessage({id: "groupDetail.statistics.allTime"});
-    const wholeYearLabel = intl.formatMessage({id: "groupDetail.statistics.wholeYear"});
-    const selectYearLabel = intl.formatMessage({id: "groupDetail.statistics.selectYear"});
-    const selectMonthLabel = intl.formatMessage({id: "groupDetail.statistics.selectMonth"});
-
     return (
-        <Box sx={{p: {xs: 2, md: 3}}}>
+        <Box sx={{px: {xs: 2, md: 3}}}>
             <Stack gap={2}>
-                <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY}>
-                    <FormattedMessage id="groupDetail.statistics.range" />
-                </Typography>
-
                 <Stack direction={{xs: "column", md: "row"}} alignItems={{xs: "stretch", md: "center"}} gap={2}>
                     <FormControl fullWidth>
-                        <InputLabel id="stats-year-label" shrink>{selectYearLabel}</InputLabel>
+                        <InputLabel shrink>{intl.formatMessage({id: "groupDetail.statistics.year"})}</InputLabel>
                         <Select
-                            id="stats-year"
-                            labelId="stats-year-label"
-                            label={selectYearLabel}
-                            notched
+                            label={intl.formatMessage({id: "groupDetail.statistics.year"})}
                             value={year}
                             displayEmpty
                             renderValue={(selected) => {
                                 const v = String(selected ?? "");
-                                return v === "" ? allTimeLabel : v;
+                                return v === "" ? intl.formatMessage({id: "groupDetail.statistics.allTime"}) : v;
                             }}
                             onChange={(e) => {
                                 const nextYear = String(e.target.value);
@@ -158,17 +170,14 @@ const StatisticsRangePicker = ({
                     </FormControl>
 
                     <FormControl fullWidth disabled={year === ""}>
-                        <InputLabel id="stats-month-label" shrink>{selectMonthLabel}</InputLabel>
+                        <InputLabel shrink>{intl.formatMessage({id: "groupDetail.statistics.month"})}</InputLabel>
                         <Select
-                            id="stats-month"
-                            labelId="stats-month-label"
-                            label={selectMonthLabel}
-                            notched
+                            label={intl.formatMessage({id: "groupDetail.statistics.month"})}
                             value={month}
                             displayEmpty
                             renderValue={(selected) => {
                                 const v = String(selected ?? "");
-                                return v === "" ? wholeYearLabel : monthLabel(Number(v));
+                                return v === "" ? intl.formatMessage({id: "groupDetail.statistics.wholeYear"}) : monthLabel(Number(v));
                             }}
                             onChange={(e) => setMonth(String(e.target.value))}
                         >
@@ -189,7 +198,7 @@ const StatisticsRangePicker = ({
 };
 
 const StatisticsLoading = () => (
-    <Box sx={{border: `2px solid ${COLORS.PRIMARY}`, borderRadius: 3, p: {xs: 2, md: 3}}}>
+    <Box sx={{p: {xs: 2, md: 3}}}>
         <Stack gap={2} alignItems="center">
             <CircularProgress/>
             <Typography color={COLORS.PRIMARY} fontWeight={700}>
@@ -202,22 +211,18 @@ const StatisticsLoading = () => (
 
 const SpendingByCategorySection = ({
     data,
-    currencyCode,
 }: {
     data: { name: string; value: number }[];
-    currencyCode: string;
 }) => (
     <StatSection title={<FormattedMessage id="groupDetail.statistics.byCategory" />}>
-        <DonutChart data={data} valueFormatter={(v) => formatMoneyWithSymbol(v, currencyCode)}/>
+        <DonutChart data={data} valueFormatter={(v) => formatMoneyWithSymbol(v, useCurrency())}/>
     </StatSection>
 );
 
 const MonthlyTrendSection = ({
     data,
-    currencyCode,
 }: {
     data: { month: string; total: number }[];
-    currencyCode: string;
 }) => {
     const intl = useIntl();
 
@@ -234,7 +239,7 @@ const MonthlyTrendSection = ({
                             <CartesianGrid strokeDasharray="3 3"/>
                             <XAxis dataKey="month"/>
                             <YAxis/>
-                            <RechartsTooltip formatter={(v: any) => formatMoneyWithSymbol(Number(v), currencyCode)}/>
+                            <RechartsTooltip formatter={(v: any) => formatMoneyWithSymbol(Number(v), useCurrency())}/>
                             <Legend/>
                             <Bar
                                 name={intl.formatMessage({id: "groupDetail.statistics.total"})}
@@ -252,34 +257,28 @@ const MonthlyTrendSection = ({
 
 const PayingByUsersSection = ({
     data,
-    currencyCode,
 }: {
     data: { name: string; value: number }[];
-    currencyCode: string;
 }) => (
     <StatSection title={<FormattedMessage id="groupDetail.statistics.payingByUser" />}>
-        <DonutChart data={data} valueFormatter={(v) => formatMoneyWithSymbol(v, currencyCode)}/>
+        <DonutChart data={data} valueFormatter={(v) => formatMoneyWithSymbol(v, useCurrency())}/>
     </StatSection>
 );
 
 const SpendingByUsersSection = ({
     data,
-    currencyCode,
 }: {
     data: { name: string; value: number }[];
-    currencyCode: string;
 }) => (
     <StatSection title={<FormattedMessage id="groupDetail.statistics.spendingByUser" />}>
-        <DonutChart data={data} valueFormatter={(v) => formatMoneyWithSymbol(v, currencyCode)}/>
+        <DonutChart data={data} valueFormatter={(v) => formatMoneyWithSymbol(v, useCurrency())}/>
     </StatSection>
 );
 
 const UserIndexTableSection = ({
     rows,
-    currencyCode,
 }: {
     rows: { userId: number; name: string; spending: number; paying: number; ratioValue: number | null }[];
-    currencyCode: string;
 }) => (
     <StatSection
         title={
@@ -320,8 +319,8 @@ const UserIndexTableSection = ({
                         <TableRow key={r.userId}>
                             <TableCell>{r.name}</TableCell>
                             <TableCell align="right">{r.ratioValue === null ? "—" : r.ratioValue.toFixed(2)}</TableCell>
-                            <TableCell align="right">{formatMoneyWithSymbol(r.paying, currencyCode)}</TableCell>
-                            <TableCell align="right">{formatMoneyWithSymbol(r.spending, currencyCode)}</TableCell>
+                            <TableCell align="right">{formatMoneyWithSymbol(r.paying, useCurrency())}</TableCell>
+                            <TableCell align="right">{formatMoneyWithSymbol(r.spending, useCurrency())}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -330,177 +329,101 @@ const UserIndexTableSection = ({
     </StatSection>
 );
 
-export const GroupStatistics = ({group}: Props) => {
+export const GroupStatistics = ({ group }: Props) => {
     const intl = useIntl();
-    const currencyCode = group.defaultCurrency;
+    const { years, monthsByYear } = useDateOptions(group.transactions);
 
-    const [year, setYear] = useState<string>("");
-    const [month, setMonth] = useState<string>("");
+    const [year, setYear] = useState("");
+    const [month, setMonth] = useState("");
 
-    const availableYears = useMemo(() => {
-        const yearsSet = new Set<string>();
-        for (const t of group.transactions ?? []) {
-            if (t.transactionType !== "EXPENSE") continue;
-            const d = new Date(t.createdAt);
-            if (Number.isNaN(d.getTime())) continue;
-            yearsSet.add(String(d.getFullYear()));
-        }
-        return Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
-    }, [group.transactions]);
+    const availableMonths = year ? (monthsByYear[year] ?? []) : [];
 
-    const availableMonthsByYear = useMemo(() => {
-        const sets = new Map<string, Set<string>>();
+    const queryParams = useMemo(() => ({
+        groupId: group.id,
+        year: year ? Number(year) : undefined,
+        month: month ? Number(month) : undefined
+    }), [group.id, year, month]);
 
-        for (const t of group.transactions ?? []) {
-            if (t.transactionType !== "EXPENSE") continue;
-            const d = new Date(t.createdAt);
-            if (Number.isNaN(d.getTime())) continue;
+    const { data, isLoading, isError } = useGroupStatisticsQuery(queryParams);
 
-            const y = String(d.getFullYear());
-            const m = String(d.getMonth() + 1); // 1-12
+    const formattedData = useMemo(() => {
+        if (!data) return null;
 
-            if (!sets.has(y)) sets.set(y, new Set<string>());
-            sets.get(y)!.add(m);
-        }
+        const userRows = (data.userStats ?? []).map(s => {
+            const member = group.members.find(m => m.id === s.userId);
+            return {
+                userId: s.userId,
+                name: member ? `${member.firstName} ${member.lastName}`.trim() : `#${s.userId}`,
+                spending: s.spending ?? 0,
+                paying: s.paying ?? 0,
+                ratioValue: s.kindex ?? null
+            };
+        }).sort((a, b) => (b.spending + b.paying) - (a.spending + a.paying));
 
-        const out = new Map<string, string[]>();
-        for (const [y, set] of sets.entries()) {
-            out.set(y, Array.from(set).sort((a, b) => Number(a) - Number(b)));
-        }
-        return out;
-    }, [group.transactions]);
-
-    const sanitizedYear = useMemo(() => {
-        if (year === "") return "";
-        return availableYears.includes(year) ? year : "";
-    }, [availableYears, year]);
-
-    const availableMonths = useMemo(() => {
-        if (sanitizedYear === "") return [];
-        return availableMonthsByYear.get(sanitizedYear) ?? [];
-    }, [availableMonthsByYear, sanitizedYear]);
-
-    const sanitizedMonth = useMemo(() => {
-        if (sanitizedYear === "") return "";
-        if (month === "") return "";
-        return availableMonths.includes(month) ? month : "";
-    }, [availableMonths, month, sanitizedYear]);
-
-    const queryParams: StatsQueryParams = useMemo(() => {
-        const yearNum = sanitizedYear === "" ? undefined : Number(sanitizedYear);
-        const monthNum = sanitizedMonth === "" ? undefined : Number(sanitizedMonth);
-
-        if (!yearNum) return {groupId: group.id};
-        if (!monthNum) return {groupId: group.id, year: yearNum};
-        return {groupId: group.id, year: yearNum, month: monthNum};
-    }, [group.id, sanitizedMonth, sanitizedYear]);
-
-    const {data, isLoading, isError} = useGroupStatisticsQuery(queryParams);
-
-    const spendingByCategoryData = useMemo(() => {
-        const rows = data?.spendingByCategory ?? [];
-        return rows.map((r) => {
-            const cat = categories.find((c) => c.name === r.category);
-            const name = cat ? intl.formatMessage({id: cat.intlId}) : (r.category ?? "OTHER");
-            return {name, value: r.total ?? 0};
-        });
-    }, [data?.spendingByCategory, intl]);
-
-    const monthlyTrendData = useMemo(() => {
-        const rows = data?.monthlyTrend ?? [];
-        return rows
-            .slice()
-            .sort((a, b) => String(a.month).localeCompare(String(b.month)))
-            .map((r) => ({
+        return {
+            categories: (data.spendingByCategory ?? []).map(r => ({
+                name: categories.find(c => c.name === r.category)
+                    ? intl.formatMessage({ id: categories.find(c => c.name === r.category)!.intlId })
+                    : (r.category ?? "OTHER"),
+                value: r.total ?? 0
+            })),
+            trends: (data.monthlyTrend ?? []).map(r => ({
                 month: formatMonthLabel(String(r.month), intl.locale),
-                total: r.total ?? 0,
-            }));
-    }, [data?.monthlyTrend, intl.locale]);
+                total: r.total ?? 0
+            })),
+            userRows
+        };
+    }, [data, group.members, intl]);
 
-    const userStatsRows = useMemo(() => {
-        const stats = data?.userStats ?? [];
-        const membersById = new Map(group.members.map((m) => [m.id, m]));
+    const handleYearChange = (newYear: string) => {
+        setYear(newYear);
+        setMonth("");
+    };
 
-        return stats
-            .map((s) => {
-                const user = membersById.get(s.userId);
-                const name = user ? `${user.firstName} ${user.lastName}`.trim() : `#${s.userId}`;
-                return {
-                    userId: s.userId,
-                    name,
-                    spending: s.spending ?? 0,
-                    paying: s.paying ?? 0,
-                    ratio: s.kindex,
-                };
-            })
-            .sort((a, b) => (b.spending + b.paying) - (a.spending + a.paying));
-    }, [data?.userStats, group.members]);
+    const titleValues = useMemo(() => {
+        const monthName = year && month
+            ? intl.formatDate(new Date(Number(year), Number(month) - 1, 1), {month: "long"})
+            : "";
 
-    const payingDonut = useMemo(
-        () => userStatsRows.map((r) => ({name: r.name, value: r.paying})),
-        [userStatsRows]
-    );
-
-    const spendingDonut = useMemo(
-        () => userStatsRows.map((r) => ({name: r.name, value: r.spending})),
-        [userStatsRows]
-    );
-
-    const ratioTableRows = useMemo(() => {
-        return userStatsRows
-            .map((r) => ({
-                userId: r.userId,
-                name: r.name,
-                spending: r.spending,
-                paying: r.paying,
-                ratioValue: r.ratio ?? null,
-            }))
-            .sort((a, b) => {
-                const av = a.ratioValue;
-                const bv = b.ratioValue;
-                if (av === null && bv === null) return 0;
-                if (av === null) return 1;
-                if (bv === null) return -1;
-                return bv - av;
-            });
-    }, [userStatsRows]);
+        return {
+            year,
+            month,
+            monthName,
+            hasYear: year ? "yes" : "no",
+            hasMonth: month ? "yes" : "no",
+        };
+    }, [intl, month, year]);
 
     return (
-        <Stack gap={2} sx={{pb: 2}}>
-            <StatisticsRangePicker
-                year={sanitizedYear}
-                setYear={setYear}
-                month={sanitizedMonth}
-                setMonth={setMonth}
-                years={availableYears}
-                months={availableMonths}
-            />
-
-            {isError && (
-                <Typography color={COLORS.RED} fontWeight={700}>
-                    <FormattedMessage id="groupDetail.statistics.error" />
+        <CurrencyContext.Provider value={group.defaultCurrency}>
+            <Stack gap={2} sx={{ pb: 2 }}>
+                <Typography color={COLORS.PRIMARY}
+                    sx={{
+                        typography: {xs: "h6", md: "h5"},
+                        fontWeight: {xs: 700, md: 800},
+                    }}
+                >
+                    <FormattedMessage id="groupDetail.statistics.title" values={titleValues} />
                 </Typography>
-            )}
+                <StatisticsRangePicker
+                    year={year} setYear={handleYearChange}
+                    month={month} setMonth={setMonth}
+                    years={years} months={availableMonths}
+                />
 
-            {isLoading && <StatisticsLoading/>}
+                {isError && <Typography color={COLORS.RED}><FormattedMessage id="groupDetail.statistics.error" /></Typography>}
+                {isLoading && <StatisticsLoading />}
 
-            {!isLoading && data && (
-                <Stack gap={2}>
-                    <SpendingByCategorySection data={spendingByCategoryData} currencyCode={currencyCode}/>
-                    <Divider />
-                    {!(sanitizedYear !== "" && sanitizedMonth !== "") &&
-                        <>
-                            <MonthlyTrendSection data={monthlyTrendData} currencyCode={currencyCode}/>
-                            <Divider />
-                        </>
-                    }
-                    <PayingByUsersSection data={payingDonut} currencyCode={currencyCode}/>
-                    <Divider />
-                    <SpendingByUsersSection data={spendingDonut} currencyCode={currencyCode}/>
-                    <Divider />
-                    <UserIndexTableSection rows={ratioTableRows} currencyCode={currencyCode}/>
-                </Stack>
-            )}
-        </Stack>
+                {formattedData && (
+                    <Stack gap={2} divider={<Divider />}>
+                        <SpendingByCategorySection data={formattedData.categories} />
+                        {!month && <MonthlyTrendSection data={formattedData.trends} />}
+                        <PayingByUsersSection data={formattedData.userRows.map(u => ({ name: u.name, value: u.paying }))} />
+                        <SpendingByUsersSection data={formattedData.userRows.map(u => ({ name: u.name, value: u.spending }))} />
+                        <UserIndexTableSection rows={formattedData.userRows} />
+                    </Stack>
+                )}
+            </Stack>
+        </CurrencyContext.Provider>
     );
-}
+};
