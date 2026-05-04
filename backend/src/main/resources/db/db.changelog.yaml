@@ -17,3 +17,7 @@ databaseChangeLog:
       file: db/updates/008-add-friend-requests.sql
   - include:
       file: db/updates/009-add-transaction-split-modes-and-filled-value.sql
+  - include:
+      file: db/updates/010-add-user-is-admin-flag.sql
+  - include:
+      file: db/updates/011-set-transaction-item-user-null-on-user-delete.sql

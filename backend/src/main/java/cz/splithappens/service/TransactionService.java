@@ -11,5 +11,6 @@ public interface TransactionService {
     TransactionDto getTransactionById(Long transactionId);
     TransactionDto updateTransaction(Long transactionId, TransactionCreateDto updateDto);
     void deleteTransaction(Long transactionId);
+    void deleteGroupTransactions(Long groupId);
 }
 

@@ -4,9 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
-import cz.splithappens.exception.BadRequestException;
-import cz.splithappens.exception.GroupNotFoundException;
-import cz.splithappens.exception.NotGroupMemberException;
+import cz.splithappens.exception.*;
 import cz.splithappens.mapper.DebtMapper;
 import cz.splithappens.mapper.GroupMapper;
 import cz.splithappens.model.Debt;
@@ -21,9 +19,7 @@ import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -76,6 +72,37 @@ public class GroupServiceImpl implements GroupService {
                     return dto;
                 })
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<GroupLightDto> getAllGroupsAdmin(User user) {
+        if (user == null || !user.isAdmin()) {
+            throw new AdminOnlyException();
+        }
+        return groupRepository.findAll().stream()
+                .map(groupMapper::toLightDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteGroup(Long groupId, User user) {
+        if (user == null || !user.isAdmin()) {
+            throw new AdminOnlyException();
+        }
+
+        if (!groupRepository.existsById(groupId)) {
+            throw new GroupNotFoundException(groupId);
+        }
+
+        if (debtRepository.existsByGroupId(groupId)) {
+            throw new GroupNotSettledException(groupId);
+        }
+
+        transactionService.deleteGroupTransactions(groupId);
+
+        groupRepository.deleteById(groupId);
     }
 
     @Override
@@ -149,6 +176,34 @@ public class GroupServiceImpl implements GroupService {
                 .monthlyTrend(monthlyTrend)
                 .userStats(userStats)
                 .build();
+    }
+
+    @Override
+    public byte[] getGroupImage(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        return group.getGroupImage();
+    }
+
+    @Override
+    public void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        group.setGroupImage(imageData.getBytes());
+        groupRepository.save(group);
+    }
+
+    @Override
+    @Transactional
+    public void leaveAllGroups(Long userId) {
+        if (debtRepository.existsByDebtorIdOrCreditorId(userId, userId)) {
+            throw new UserNotSettledException(userId);
+        }
+
+        List<Group> groups = groupRepository.findByMembersId(userId);
+        groups.forEach(g -> g.removeMember(userId));
+
+        groupRepository.saveAll(groups);
     }
 
     private void validateStatisticsFilter(Integer year, Integer month) {
@@ -230,21 +285,6 @@ public class GroupServiceImpl implements GroupService {
                             .build();
                 })
                 .toList();
-    }
-
-    @Override
-    public byte[] getGroupImage(Long groupId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException(groupId));
-        return group.getGroupImage();
-    }
-
-    @Override
-    public void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException(groupId));
-        group.setGroupImage(imageData.getBytes());
-        groupRepository.save(group);
     }
 
     private boolean isUserInvolvedInDebt(Debt debt, Long userId) {
