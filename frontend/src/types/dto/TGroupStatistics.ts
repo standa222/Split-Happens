@@ -13,6 +13,6 @@ export type TGroupStatistics = {
     userId: number;
     spending: number;
     paying: number;
-    spendingToPayingRatio: number | null;
+    kindex: number | null;
   }[];
 };

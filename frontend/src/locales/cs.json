@@ -105,8 +105,8 @@
   "groupDetail.statistics.spendingByUser": "Výdaje podle členů",
   "groupDetail.statistics.userIndex": "K-Index",
   "groupDetail.statistics.user": "Uživatel",
-  "groupDetail.statistics.spending": "Výdaje",
-  "groupDetail.statistics.paying": "Zaplaceno",
+  "groupDetail.statistics.spending": "Celkem utraceno",
+  "groupDetail.statistics.paying": "Celkem zaplaceno",
   "groupDetail.statistics.ratio": "K-Index",
   "groupDetail.statistics.userIndex.tooltip": "Kristiánův Index porovnává, kolik člen zaplatil vs. kolik utratil. Hodnota nad 1 znamená, že více zaplatil než utratil; pod 1 znamená, že více utratil než zaplatil.",
 

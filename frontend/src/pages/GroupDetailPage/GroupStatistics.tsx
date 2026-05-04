@@ -307,17 +307,17 @@ const UserIndexTableSection = ({
             <Table size="small">
                 <TableHead>
                     <TableRow>
-                        <TableCell sx={{fontWeight: 800, color: COLORS.PRIMARY}}>
+                        <TableCell sx={{fontWeight: 800}}>
                             <FormattedMessage id="groupDetail.statistics.user" />
                         </TableCell>
-                        <TableCell align="right" sx={{fontWeight: 800, color: COLORS.PRIMARY}}>
-                            <FormattedMessage id="groupDetail.statistics.spending" />
+                        <TableCell align="right" sx={{fontWeight: 800}}>
+                            <FormattedMessage id="groupDetail.statistics.ratio" />
                         </TableCell>
-                        <TableCell align="right" sx={{fontWeight: 800, color: COLORS.PRIMARY}}>
+                        <TableCell align="right" sx={{fontWeight: 800}}>
                             <FormattedMessage id="groupDetail.statistics.paying" />
                         </TableCell>
-                        <TableCell align="right" sx={{fontWeight: 800, color: COLORS.PRIMARY}}>
-                            <FormattedMessage id="groupDetail.statistics.ratio" />
+                        <TableCell align="right" sx={{fontWeight: 800}}>
+                            <FormattedMessage id="groupDetail.statistics.spending" />
                         </TableCell>
                     </TableRow>
                 </TableHead>
@@ -325,9 +325,9 @@ const UserIndexTableSection = ({
                     {rows.map((r) => (
                         <TableRow key={r.userId}>
                             <TableCell>{r.name}</TableCell>
-                            <TableCell align="right">{formatMoneyWithSymbol(r.spending, currencyCode)}</TableCell>
-                            <TableCell align="right">{formatMoneyWithSymbol(r.paying, currencyCode)}</TableCell>
                             <TableCell align="right">{r.ratioValue === null ? "—" : r.ratioValue.toFixed(2)}</TableCell>
+                            <TableCell align="right">{formatMoneyWithSymbol(r.paying, currencyCode)}</TableCell>
+                            <TableCell align="right">{formatMoneyWithSymbol(r.spending, currencyCode)}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -392,7 +392,7 @@ export const GroupStatistics = ({group}: Props) => {
                     name,
                     spending: s.spending ?? 0,
                     paying: s.paying ?? 0,
-                    ratio: s.spendingToPayingRatio,
+                    ratio: s.kindex,
                 };
             })
             .sort((a, b) => (b.spending + b.paying) - (a.spending + a.paying));
@@ -426,6 +426,9 @@ export const GroupStatistics = ({group}: Props) => {
                 return bv - av;
             });
     }, [userStatsRows]);
+
+    console.log("userStatsRows", userStatsRows);
+    console.log("ratioTableRows", ratioTableRows);
 
     return (
         <Stack gap={2} sx={{pb: 2}}>
