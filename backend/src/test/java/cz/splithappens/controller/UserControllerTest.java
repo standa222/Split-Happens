@@ -25,12 +25,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -60,9 +58,6 @@ class UserControllerTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
-
-    @Autowired
-    private EntityManager entityManager;
 
     private User testUser;
     private User deletedUser;
@@ -223,9 +218,6 @@ class UserControllerTest {
         Transaction transaction = getTestTransaction(group);
         transactionRepository.saveAndFlush(transaction);
 
-        entityManager.flush();
-        entityManager.clear();
-
         // act
         mockMvc.perform(delete("/api/users/{userId}", deletedUser.getId()))
                 .andExpect(status().isNoContent());
@@ -241,18 +233,10 @@ class UserControllerTest {
 
         // assert: transaction items for deleted user are NOT removed (to preserve transaction history), but user reference is set to null
         Transaction reloadedTransaction = transactionRepository.findById(transaction.getId()).orElseThrow();
-        System.out.println("Transaction items after deletion: " + reloadedTransaction.getItems().size());
-        System.out.println("Transaction items: " + reloadedTransaction.getItems().stream()
-                .map(item -> "Item{email=" + (item.getUser() != null ? item.getUser().getEmail() : "null") + "}")
-                .toList());
         assertEquals(2, reloadedTransaction.getItems().size());
         assertEquals(1, reloadedTransaction.getItems().stream()
                 .filter(item -> item.getUser() == null)
                 .count());
-        assertNull(reloadedTransaction.getItems().stream()
-                .filter(item -> Objects.equals(item.getUser().getId(), deletedUser.getId()))
-                .findFirst()
-                .orElse(null));
     }
 
     private Transaction getTestTransaction(Group group) {

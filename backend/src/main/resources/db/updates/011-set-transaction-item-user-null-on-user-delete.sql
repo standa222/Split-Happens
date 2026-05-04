@@ -1,8 +1,6 @@
 --liquibase formatted sql
 --changeset stanislav:11
 
-ALTER TABLE transaction_item ALTER COLUMN user_id DROP NOT NULL;
-
 ALTER TABLE transaction_item
 DROP CONSTRAINT IF EXISTS transaction_item_user_id_fkey;
 

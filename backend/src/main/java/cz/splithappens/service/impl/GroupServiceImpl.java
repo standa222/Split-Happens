@@ -174,6 +174,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public void leaveAllGroups(Long userId) {
         if (debtRepository.existsByDebtorIdOrCreditorId(userId, userId)) {
             throw new UserNotSettledException(userId);

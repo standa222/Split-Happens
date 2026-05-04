@@ -10,8 +10,10 @@ import cz.splithappens.exception.UserNotSettledException;
 import cz.splithappens.mapper.BankAccountMapper;
 import cz.splithappens.mapper.UserMapper;
 import cz.splithappens.model.BankAccount;
+import cz.splithappens.model.TransactionItem;
 import cz.splithappens.model.User;
 import cz.splithappens.repository.DebtRepository;
+import cz.splithappens.repository.TransactionItemRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.GroupService;
 import cz.splithappens.service.UserService;
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final BankAccountMapper bankAccountMapper;
     private final PasswordEncoder passwordEncoder;
     private final GroupService groupService;
+    private final TransactionItemRepository transactionItemRepository;
 
     @Override
     @Transactional
@@ -115,6 +118,11 @@ public class UserServiceImpl implements UserService {
         }
 
         groupService.leaveAllGroups(userId);
+
+        List<TransactionItem> items = transactionItemRepository.findByUserId(userId);
+        items.forEach(item -> item.setUser(null));
+        transactionItemRepository.saveAll(items);
+
         userRepository.deleteById(userId);
     }
 

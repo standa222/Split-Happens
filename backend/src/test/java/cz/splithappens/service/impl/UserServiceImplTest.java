@@ -5,11 +5,15 @@ import cz.splithappens.dto.request.UserCreateDto;
 import cz.splithappens.dto.response.UserDto;
 import cz.splithappens.exception.EmailAlreadyExistsException;
 import cz.splithappens.exception.UserNotFoundException;
+import cz.splithappens.exception.UserNotSettledException;
 import cz.splithappens.mapper.BankAccountMapper;
 import cz.splithappens.mapper.UserMapper;
 import cz.splithappens.model.BankAccount;
 import cz.splithappens.model.User;
+import cz.splithappens.repository.DebtRepository;
+import cz.splithappens.repository.TransactionItemRepository;
 import cz.splithappens.repository.UserRepository;
+import cz.splithappens.service.GroupService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -34,6 +38,9 @@ class UserServiceImplTest {
     @Mock private UserMapper userMapper;
     @Mock private BankAccountMapper bankAccountMapper;
     @Mock private PasswordEncoder passwordEncoder;
+    @Mock private DebtRepository debtRepository;
+    @Mock private GroupService groupService;
+    @Mock private TransactionItemRepository transactionItemRepository;
 
     @InjectMocks private UserServiceImpl userService;
 
@@ -176,6 +183,27 @@ class UserServiceImplTest {
         assertThat(saved.getBankAccount().getPrefix()).isEqualTo("19");
         assertThat(saved.getBankAccount().getAccountNumber()).isEqualTo("123");
         assertThat(saved.getBankAccount().getBankCode()).isEqualTo("0800");
+    }
+
+    @Test
+    void deleteUser_userNotFound_throws() {
+        when(userRepository.existsById(1L)).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.deleteUser(1L))
+                .isInstanceOf(UserNotFoundException.class);
+
+        verify(userRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void deleteUser_happyPath_deletesUser() {
+        when(userRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(groupService).leaveAllGroups(1L);
+        when(transactionItemRepository.findByUserId(1L)).thenReturn(List.of());
+
+        userService.deleteUser(1L);
+
+        verify(userRepository).deleteById(1L);
     }
 
     private static UserCreateDto createUserDto(String email) {
