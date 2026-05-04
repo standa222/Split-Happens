@@ -68,8 +68,8 @@ const formatMonthLabel = (ym: string, locale: string) => {
 };
 
 const StatSection = ({ title, children }: { title: ReactNode; children: ReactNode }) => (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
-        <Stack gap={2}>
+    <Box>
+        <Stack>
             <Typography variant="h6" fontWeight={800} color={COLORS.PRIMARY}>
                 {title}
             </Typography>
@@ -415,7 +415,7 @@ export const GroupStatistics = ({ group }: Props) => {
                 {isLoading && <StatisticsLoading />}
 
                 {formattedData && (
-                    <Stack gap={2} divider={<Divider />}>
+                    <Stack gap={3} divider={<Divider />}>
                         <SpendingByCategorySection data={formattedData.categories} />
                         {!month && <MonthlyTrendSection data={formattedData.trends} />}
                         <PayingByUsersSection data={formattedData.userRows.map(u => ({ name: u.name, value: u.paying }))} />

@@ -85,7 +85,7 @@
   "groupDetail.tabs.balances": "Zůstatky",
   "groupDetail.tabs.statistics": "Statistiky",
 
-  "groupDetail.statistics.title": "{hasYear, select, no {Statistiky} other {{hasMonth, select, no {Statistiky za rok {year}} other {Statistiky za měsíc {monthName} {year}}}}}",
+  "groupDetail.statistics.title": "{hasYear, select, no {Statistiky} other {{hasMonth, select, no {Statistiky za rok {year}} other {Statistiky za {monthName} {year}}}}}",
   "groupDetail.statistics.allTime": "Celá historie",
   "groupDetail.statistics.wholeYear": "Celý rok",
   "groupDetail.statistics.year": "Rok",
@@ -96,7 +96,7 @@
   "groupDetail.statistics.noData": "Žádná data",
 
   "groupDetail.statistics.byCategory": "Výdaje podle kategorií",
-  "groupDetail.statistics.monthlyTrend": "Trend podle měsíců",
+  "groupDetail.statistics.monthlyTrend": "Měsíční výdaje",
   "groupDetail.statistics.total": "Celkem",
   "groupDetail.statistics.payingByUser": "Zaplaceno podle členů",
   "groupDetail.statistics.spendingByUser": "Výdaje podle členů",
