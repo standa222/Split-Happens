@@ -1,7 +1,14 @@
 package cz.splithappens.controller;
 
 import cz.splithappens.dto.request.UserCreateDto;
-import cz.splithappens.model.User;
+import cz.splithappens.model.*;
+import cz.splithappens.model.enums.Currency;
+import cz.splithappens.model.enums.ExpenseCategory;
+import cz.splithappens.model.enums.TransactionSplitMode;
+import cz.splithappens.model.enums.TransactionType;
+import cz.splithappens.repository.DebtRepository;
+import cz.splithappens.repository.GroupRepository;
+import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.security.CustomUserDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,9 +25,15 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,7 +52,20 @@ class UserControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private DebtRepository debtRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
     private User testUser;
+    private User deletedUser;
 
     @BeforeEach
     void setup() {
@@ -50,6 +76,13 @@ class UserControllerTest {
         testUser.setLastName("User");
         testUser.setProfileImage(new byte[]{1, 2, 3});
         userRepository.save(testUser);
+
+        deletedUser = new User();
+        deletedUser.setEmail("delete@mail.com");
+        deletedUser.setPasswordHash("hashedpassword");
+        deletedUser.setFirstName("Delete");
+        deletedUser.setLastName("User");
+        userRepository.save(deletedUser);
     }
 
     @Test
@@ -146,6 +179,112 @@ class UserControllerTest {
                         .param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    void deleteUser_hasDebts_returnsConflict() throws Exception {
+        // arrange
+        Group group = Group.builder()
+                .name("Test Group")
+                .members(Set.of(testUser, deletedUser))
+                .build();
+        groupRepository.save(group);
+
+        Debt debt = Debt.builder()
+                .amount(BigDecimal.valueOf(100))
+                .debtor(deletedUser)
+                .creditor(testUser)
+                .group(group)
+                .build();
+        debtRepository.save(debt);
+
+        testUser.setAdmin(true);
+        userRepository.save(testUser);
+        setAuthenticatedUser(testUser);
+
+        // act + assert
+        mockMvc.perform(delete("/api/users/{userId}", deletedUser.getId()))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void deleteUser_noDebts_returnsOk() throws Exception {
+        // arrange
+        testUser.setAdmin(true);
+        userRepository.saveAndFlush(testUser);
+        setAuthenticatedUser(testUser);
+
+        Group group = Group.builder()
+                .name("Group With Deleted Member")
+                .members(new HashSet<>(Set.of(testUser, deletedUser)))
+                .build();
+        groupRepository.saveAndFlush(group);
+
+        Transaction transaction = getTestTransaction(group);
+        transactionRepository.saveAndFlush(transaction);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        // act
+        mockMvc.perform(delete("/api/users/{userId}", deletedUser.getId()))
+                .andExpect(status().isNoContent());
+
+        // assert: user is deleted
+        assertFalse(userRepository.findById(deletedUser.getId()).isPresent());
+
+        // assert: deleted user is no longer a member of the group
+        Group reloadedGroup = groupRepository.findById(group.getId()).orElseThrow();
+        boolean stillMember = reloadedGroup.getMembers().stream()
+                .anyMatch(u -> u.getId().equals(deletedUser.getId()));
+        assertFalse(stillMember);
+
+        // assert: transaction items for deleted user are NOT removed (to preserve transaction history), but user reference is set to null
+        Transaction reloadedTransaction = transactionRepository.findById(transaction.getId()).orElseThrow();
+        System.out.println("Transaction items after deletion: " + reloadedTransaction.getItems().size());
+        System.out.println("Transaction items: " + reloadedTransaction.getItems().stream()
+                .map(item -> "Item{email=" + (item.getUser() != null ? item.getUser().getEmail() : "null") + "}")
+                .toList());
+        assertEquals(2, reloadedTransaction.getItems().size());
+        assertEquals(1, reloadedTransaction.getItems().stream()
+                .filter(item -> item.getUser() == null)
+                .count());
+        assertNull(reloadedTransaction.getItems().stream()
+                .filter(item -> Objects.equals(item.getUser().getId(), deletedUser.getId()))
+                .findFirst()
+                .orElse(null));
+    }
+
+    private Transaction getTestTransaction(Group group) {
+        Transaction transaction = Transaction.builder()
+                .title("Test Transaction")
+                .totalAmount(BigDecimal.valueOf(50))
+                .group(group)
+                .transactionType(TransactionType.EXPENSE)
+                .paidByMode(TransactionSplitMode.FIXED)
+                .splitBetweenMode(TransactionSplitMode.FIXED)
+                .currency(Currency.CZK)
+                .expenseCategory(ExpenseCategory.DINING)
+                .build();
+
+        List<TransactionItem> items = List.of(
+                TransactionItem.builder()
+                        .user(testUser)
+                        .transaction(transaction)
+                        .balanceChange(BigDecimal.valueOf(50))
+                        .defaultCurrencyBalanceChange(BigDecimal.valueOf(50))
+                        .filledValue(BigDecimal.valueOf(50))
+                        .build(),
+                TransactionItem.builder()
+                        .user(deletedUser)
+                        .transaction(transaction)
+                        .balanceChange(BigDecimal.valueOf(-50))
+                        .defaultCurrencyBalanceChange(BigDecimal.valueOf(-50))
+                        .filledValue(BigDecimal.valueOf(50))
+                        .build()
+        );
+        transaction.setItems(items);
+        return transaction;
     }
 
     private void setAuthenticatedUser(User user) {

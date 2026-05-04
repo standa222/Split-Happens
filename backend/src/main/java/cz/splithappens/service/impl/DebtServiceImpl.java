@@ -6,6 +6,7 @@ import cz.splithappens.model.Debt;
 import cz.splithappens.model.Transaction;
 import cz.splithappens.model.TransactionItem;
 import cz.splithappens.model.User;
+import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.model.enums.TransactionType;
 import cz.splithappens.repository.DebtRepository;
 import cz.splithappens.repository.TransactionRepository;
@@ -39,6 +40,8 @@ public class DebtServiceImpl implements DebtService {
                 .group(debt.getGroup())
                 .title("Payment")
                 .totalAmount(debt.getAmount())
+                .paidByMode(TransactionSplitMode.FIXED)
+                .splitBetweenMode(TransactionSplitMode.FIXED)
                 .transactionType(TransactionType.PAYMENT)
                 .currency(debt.getGroup().getDefaultCurrency())
                 .build();
@@ -49,12 +52,14 @@ public class DebtServiceImpl implements DebtService {
                         .user(debtor)
                         .balanceChange(debt.getAmount())
                         .defaultCurrencyBalanceChange(debt.getAmount()) // TODO: Handle currency conversion if needed
+                        .filledValue(debt.getAmount())
                         .build(),
                 TransactionItem.builder()
                         .transaction(paymentTransaction)
                         .user(creditor)
                         .balanceChange(debt.getAmount().negate())
                         .defaultCurrencyBalanceChange(debt.getAmount().negate()) // TODO: Handle currency conversion if needed
+                        .filledValue(debt.getAmount().negate())
                         .build()
         ));
 

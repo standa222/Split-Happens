@@ -18,4 +18,5 @@ public interface UserService {
     List<UserDto> getAllUsersAdmin(User user, int limit);
     byte[] getUserImage(Long userId);
     void uploadUserImage(Long userId, MultipartFile imageData) throws IOException;
+    void deleteUser(Long userId);
 }

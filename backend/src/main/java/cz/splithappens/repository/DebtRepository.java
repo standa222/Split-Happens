@@ -11,4 +11,5 @@ public interface DebtRepository extends JpaRepository<Debt, Long> {
     List<Debt> findByGroupId(Long groupId);
     List<Debt> findByGroupIdIn(List<Long> groupIds);
     void deleteByGroupId(Long groupId);
+    boolean existsByDebtorIdOrCreditorId(Long debtorId, Long creditorId);
 }

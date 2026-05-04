@@ -4,10 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
-import cz.splithappens.exception.AdminOnlyException;
-import cz.splithappens.exception.BadRequestException;
-import cz.splithappens.exception.GroupNotFoundException;
-import cz.splithappens.exception.NotGroupMemberException;
+import cz.splithappens.exception.*;
 import cz.splithappens.mapper.DebtMapper;
 import cz.splithappens.mapper.GroupMapper;
 import cz.splithappens.model.Debt;
@@ -161,6 +158,33 @@ public class GroupServiceImpl implements GroupService {
                 .build();
     }
 
+    @Override
+    public byte[] getGroupImage(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        return group.getGroupImage();
+    }
+
+    @Override
+    public void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException(groupId));
+        group.setGroupImage(imageData.getBytes());
+        groupRepository.save(group);
+    }
+
+    @Override
+    public void leaveAllGroups(Long userId) {
+        if (debtRepository.existsByDebtorIdOrCreditorId(userId, userId)) {
+            throw new UserNotSettledException(userId);
+        }
+
+        List<Group> groups = groupRepository.findByMembersId(userId);
+        groups.forEach(g -> g.removeMember(userId));
+
+        groupRepository.saveAll(groups);
+    }
+
     private void validateStatisticsFilter(Integer year, Integer month) {
         if (month != null && year == null) {
             throw new BadRequestException("MONTH_WITHOUT_YEAR", "Month filter cannot be used without year filter");
@@ -240,21 +264,6 @@ public class GroupServiceImpl implements GroupService {
                             .build();
                 })
                 .toList();
-    }
-
-    @Override
-    public byte[] getGroupImage(Long groupId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException(groupId));
-        return group.getGroupImage();
-    }
-
-    @Override
-    public void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new GroupNotFoundException(groupId));
-        group.setGroupImage(imageData.getBytes());
-        groupRepository.save(group);
     }
 
     private boolean isUserInvolvedInDebt(Debt debt, Long userId) {
