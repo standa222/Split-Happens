@@ -100,5 +100,13 @@ export const theme = createTheme({
                 },
             },
         },
+
+        MuiTableCell: {
+            styleOverrides: {
+                root: {
+                    color: COLORS.PRIMARY,
+                },
+            },
+        },
     },
 });
