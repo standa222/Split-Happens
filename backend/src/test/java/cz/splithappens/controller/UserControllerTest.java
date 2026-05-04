@@ -121,6 +121,33 @@ class UserControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    void getAllUsersAdmin_asNonAdmin_returnsForbidden() throws Exception {
+        // arrange
+        testUser.setAdmin(false);
+        userRepository.save(testUser);
+        setAuthenticatedUser(testUser);
+
+        // act + assert
+        mockMvc.perform(get("/api/users/admin")
+                        .param("limit", "10"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getAllUsersAdmin_asAdmin_returnsOk() throws Exception {
+        // arrange
+        testUser.setAdmin(true);
+        userRepository.save(testUser);
+        setAuthenticatedUser(testUser);
+
+        // act + assert
+        mockMvc.perform(get("/api/users/admin")
+                        .param("limit", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
     private void setAuthenticatedUser(User user) {
             CustomUserDetails userDetails = new CustomUserDetails(user, user.getAuthorities());
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
