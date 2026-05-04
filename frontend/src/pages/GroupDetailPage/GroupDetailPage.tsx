@@ -9,6 +9,7 @@ import {AddExpenseButton} from "../../components/AddExpenseButton";
 import {GroupExpenses} from "./GroupExpenses";
 import {GroupMembers} from "./GroupMembers";
 import { FormattedMessage } from "react-intl";
+import {GroupStatistics} from "./GroupStatistics";
 
 type WrapperProps = {
     group: TGroupDetail | undefined;
@@ -127,11 +128,7 @@ const GroupDetailTabContent = ({ activeTab, group }: { activeTab: GroupDetailSta
         case "members":
             return <GroupMembers group={group} />;
         case "statistics":
-            return (
-                <Typography>
-                    <FormattedMessage id="groupDetail.statistics.placeholder" values={{ name: group.name }} />
-                </Typography>
-            );
+            return <GroupStatistics group={group} />;
     }
 };
 

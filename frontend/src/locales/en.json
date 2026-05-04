@@ -288,5 +288,29 @@
 
   "friends.detail.subtitle": "Friend balance",
   "friends.detail.loading": "Loading...",
-  "friends.detail.error": "Failed to load friend detail."
+  "friends.detail.error": "Failed to load friend detail.",
+
+  "groupDetail.statistics.range": "Statistics range",
+  "groupDetail.statistics.mode": "Range",
+  "groupDetail.statistics.allTime": "All time",
+  "groupDetail.statistics.year": "Year",
+  "groupDetail.statistics.month": "Month",
+  "groupDetail.statistics.selectYear": "Year",
+  "groupDetail.statistics.selectMonth": "Month",
+  "groupDetail.statistics.loading": "Loading…",
+  "groupDetail.statistics.calculating": "Calculating statistics…",
+  "groupDetail.statistics.error": "Could not load statistics",
+  "groupDetail.statistics.noData": "No data",
+
+  "groupDetail.statistics.byCategory": "Spending by category",
+  "groupDetail.statistics.monthlyTrend": "Monthly trend",
+  "groupDetail.statistics.total": "Total",
+  "groupDetail.statistics.payingByUser": "Paying by member",
+  "groupDetail.statistics.spendingByUser": "Spending by member",
+  "groupDetail.statistics.userIndex": "K-Index",
+  "groupDetail.statistics.user": "User",
+  "groupDetail.statistics.spending": "Spending",
+  "groupDetail.statistics.paying": "Paying",
+  "groupDetail.statistics.ratio": "K-Index",
+  "groupDetail.statistics.userIndex.tooltip": "Kristián-Index compares how much each member paid vs. spent. Values above 1 mean the member paid more than they spent; below 1 means they spent more than they paid."
 }
