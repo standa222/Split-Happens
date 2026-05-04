@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface TransactionItemRepository extends JpaRepository<TransactionItem, Long> {
     List<TransactionItem> findByUserId(Long userId);
+    void deleteByTransactionId(Long transactionId);
 }

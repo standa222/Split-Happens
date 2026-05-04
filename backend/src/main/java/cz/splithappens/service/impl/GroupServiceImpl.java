@@ -87,6 +87,26 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
+    public void deleteGroup(Long groupId, User user) {
+        if (user == null || !user.isAdmin()) {
+            throw new AdminOnlyException();
+        }
+
+        if (!groupRepository.existsById(groupId)) {
+            throw new GroupNotFoundException(groupId);
+        }
+
+        if (debtRepository.existsByGroupId(groupId)) {
+            throw new GroupNotSettledException(groupId);
+        }
+
+        transactionService.deleteGroupTransactions(groupId);
+
+        groupRepository.deleteById(groupId);
+    }
+
+    @Override
+    @Transactional
     public GroupDto getGroupDetails(Long groupId, User user) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException(groupId));

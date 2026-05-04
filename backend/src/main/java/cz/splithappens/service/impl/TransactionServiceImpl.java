@@ -14,6 +14,7 @@ import cz.splithappens.model.TransactionItem;
 import cz.splithappens.model.User;
 import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.repository.GroupRepository;
+import cz.splithappens.repository.TransactionItemRepository;
 import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.SettlementEngine;
@@ -39,6 +40,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final UserRepository userRepository;
     private final SettlementEngine settlementEngine;
     private final SplitComputationStrategyFactory splitComputationStrategyFactory;
+    private final TransactionItemRepository transactionItemRepository;
 
     @Override
     @Transactional
@@ -107,6 +109,13 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.delete(transaction);
         transaction.getGroup().updateLastActivity();
         settlementEngine.calculateDebts(transaction.getGroup().getId());
+    }
+
+    @Override
+    public void deleteGroupTransactions(Long groupId) {
+        List<Transaction> transactions = transactionRepository.findByGroupId(groupId);
+        transactions.forEach(t -> transactionItemRepository.deleteByTransactionId(t.getId()));
+        transactionRepository.deleteAll(transactions);
     }
 
     private List<TransactionItem> createTransactionsItems(TransactionCreateDto createDto, Transaction transaction) {

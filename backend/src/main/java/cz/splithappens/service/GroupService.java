@@ -14,6 +14,7 @@ public interface GroupService {
     GroupDto createGroup(GroupCreateDto createDto, User user);
     List<GroupLightDto> getUserGroups(User user);
     List<GroupLightDto> getAllGroupsAdmin(User user);
+    void deleteGroup(Long groupId, User user);
     GroupDto getGroupDetails(Long groupId, User user);
     GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user);
     void leaveGroup(Long groupId, User user);

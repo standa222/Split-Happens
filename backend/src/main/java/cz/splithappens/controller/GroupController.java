@@ -65,6 +65,23 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getAllGroupsAdmin(userDetails.getUser()));
     }
 
+    @DeleteMapping("/{groupId}")
+    @Operation(summary = "Delete group (admin)", description = "Deletes the specified group from the system. Admin-only endpoint. The group must be settled (no debts exist).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Group deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin only"),
+            @ApiResponse(responseCode = "404", description = "Group not found"),
+            @ApiResponse(responseCode = "409", description = "Cannot delete an unsettled group (debts exist)")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        groupService.deleteGroup(groupId, userDetails.getUser());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{groupId}")
     @Operation(summary = "Get group details", description = "Returns details of a specific group, including its members and transactions.")
     @ApiResponses(value = {
