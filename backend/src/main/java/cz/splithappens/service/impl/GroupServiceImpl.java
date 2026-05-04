@@ -4,6 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
+import cz.splithappens.exception.BadRequestException;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.NotGroupMemberException;
 import cz.splithappens.mapper.DebtMapper;
@@ -20,14 +21,18 @@ import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,7 +128,9 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public GroupStatisticsDto getGroupStatistics(Long groupId, User user) {
+    public GroupStatisticsDto getGroupStatistics(Long groupId, User user, Integer year, Integer month) {
+        validateStatisticsFilter(year, month);
+
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException(groupId));
 
@@ -131,9 +138,11 @@ public class GroupServiceImpl implements GroupService {
             throw new NotGroupMemberException(groupId);
         }
 
-        List<GroupStatisticsDto.CategorySpendingDto> spendingByCategory = getCategorySpendingDtos(groupId);
-        List<GroupStatisticsDto.MonthlySpendingDto> monthlyTrend = getMonthlySpendingDtos(groupId);
-        List<GroupStatisticsDto.UserStatsDto> userStats = getUserStatsDtos(groupId);
+        DateRange range = buildDateRange(year, month);
+
+        List<GroupStatisticsDto.CategorySpendingDto> spendingByCategory = getCategorySpendingDtos(groupId, range.from(), range.to());
+        List<GroupStatisticsDto.MonthlySpendingDto> monthlyTrend = getMonthlySpendingDtos(groupId, range.from(), range.to());
+        List<GroupStatisticsDto.UserStatsDto> userStats = getUserStatsDtos(groupId, range.from(), range.to());
 
         return GroupStatisticsDto.builder()
                 .spendingByCategory(spendingByCategory)
@@ -142,9 +151,38 @@ public class GroupServiceImpl implements GroupService {
                 .build();
     }
 
-    private List<GroupStatisticsDto.MonthlySpendingDto> getMonthlySpendingDtos(Long groupId) {
+    private void validateStatisticsFilter(Integer year, Integer month) {
+        if (month != null && year == null) {
+            throw new BadRequestException("MONTH_WITHOUT_YEAR", "Month filter cannot be used without year filter");
+        }
+        if (month != null && (month < 1 || month > 12)) {
+            throw new BadRequestException("INVALID_MONTH", "Month filter must be between 1 and 12");
+        }
+    }
+
+    private record DateRange(OffsetDateTime from, OffsetDateTime to) {
+    }
+
+    private DateRange buildDateRange(Integer year, Integer month) {
+        if (year == null) {
+            return new DateRange(null, null);
+        }
+
+        if (month == null) {
+            OffsetDateTime from = LocalDate.of(year, 1, 1).atStartOfDay().atOffset(ZoneOffset.UTC);
+            OffsetDateTime to = LocalDate.of(year + 1, 1, 1).atStartOfDay().atOffset(ZoneOffset.UTC);
+            return new DateRange(from, to);
+        }
+
+        YearMonth ym = YearMonth.of(year, month);
+        OffsetDateTime from = ym.atDay(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime to = ym.plusMonths(1).atDay(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+        return new DateRange(from, to);
+    }
+
+    private List<GroupStatisticsDto.MonthlySpendingDto> getMonthlySpendingDtos(Long groupId, OffsetDateTime from, OffsetDateTime to) {
         return transactionRepository
-                .sumExpensesByMonth(groupId)
+                .sumExpensesByMonth(groupId, from, to)
                 .stream()
                 .map(row -> GroupStatisticsDto.MonthlySpendingDto.builder()
                         .month(YearMonth.of(row.getMonthDate().getYear(), row.getMonthDate().getMonthValue()))
@@ -153,9 +191,9 @@ public class GroupServiceImpl implements GroupService {
                 .toList();
     }
 
-    private List<GroupStatisticsDto.CategorySpendingDto> getCategorySpendingDtos(Long groupId) {
+    private List<GroupStatisticsDto.CategorySpendingDto> getCategorySpendingDtos(Long groupId, OffsetDateTime from, OffsetDateTime to) {
         return transactionRepository
-                .sumExpensesByCategory(groupId)
+                .sumExpensesByCategory(groupId, from, to)
                 .stream()
                 .map(row -> GroupStatisticsDto.CategorySpendingDto.builder()
                         .category(row.getCategory())
@@ -164,11 +202,11 @@ public class GroupServiceImpl implements GroupService {
                 .toList();
     }
 
-    private List<GroupStatisticsDto.UserStatsDto> getUserStatsDtos(Long groupId) {
-        Map<Long, BigDecimal> spendingMap = transactionRepository.sumUserSpending(groupId).stream()
+    private List<GroupStatisticsDto.UserStatsDto> getUserStatsDtos(Long groupId, OffsetDateTime from, OffsetDateTime to) {
+        Map<Long, BigDecimal> spendingMap = transactionRepository.sumUserSpending(groupId, from, to).stream()
                 .collect(Collectors.toMap(TransactionRepository.UserTotalProjection::getUserId, TransactionRepository.UserTotalProjection::getTotal));
 
-        Map<Long, BigDecimal> payingMap = transactionRepository.sumUserPaying(groupId).stream()
+        Map<Long, BigDecimal> payingMap = transactionRepository.sumUserPaying(groupId, from, to).stream()
                 .collect(Collectors.toMap(TransactionRepository.UserTotalProjection::getUserId, TransactionRepository.UserTotalProjection::getTotal));
 
         Set<Long> userIds = new HashSet<>();

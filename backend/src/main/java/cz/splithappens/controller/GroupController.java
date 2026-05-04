@@ -70,14 +70,17 @@ public class GroupController {
     @Operation(summary = "Get group statistics", description = "Returns aggregated statistics for a specific group.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
     public ResponseEntity<GroupStatisticsDto> getGroupStatistics(
             @PathVariable Long groupId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(groupService.getGroupStatistics(groupId, userDetails.getUser()));
+        return ResponseEntity.ok(groupService.getGroupStatistics(groupId, userDetails.getUser(), year, month));
     }
 
     @PutMapping("/{groupId}")

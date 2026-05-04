@@ -21,19 +21,31 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             from Transaction t
             where t.group.id = :groupId
               and t.transactionType = cz.splithappens.model.enums.TransactionType.EXPENSE
+              and (cast(:from as offsetdatetime) is null or t.createdAt >= :from)
+              and (cast(:to as offsetdatetime) is null or t.createdAt < :to)
             group by t.expenseCategory
             """)
-    List<CategoryTotalProjection> sumExpensesByCategory(@Param("groupId") Long groupId);
+    List<CategoryTotalProjection> sumExpensesByCategory(
+            @Param("groupId") Long groupId,
+            @Param("from") OffsetDateTime from,
+            @Param("to") OffsetDateTime to
+    );
 
     @Query("""
             select date_trunc('month', t.createdAt) as monthDate, sum(t.totalAmount) as total
             from Transaction t
             where t.group.id = :groupId
               and t.transactionType = cz.splithappens.model.enums.TransactionType.EXPENSE
+              and (cast(:from as offsetdatetime) is null or t.createdAt >= :from)
+              and (cast(:to as offsetdatetime) is null or t.createdAt < :to)
             group by date_trunc('month', t.createdAt)
             order by 1 asc
             """)
-    List<MonthTotalProjection> sumExpensesByMonth(@Param("groupId") Long groupId);
+    List<MonthTotalProjection> sumExpensesByMonth(
+            @Param("groupId") Long groupId,
+            @Param("from") OffsetDateTime from,
+            @Param("to") OffsetDateTime to
+    );
 
     @Query("""
             select ti.user.id as userId, sum(-ti.defaultCurrencyBalanceChange) as total
@@ -41,10 +53,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             where ti.transaction.group.id = :groupId
               and ti.transaction.transactionType = cz.splithappens.model.enums.TransactionType.EXPENSE
               and ti.defaultCurrencyBalanceChange < 0
+              and (cast(:from as offsetdatetime) is null or ti.transaction.createdAt >= :from)
+              and (cast(:to as offsetdatetime) is null or ti.transaction.createdAt < :to)
             group by ti.user.id
             order by total desc
             """)
-    List<UserTotalProjection> sumUserSpending(@Param("groupId") Long groupId);
+    List<UserTotalProjection> sumUserSpending(
+            @Param("groupId") Long groupId,
+            @Param("from") OffsetDateTime from,
+            @Param("to") OffsetDateTime to
+    );
 
     @Query("""
             select ti.user.id as userId, sum(ti.defaultCurrencyBalanceChange) as total
@@ -52,11 +70,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             where ti.transaction.group.id = :groupId
               and ti.transaction.transactionType = cz.splithappens.model.enums.TransactionType.EXPENSE
               and ti.defaultCurrencyBalanceChange > 0
+              and (cast(:from as offsetdatetime) is null or ti.transaction.createdAt >= :from)
+              and (cast(:to as offsetdatetime) is null or ti.transaction.createdAt < :to)
             group by ti.user.id
             order by total desc
             """)
-    List<UserTotalProjection> sumUserPaying(@Param("groupId") Long groupId);
-
+    List<UserTotalProjection> sumUserPaying(
+            @Param("groupId") Long groupId,
+            @Param("from") OffsetDateTime from,
+            @Param("to") OffsetDateTime to
+    );
 
     interface CategoryTotalProjection {
         ExpenseCategory getCategory();

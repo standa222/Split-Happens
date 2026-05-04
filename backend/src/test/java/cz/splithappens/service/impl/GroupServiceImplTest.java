@@ -281,7 +281,7 @@ class GroupServiceImplTest {
     void getGroupStatistics_groupNotFound_throws() {
         when(groupRepository.findById(10L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> groupService.getGroupStatistics(10L, user(1L)))
+        assertThatThrownBy(() -> groupService.getGroupStatistics(10L, user(1L), null, null))
                 .isInstanceOf(GroupNotFoundException.class);
 
         verifyNoInteractions(transactionRepository);
@@ -294,7 +294,7 @@ class GroupServiceImplTest {
         group.setMembers(new LinkedHashSet<>(List.of(user(2L), user(3L))));
         when(groupRepository.findById(10L)).thenReturn(Optional.of(group));
 
-        assertThatThrownBy(() -> groupService.getGroupStatistics(10L, user(1L)))
+        assertThatThrownBy(() -> groupService.getGroupStatistics(10L, user(1L), null, null))
                 .isInstanceOf(NotGroupMemberException.class);
 
         verifyNoInteractions(transactionRepository);
@@ -311,12 +311,12 @@ class GroupServiceImplTest {
         TransactionRepository.CategoryTotalProjection catProj = mockCategory();
         TransactionRepository.MonthTotalProjection monthProj = mockMonth();
         TransactionRepository.UserTotalProjection userProj = mockUser();
-        when(transactionRepository.sumExpensesByCategory(10L)).thenReturn(List.of(catProj));
-        when(transactionRepository.sumExpensesByMonth(10L)).thenReturn(List.of(monthProj));
-        when(transactionRepository.sumUserSpending(10L)).thenReturn(List.of(userProj));
-        when(transactionRepository.sumUserPaying(10L)).thenReturn(List.of());
+        when(transactionRepository.sumExpensesByCategory(10L, null, null)).thenReturn(List.of(catProj));
+        when(transactionRepository.sumExpensesByMonth(10L, null, null)).thenReturn(List.of(monthProj));
+        when(transactionRepository.sumUserSpending(10L, null, null)).thenReturn(List.of(userProj));
+        when(transactionRepository.sumUserPaying(10L, null, null)).thenReturn(List.of());
 
-        GroupStatisticsDto result = groupService.getGroupStatistics(10L, current);
+        GroupStatisticsDto result = groupService.getGroupStatistics(10L, current, null, null);
 
         assertThat(result.getSpendingByCategory()).hasSize(1);
         assertThat(result.getSpendingByCategory().getFirst().getCategory()).isEqualTo(ExpenseCategory.COFFEE);
@@ -332,10 +332,10 @@ class GroupServiceImplTest {
         assertThat(result.getUserStats().getFirst().getPaying()).isEqualByComparingTo("0");
         assertThat(result.getUserStats().getFirst().getKIndex()).isEqualTo(0.0);
 
-        verify(transactionRepository).sumExpensesByCategory(10L);
-        verify(transactionRepository).sumExpensesByMonth(10L);
-        verify(transactionRepository).sumUserSpending(10L);
-        verify(transactionRepository).sumUserPaying(10L);
+        verify(transactionRepository).sumExpensesByCategory(10L, null, null);
+        verify(transactionRepository).sumExpensesByMonth(10L, null, null);
+        verify(transactionRepository).sumUserSpending(10L, null, null);
+        verify(transactionRepository).sumUserPaying(10L, null, null);
     }
 
     private static GroupCreateDto createGroupDto(List<Long> memberIds) {

@@ -16,7 +16,7 @@ public interface GroupService {
     GroupDto getGroupDetails(Long groupId, User user);
     GroupDto updateGroup(Long groupId, GroupCreateDto updateDto, User user);
     void leaveGroup(Long groupId, User user);
-    GroupStatisticsDto getGroupStatistics(Long groupId, User user);
+    GroupStatisticsDto getGroupStatistics(Long groupId, User user, Integer year, Integer month);
     byte[] getGroupImage(Long groupId);
     void uploadGroupImage(Long groupId, MultipartFile imageData) throws IOException;
 }
