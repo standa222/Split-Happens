@@ -308,5 +308,25 @@
   "groupDetail.statistics.spending": "Total spent",
   "groupDetail.statistics.paying": "Total paid",
   "groupDetail.statistics.ratio": "K-Index",
-  "groupDetail.statistics.userIndex.tooltip": "Kristián-Index compares how much each member paid vs. spent. Values above 1 mean the member paid more than they spent; below 1 means they spent more than they paid."
+  "groupDetail.statistics.userIndex.tooltip": "Kristián-Index compares how much each member paid vs. spent. Values above 1 mean the member paid more than they spent; below 1 means they spent more than they paid.",
+
+  "admin.title": "Admin Dashboard",
+  "admin.error": "Failed to load admin data.",
+  "admin.loading": "Loading admin data...",
+  "admin.users": "Users",
+  "admin.groups": "Groups",
+  "admin.actions": "Actions",
+  "admin.group.name": "Group name",
+  "admin.group.delete.confirmation": "Are you sure you want to delete the group {groupName}? This action cannot be undone.",
+  "admin.group.delete.action": "Delete group",
+  "admin.group.delete.deleting": "Deleting...",
+  "admin.group.delete.success": "Group deleted successfully.",
+  "admin.group.delete.unsettled": "Cannot delete unsettled group (debts must be settled first).",
+  "admin.user.name": "Name",
+  "admin.user.email": "Email",
+  "admin.user.delete.confirmation": "Are you sure you want to delete the user {userName}? This action cannot be undone.",
+  "admin.user.delete.action": "Delete user",
+  "admin.user.delete.deleting": "Deleting...",
+  "admin.user.delete.success": "User deleted successfully.",
+  "admin.user.delete.unsettled": "Cannot delete unsettled user (debts must be settled first)."
 }

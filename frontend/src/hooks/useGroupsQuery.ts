@@ -59,10 +59,11 @@ const fetchGroupDetail = async (groupId: number) => {
     return data;
 }
 
-export const useGroupDetail = (groupId: number) => {
+export const useGroupDetail = (groupId: number, options?: { enabled?: boolean }) => {
     return useQuery({
         queryKey: ['groupDetail', groupId],
         queryFn: () => fetchGroupDetail(groupId),
         retry: false,
+        enabled: options?.enabled ?? true,
     })
 }

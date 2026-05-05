@@ -146,6 +146,14 @@ export function getApiErrorMessage(error: unknown): ApiErrorMessage {
     if (status === 401) return { id: "auth.login.error.invalidCredentials" };
     if (status === 403) return { id: "api.error.forbidden" };
     if (status === 404) return { id: "api.error.notFound" };
+    if (status === 409) {
+        if (pd?.errorCode === "GROUP_NOT_SETTLED") {
+            return { id: "admin.group.delete.unsettled" };
+        }
+        if (pd?.errorCode === "USER_NOT_SETTLED") {
+            return { id: "admin.user.delete.unsettled" };
+        }
+    }
     if (status && status >= 500) return { id: "api.error.server" };
 
     // If backend sends ProblemDetail detail, prefer it over generic.
