@@ -1,7 +1,9 @@
 package cz.splithappens.service.impl;
 
+import cz.splithappens.dto.response.NotificationDto;
 import cz.splithappens.event.ExpenseAddedEvent;
 import cz.splithappens.exception.GroupNotFoundException;
+import cz.splithappens.mapper.NotificationMapper;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Notification;
 import cz.splithappens.model.User;
@@ -26,16 +28,18 @@ import java.util.Map;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final NotificationMapper notificationMapper;
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Notification> getMyNotifications(User currentUser, Pageable pageable) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(currentUser.getId(), pageable);
+    public Page<NotificationDto> getMyNotifications(User currentUser, Pageable pageable) {
+        return notificationRepository.findByUserId(currentUser.getId(), pageable)
+                .map(notificationMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public long getMyUnreadCount(User currentUser) {
+    public Integer getMyUnreadCount(User currentUser) {
         return notificationRepository.countByUserIdAndReadFalse(currentUser.getId());
     }
 
@@ -46,7 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
         List<Notification> toSave = new ArrayList<>();
 
         Map<String, String> params = new HashMap<>();
-        params.put("actor", event.creator().getFirstName());
+        params.put("creator", event.creator().getFirstName());
         params.put("group", event.group().getName());
         params.put("amount", event.transaction().getTotalAmount().toString());
 

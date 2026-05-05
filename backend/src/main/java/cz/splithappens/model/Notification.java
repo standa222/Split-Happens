@@ -32,7 +32,7 @@ public class Notification {
     private NotificationType notificationType;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(name = "message_params", columnDefinition = "jsonb")
     @Builder.Default
     private Map<String, String> messageParameters = new HashMap<>();
 
