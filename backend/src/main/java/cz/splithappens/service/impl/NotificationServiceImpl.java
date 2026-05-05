@@ -2,7 +2,9 @@ package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.response.NotificationDto;
 import cz.splithappens.event.ExpenseAddedEvent;
+import cz.splithappens.exception.ForbiddenException;
 import cz.splithappens.exception.GroupNotFoundException;
+import cz.splithappens.exception.NotFoundException;
 import cz.splithappens.mapper.NotificationMapper;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Notification;
@@ -41,6 +43,24 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional(readOnly = true)
     public Integer getMyUnreadCount(User currentUser) {
         return notificationRepository.countByUserIdAndReadFalse(currentUser.getId());
+    }
+
+    @Override
+    public void markAllAsRead(User currentUser) {
+        List<Notification> notifications = notificationRepository.findByUserId(currentUser.getId(), Pageable.unpaged()).getContent();
+        notifications.forEach(notification -> notification.setRead(true));
+        notificationRepository.saveAll(notifications);
+    }
+
+    @Override
+    public void markAsRead(User currentUser, Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new NotFoundException("NOTIFICATION_NOT_FOUND", "Notification not found"));
+        if (!notification.getUser().getId().equals(currentUser.getId())) {
+            throw new ForbiddenException("OTHER_USER_NOTIFICATION", "Cannot mark notification as read: not owned by user");
+        }
+        notification.setRead(true);
+        notificationRepository.save(notification);
     }
 
     @EventListener

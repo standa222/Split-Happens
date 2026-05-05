@@ -39,8 +39,9 @@ public class Notification {
     @Column(name = "target_id")
     private Long targetId;
 
+    @Builder.Default
     @Column(name = "is_read", nullable = false)
-    private boolean read;
+    private boolean read = false;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime createdAt;

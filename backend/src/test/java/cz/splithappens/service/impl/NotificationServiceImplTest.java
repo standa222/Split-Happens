@@ -1,6 +1,9 @@
 package cz.splithappens.service.impl;
 
 import cz.splithappens.event.ExpenseAddedEvent;
+import cz.splithappens.exception.DebtNotFoundException;
+import cz.splithappens.exception.ForbiddenException;
+import cz.splithappens.exception.NotFoundException;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Notification;
 import cz.splithappens.model.Transaction;
@@ -14,12 +17,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Set;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,6 +78,47 @@ class NotificationServiceImplTest {
         verifyNoMoreInteractions(notificationRepository);
     }
 
+    @Test
+    void markAllAsRead_marksAllUserNotificationsAsRead() {
+        Notification n1 = notification(member2);
+        Notification n2 = notification(member2);
+        when(notificationRepository.findByUserId(member2.getId(), Pageable.unpaged()))
+                .thenReturn(new PageImpl<>(List.of(n1, n2)));
+
+        notificationService.markAllAsRead(member2);
+
+        assertTrue(n1.isRead());
+        assertTrue(n2.isRead());
+        verify(notificationRepository).saveAll(List.of(n1, n2));
+    }
+
+    @Test
+    void markAsRead_validNotification_marksAsRead() {
+        Notification notification = notification(member2);
+        when(notificationRepository.findById(100L)).thenReturn(Optional.of(notification));
+
+        notificationService.markAsRead(member2, 100L);
+
+        assertTrue(notification.isRead());
+    }
+
+    @Test
+    void markAsRead_otherUserNotification_throwsForbidden() {
+        Notification notification = notification(member2);
+        when(notificationRepository.findById(100L)).thenReturn(Optional.of(notification));
+
+        assertThatThrownBy(() -> notificationService.markAsRead(member3, 100L))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    void markAsRead_notificationNotFound_throws() {
+        when(notificationRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> notificationService.markAsRead(member2, 404L))
+                .isInstanceOf(NotFoundException.class);
+    }
+
     private static User user(Long id, String email) {
         User u = new User();
         u.setId(id);
@@ -78,5 +127,13 @@ class NotificationServiceImplTest {
         u.setLastName("L");
         u.setPasswordHash("hash");
         return u;
+    }
+
+    private static Notification notification(User user) {
+        return Notification.builder()
+                .id(100L)
+                .user(user)
+                .notificationType(NotificationType.EXPENSE_ADDED)
+                .build();
     }
 }
