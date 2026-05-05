@@ -21,3 +21,17 @@ export const useAdminDeleteGroupMutation = (options?: Options) => {
   });
 };
 
+export const useAdminDeleteUserMutation = (options?: Options) => {
+  const qc = useQueryClient();
+
+  return useMutation<void, unknown, { userId: number }>({
+    mutationFn: ({ userId }) => api.delete(`/users/${userId}`).then(() => undefined),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adminUsers"] });
+      options?.onSuccess?.();
+    },
+    onError: (error) => {
+      options?.onError?.(error);
+    },
+  });
+};

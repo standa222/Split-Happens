@@ -29,10 +29,15 @@ import { COLORS } from "../../constants/colors";
 import { useMemo, useState, useEffect } from "react";
 import { GroupFormModal } from "../../components/GroupFormModal";
 import { useGroupDetail } from "../../hooks/useGroupsQuery";
-import { useAdminDeleteGroupMutation } from "../../hooks/useAdminMutations";
+import {
+  useAdminDeleteGroupMutation,
+  useAdminDeleteUserMutation,
+} from "../../hooks/useAdminMutations";
 import { AppSnackbar } from "../../components/AppSnackbar";
 import { formatApiError } from "../../utils/apiErrorUtils";
-import {TGroupLight} from "../../types/dto/TGroupLight";
+import type { TUser } from "../../types/TUser";
+import type { TGroupLight } from "../../types/dto/TGroupLight";
+import { AdminUserEditModal } from "../../components/AdminUserEditModal";
 
 export const AdminPage = () => {
   const intl = useIntl();
@@ -60,15 +65,15 @@ export const AdminPage = () => {
   const isLoading = probeLoading || groupsLoading || usersLoading;
   const isError = probeError || groupsError || usersError;
 
-  // Two-step edit flow:
-  // 1) click edit => set pendingGroupId to start loading detail
-  // 2) when detail is loaded => open modal by setting openGroupId
   const [pendingGroupId, setPendingGroupId] = useState<number | null>(null);
   const [openGroupId, setOpenGroupId] = useState<number | null>(null);
   const [deleteGroup, setDeleteGroup] = useState<TGroupLight | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; severity: "success" | "error"; message: string }>(
-    { open: false, severity: "success", message: "" }
-  );
+  const [deleteUser, setDeleteUser] = useState<TUser | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    severity: "success" | "error";
+    message: string;
+  }>({ open: false, severity: "success", message: "" });
 
   const { data: pendingGroupDetail, isLoading: isPendingGroupLoading } = useGroupDetail(
     pendingGroupId ?? -1,
@@ -122,6 +127,60 @@ export const AdminPage = () => {
     );
   }, [deleteGroup?.name, intl]);
 
+  const { mutate: deleteUserMutate, isPending: isDeleteUserPending } =
+    useAdminDeleteUserMutation({
+      onSuccess: () => {
+        setDeleteUser(null);
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: intl.formatMessage({ id: "admin.user.delete.success" }),
+        });
+      },
+      onError: (error) => {
+        setSnackbar({
+          open: true,
+          severity: "error",
+          message: formatApiError(intl, error),
+        });
+      },
+    });
+
+  const onConfirmDeleteUser = () => {
+    if (!deleteUser || isDeleteUserPending) return;
+    deleteUserMutate({ userId: deleteUser.id });
+  };
+
+  const deleteUserConfirmText = useMemo(() => {
+    return intl.formatMessage(
+      { id: "admin.user.delete.confirmation" },
+      { userName: `${deleteUser?.firstName ?? ""} ${deleteUser?.lastName ?? ""}`.trim() }
+    );
+  }, [deleteUser?.firstName, deleteUser?.lastName, intl]);
+
+  const [pendingUserId, setPendingUserId] = useState<number | null>(null);
+  const [openUserId, setOpenUserId] = useState<number | null>(null);
+
+  const pendingUser = useMemo(() => {
+    if (typeof pendingUserId !== "number") return null;
+    return (users ?? []).find((u) => u.id === pendingUserId) ?? null;
+  }, [pendingUserId, users]);
+
+  const openUser = useMemo(() => {
+    if (typeof openUserId !== "number") return null;
+    return (users ?? []).find((u) => u.id === openUserId) ?? null;
+  }, [openUserId, users]);
+
+  useEffect(() => {
+    if (typeof pendingUserId !== "number") return;
+    if (!pendingUser) return;
+
+    setOpenUserId(pendingUserId);
+    setPendingUserId(null);
+  }, [pendingUser, pendingUserId]);
+
+  const isUserEditModalOpen = typeof openUserId === "number";
+
   if (isForbidden) return <Page404 />;
 
   if (isLoading) {
@@ -168,7 +227,7 @@ export const AdminPage = () => {
                       <FormattedMessage id="admin.group.name" />
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }} align="right" width={110}>
-                      <FormattedMessage id="common.actions" defaultMessage="Actions" />
+                      <FormattedMessage id="admin.actions" />
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -218,6 +277,9 @@ export const AdminPage = () => {
                     <TableCell sx={{ fontWeight: 600 }}>
                       <FormattedMessage id="admin.user.email" />
                     </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }} align="right" width={110}>
+                      <FormattedMessage id="admin.actions" />
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -225,6 +287,27 @@ export const AdminPage = () => {
                     <TableRow key={u.id}>
                       <TableCell>{`${u.firstName} ${u.lastName}`.trim()}</TableCell>
                       <TableCell>{u.email}</TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" justifyContent="flex-end" gap={0.5}>
+                          <IconButton
+                            aria-label="edit"
+                            onClick={() => setPendingUserId(u.id)}
+                            sx={{ color: COLORS.PRIMARY }}
+                            size="small"
+                            disabled={typeof pendingUserId === "number" && pendingUserId === u.id && !pendingUser}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => setDeleteUser(u)}
+                            sx={{ color: COLORS.RED }}
+                            size="small"
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -275,6 +358,68 @@ export const AdminPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={!!deleteUser}
+        onClose={isDeleteUserPending ? undefined : () => setDeleteUser(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: COLORS.PRIMARY, fontWeight: 700 }}>
+          <FormattedMessage id="admin.user.delete.action" />
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <Typography>{deleteUserConfirmText}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setDeleteUser(null)}
+            disabled={isDeleteUserPending}
+            color="inherit"
+            sx={{ borderRadius: 40 }}
+          >
+            <FormattedMessage id="common.cancel" defaultMessage="Cancel" />
+          </Button>
+          <Button
+            onClick={onConfirmDeleteUser}
+            variant="contained"
+            sx={{ bgcolor: COLORS.RED, borderRadius: 40, "&:hover": { bgcolor: COLORS.RED } }}
+            disabled={isDeleteUserPending}
+          >
+            {isDeleteUserPending ? (
+              <FormattedMessage id="admin.user.delete.deleting" />
+            ) : (
+              <FormattedMessage id="admin.user.delete.action" />
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <AdminUserEditModal
+        open={isUserEditModalOpen && !!openUser}
+        user={openUser}
+        onClose={() => {
+          setOpenUserId(null);
+          setPendingUserId(null);
+        }}
+        onSuccess={() => {
+          setSnackbar({
+            open: true,
+            severity: "success",
+            message: intl.formatMessage({
+              id: "profile.edit.success",
+              defaultMessage: "Profile updated successfully.",
+            }),
+          });
+        }}
+        onError={(e) => {
+          setSnackbar({
+            open: true,
+            severity: "error",
+            message: formatApiError(intl, e),
+          });
+        }}
+      />
 
       <AppSnackbar
         open={snackbar.open}

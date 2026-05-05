@@ -316,6 +316,7 @@
   "admin.loading": "Načítání dat...",
   "admin.users": "Uživatelé",
   "admin.groups": "Skupiny",
+  "admin.actions": "Akce",
   "admin.group.name": "Jméno skupiny",
   "admin.group.delete.confirmation": "Opravdu chcete smazat skupinu '{groupName}'? Tuto akci nelze vzít zpět.",
   "admin.group.delete.action": "Smazat skupinu",

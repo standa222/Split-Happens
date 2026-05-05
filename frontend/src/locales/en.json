@@ -315,6 +315,7 @@
   "admin.loading": "Loading admin data...",
   "admin.users": "Users",
   "admin.groups": "Groups",
+  "admin.actions": "Actions",
   "admin.group.name": "Group name",
   "admin.group.delete.confirmation": "Are you sure you want to delete the group '{groupName}'? This action cannot be undone.",
   "admin.group.delete.action": "Delete group",
