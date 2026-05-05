@@ -3,6 +3,7 @@ package cz.splithappens.service.impl;
 import cz.splithappens.event.ExpenseAddedEvent;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Notification;
+import cz.splithappens.model.Transaction;
 import cz.splithappens.model.User;
 import cz.splithappens.model.enums.NotificationType;
 import cz.splithappens.repository.NotificationRepository;
@@ -14,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.List;
 
@@ -47,7 +49,10 @@ class NotificationServiceImplTest {
 
     @Test
     void onExpenseAdded_persistsNotificationForAllMembersExceptActor() {
-        notificationService.onExpenseAdded(new ExpenseAddedEvent(group, null, creator));
+        Transaction transaction = new Transaction();
+        transaction.setTotalAmount(BigDecimal.TEN);
+
+        notificationService.onExpenseAdded(new ExpenseAddedEvent(group, transaction, creator));
 
         ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
         verify(notificationRepository).saveAll(captor.capture());

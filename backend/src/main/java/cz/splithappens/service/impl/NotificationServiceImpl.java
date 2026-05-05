@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -42,13 +44,19 @@ public class NotificationServiceImpl implements NotificationService {
     public void onExpenseAdded(ExpenseAddedEvent event) {
         Group group = event.group();
         List<Notification> toSave = new ArrayList<>();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("actor", event.creator().getFirstName());
+        params.put("group", event.group().getName());
+        params.put("amount", event.transaction().getTotalAmount().toString());
+
         for (User member : group.getMembers()) {
             if (member.getId().equals(event.creator().getId())) {
                 continue;
             }
             toSave.add(Notification.builder()
                     .user(member)
-                    .message("New expense added in '" + group.getName() + "'")
+                    .messageParameters(params)
                     .notificationType(NotificationType.EXPENSE_ADDED)
                     .targetId(event.group().getId())
                     .read(false)

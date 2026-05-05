@@ -3,8 +3,12 @@ package cz.splithappens.model;
 import cz.splithappens.model.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -23,12 +27,14 @@ public class Notification {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "message", nullable = false)
-    private String message;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false, length = 50)
     private NotificationType notificationType;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    @Builder.Default
+    private Map<String, String> messageParameters = new HashMap<>();
 
     @Column(name = "target_id")
     private Long targetId;

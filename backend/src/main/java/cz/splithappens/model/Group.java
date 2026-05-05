@@ -29,12 +29,15 @@ public class Group {
     @Enumerated(EnumType.STRING)
     private Currency defaultCurrency = Currency.CZK;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private PermissionMode permissionMode = PermissionMode.SOFT;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private GroupType groupType = GroupType.GROUP;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "group_member",
@@ -44,6 +47,7 @@ public class Group {
     @OrderBy("lastName ASC, firstName ASC, id ASC")
     private Set<User> members = new LinkedHashSet<>();
 
+    @Builder.Default
     @Column(name = "last_activity", nullable = false)
     private OffsetDateTime lastActivity = OffsetDateTime.now();
 

@@ -21,3 +21,5 @@ databaseChangeLog:
       file: db/updates/010-add-user-is-admin-flag.sql
   - include:
       file: db/updates/011-set-transaction-item-user-null-on-user-delete.sql
+  - include:
+      file: db/updates/012-notification-use-props-instead-message.sql
