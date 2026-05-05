@@ -19,11 +19,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Page404 } from "../Page404";
-import {
-  useAdminGroupsQuery,
-  useAdminQuery,
-  useAdminUsersQuery,
-} from "../../hooks/useAdminQuery";
+import { useAdminGroupsQuery, useAdminQuery, useAdminUsersQuery } from "../../hooks/useAdminQuery";
 import { FormattedMessage, useIntl } from "react-intl";
 import { COLORS } from "../../constants/colors";
 import { useMemo, useState, useEffect } from "react";
@@ -42,11 +38,7 @@ import { AdminUserEditModal } from "../../components/AdminUserEditModal";
 export const AdminPage = () => {
   const intl = useIntl();
 
-  const {
-    data: probe,
-    isLoading: probeLoading,
-    isError: probeError,
-  } = useAdminQuery();
+  const { data: probe, isLoading: probeLoading, isError: probeError } = useAdminQuery();
 
   const isForbidden = probe ? !probe.groupsOk || !probe.usersOk : false;
 
@@ -96,24 +88,23 @@ export const AdminPage = () => {
     enabled: isEditModalOpen,
   });
 
-  const { mutate: deleteGroupMutate, isPending: isDeletePending } =
-    useAdminDeleteGroupMutation({
-      onSuccess: () => {
-        setDeleteGroup(null);
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: intl.formatMessage({ id: "admin.group.delete.success" }),
-        });
-      },
-      onError: (error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: formatApiError(intl, error),
-        });
-      },
-    });
+  const { mutate: deleteGroupMutate, isPending: isDeletePending } = useAdminDeleteGroupMutation({
+    onSuccess: () => {
+      setDeleteGroup(null);
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: intl.formatMessage({ id: "admin.group.delete.success" }),
+      });
+    },
+    onError: (error) => {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: formatApiError(intl, error),
+      });
+    },
+  });
 
   const onConfirmDelete = () => {
     if (!deleteGroup || isDeletePending) return;
@@ -127,24 +118,23 @@ export const AdminPage = () => {
     );
   }, [deleteGroup?.name, intl]);
 
-  const { mutate: deleteUserMutate, isPending: isDeleteUserPending } =
-    useAdminDeleteUserMutation({
-      onSuccess: () => {
-        setDeleteUser(null);
-        setSnackbar({
-          open: true,
-          severity: "success",
-          message: intl.formatMessage({ id: "admin.user.delete.success" }),
-        });
-      },
-      onError: (error) => {
-        setSnackbar({
-          open: true,
-          severity: "error",
-          message: formatApiError(intl, error),
-        });
-      },
-    });
+  const { mutate: deleteUserMutate, isPending: isDeleteUserPending } = useAdminDeleteUserMutation({
+    onSuccess: () => {
+      setDeleteUser(null);
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: intl.formatMessage({ id: "admin.user.delete.success" }),
+      });
+    },
+    onError: (error) => {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: formatApiError(intl, error),
+      });
+    },
+  });
 
   const onConfirmDeleteUser = () => {
     if (!deleteUser || isDeleteUserPending) return;
@@ -201,7 +191,7 @@ export const AdminPage = () => {
           <FormattedMessage id="admin.title" />
         </Typography>
         <Typography>
-            <FormattedMessage id="admin.error" />
+          <FormattedMessage id="admin.error" />
         </Typography>
       </Stack>
     );
@@ -294,7 +284,11 @@ export const AdminPage = () => {
                             onClick={() => setPendingUserId(u.id)}
                             sx={{ color: COLORS.PRIMARY }}
                             size="small"
-                            disabled={typeof pendingUserId === "number" && pendingUserId === u.id && !pendingUser}
+                            disabled={
+                              typeof pendingUserId === "number" &&
+                              pendingUserId === u.id &&
+                              !pendingUser
+                            }
                           >
                             <EditIcon fontSize="small" />
                           </IconButton>

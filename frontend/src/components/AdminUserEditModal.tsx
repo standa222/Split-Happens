@@ -15,10 +15,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useForm } from "react-hook-form";
 import { COLORS } from "../constants/colors";
 import type { TUser } from "../types/TUser";
-import {
-  type TUpdateProfileForm,
-  updateProfileFormSchema,
-} from "../types/form/TUpdateProfileForm";
+import { type TUpdateProfileForm, updateProfileFormSchema } from "../types/form/TUpdateProfileForm";
 import { tError } from "../utils/localeUtils";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 
@@ -30,13 +27,7 @@ type Props = {
   onError?: (error: unknown) => void;
 };
 
-export const AdminUserEditModal = ({
-  open,
-  user,
-  onClose,
-  onSuccess,
-  onError,
-}: Props) => {
+export const AdminUserEditModal = ({ open, user, onClose, onSuccess, onError }: Props) => {
   const intl = useIntl();
 
   const defaultValues = useMemo<TUpdateProfileForm>(
@@ -115,11 +106,7 @@ export const AdminUserEditModal = ({
         <FormattedMessage id="profile.edit.title" defaultMessage="Edit profile" />
       </DialogTitle>
 
-      <Box
-        component="form"
-        onSubmit={handleSubmit(onSubmit)}
-        onReset={() => reset(defaultValues)}
-      >
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} onReset={() => reset(defaultValues)}>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
           <TextField
             label={<FormattedMessage id="profile.firstName" defaultMessage="First name" />}
@@ -148,7 +135,9 @@ export const AdminUserEditModal = ({
           />
 
           <TextField
-            label={<FormattedMessage id="register.bankAccountNumber" defaultMessage="Account number" />}
+            label={
+              <FormattedMessage id="register.bankAccountNumber" defaultMessage="Account number" />
+            }
             {...register("bankAccount.accountNumber")}
             error={!!errors.bankAccount?.accountNumber}
             helperText={tError(intl, errors.bankAccount?.accountNumber?.message)}

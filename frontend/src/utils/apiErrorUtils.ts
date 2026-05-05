@@ -58,7 +58,10 @@ function mapValidationFieldErrorToMessageId(fe: BackendFieldError): ApiErrorMess
     return { id: "validation.transaction.paidBySumMismatch" };
   }
 
-  if (field === "splitBetween" && msg.includes("Sum of fixed amounts in splitBetween must equal totalAmount")) {
+  if (
+    field === "splitBetween" &&
+    msg.includes("Sum of fixed amounts in splitBetween must equal totalAmount")
+  ) {
     return { id: "validation.transaction.splitBetweenSumMismatch" };
   }
 
@@ -67,7 +70,10 @@ function mapValidationFieldErrorToMessageId(fe: BackendFieldError): ApiErrorMess
     return { id: "validation.transaction.paidByPercentageSumMismatch" };
   }
 
-  if (field === "splitBetween" && msg.includes("Sum of percentage values in splitBetween must be 100")) {
+  if (
+    field === "splitBetween" &&
+    msg.includes("Sum of percentage values in splitBetween must be 100")
+  ) {
     return { id: "validation.transaction.splitBetweenPercentageSumMismatch" };
   }
 
@@ -85,7 +91,12 @@ function getFirstMeaningfulValidationError(pd: ProblemDetailLike): BackendFieldE
 
   // Prefer the most actionable items first.
   // 1) Any explicit numeric/required constraint on an indexed field (e.g., splitBetween[0].fixed)
-  const indexed = errors.find((e) => typeof e.field === "string" && e.field.includes("[") && !!mapValidationFieldErrorToMessageId(e));
+  const indexed = errors.find(
+    (e) =>
+      typeof e.field === "string" &&
+      e.field.includes("[") &&
+      !!mapValidationFieldErrorToMessageId(e)
+  );
   if (indexed) return indexed;
 
   // 2) Any mappable message.
@@ -120,7 +131,12 @@ export function getApiErrorMessage(error: unknown): ApiErrorMessage {
     // Example: "Email already exists: string@g.com"
     if (status === 400) {
       const data = error.response?.data;
-      const maybeText = typeof data === "string" ? data : typeof (data as any)?.message === "string" ? (data as any).message : undefined;
+      const maybeText =
+        typeof data === "string"
+          ? data
+          : typeof (data as any)?.message === "string"
+            ? (data as any).message
+            : undefined;
       if (maybeText && maybeText.toLowerCase().includes("email already exists")) {
         return { id: "auth.register.error.emailAlreadyExists" };
       }
@@ -147,12 +163,12 @@ export function getApiErrorMessage(error: unknown): ApiErrorMessage {
     if (status === 403) return { id: "api.error.forbidden" };
     if (status === 404) return { id: "api.error.notFound" };
     if (status === 409) {
-        if (pd?.errorCode === "GROUP_NOT_SETTLED") {
-            return { id: "admin.group.delete.unsettled" };
-        }
-        if (pd?.errorCode === "USER_NOT_SETTLED") {
-            return { id: "admin.user.delete.unsettled" };
-        }
+      if (pd?.errorCode === "GROUP_NOT_SETTLED") {
+        return { id: "admin.group.delete.unsettled" };
+      }
+      if (pd?.errorCode === "USER_NOT_SETTLED") {
+        return { id: "admin.user.delete.unsettled" };
+      }
     }
     if (status && status >= 500) return { id: "api.error.server" };
 

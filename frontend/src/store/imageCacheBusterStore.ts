@@ -11,4 +11,3 @@ export const useImageCacheBusterStore = create<ImageCacheBusterState>((set) => (
   version: Date.now(),
   bump: () => set({ version: Date.now() }),
 }));
-

@@ -1,9 +1,9 @@
-import {TDebt} from "../TDebt";
+import { TDebt } from "../TDebt";
 
 export type TGroupLight = {
-    id: number;
-    name: string;
-    userDebts: TDebt[];
-    lastActivity: string;
-    defaultCurrency: string;
-}
+  id: number;
+  name: string;
+  userDebts: TDebt[];
+  lastActivity: string;
+  defaultCurrency: string;
+};

@@ -9,4 +9,3 @@ export type TFriendRequestDto = {
   status: TFriendRequestStatus;
   createdAt?: string;
 };
-

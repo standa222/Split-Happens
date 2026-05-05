@@ -8,7 +8,11 @@ export type GroupStatisticsParams = {
   month?: number; // 1-12
 };
 
-const fetchGroupStatistics = async ({ groupId, year, month }: GroupStatisticsParams): Promise<TGroupStatistics> => {
+const fetchGroupStatistics = async ({
+  groupId,
+  year,
+  month,
+}: GroupStatisticsParams): Promise<TGroupStatistics> => {
   const { data } = await api.get(`/groups/${groupId}/statistics`, {
     params: {
       ...(year ? { year } : {}),

@@ -66,7 +66,8 @@ export const useAcceptFriendRequestMutation = (options?: Options) => {
   const qc = useQueryClient();
 
   return useMutation<TFriendRequestDto, unknown, { requestId: number }>({
-    mutationFn: ({ requestId }) => api.post(`/friend-requests/${requestId}/accept`).then((r) => r.data),
+    mutationFn: ({ requestId }) =>
+      api.post(`/friend-requests/${requestId}/accept`).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["friendRequests", "incoming"] });
       qc.invalidateQueries({ queryKey: ["friends"] });
@@ -79,11 +80,11 @@ export const useRejectFriendRequestMutation = (options?: Options) => {
   const qc = useQueryClient();
 
   return useMutation<TFriendRequestDto, unknown, { requestId: number }>({
-    mutationFn: ({ requestId }) => api.post(`/friend-requests/${requestId}/reject`).then((r) => r.data),
+    mutationFn: ({ requestId }) =>
+      api.post(`/friend-requests/${requestId}/reject`).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["friendRequests", "incoming"] });
       options?.onSuccess?.();
     },
   });
 };
-

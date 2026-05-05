@@ -6,4 +6,3 @@ export type TFriendDto = {
   /** Group created for the friendship (optional, backend may provide it). */
   friendGroupId: number;
 };
-

@@ -1,223 +1,225 @@
-import {Stack, Typography, Button, StackProps} from "@mui/material";
-import {TDebt} from "../types/TDebt";
-import {useAuthStore} from "../store/authStore";
-import {TUser} from "../types/TUser";
+import { Stack, Typography, Button, StackProps } from "@mui/material";
+import { TDebt } from "../types/TDebt";
+import { useAuthStore } from "../store/authStore";
+import { TUser } from "../types/TUser";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import QrCode2Icon from '@mui/icons-material/QrCode2';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import {COLORS} from "../constants/colors";
-import {FormattedMessage, useIntl} from "react-intl";
-import {useSettleDebt} from "../hooks/useSettleDebt";
-import {QRPaymentDialog} from "./QRPaymentDialog";
-import {useState} from "react";
-import {getCurrencySymbol} from "../utils/currencyUtils";
-import {SettleModal} from "./SettleModal";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { COLORS } from "../constants/colors";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useSettleDebt } from "../hooks/useSettleDebt";
+import { QRPaymentDialog } from "./QRPaymentDialog";
+import { useState } from "react";
+import { getCurrencySymbol } from "../utils/currencyUtils";
+import { SettleModal } from "./SettleModal";
 
 type Props = {
-    userDebts: TDebt[],
-    user: TUser,
-    showActionButtons?: boolean,
-    groupId: number,
-    /** Group default currency (QR payments are currently supported only for CZK). */
-    groupCurrency?: string,
-    display?: StackProps["display"],
-    showDividers?: boolean,
-}
+  userDebts: TDebt[];
+  user: TUser;
+  showActionButtons?: boolean;
+  groupId: number;
+  /** Group default currency (QR payments are currently supported only for CZK). */
+  groupCurrency?: string;
+  display?: StackProps["display"];
+  showDividers?: boolean;
+};
 
 type DebtActionButtonsProps = {
-    debt: TDebt;
-    groupId: number;
-    groupCurrency?: string;
-    owesLine?: string;
-}
+  debt: TDebt;
+  groupId: number;
+  groupCurrency?: string;
+  owesLine?: string;
+};
 
 const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine }: DebtActionButtonsProps) => {
-    const {mutate: settleDebt, isPending: isSettleDebtPending} = useSettleDebt();
-    const [ qrModalOpen, setQrModalOpen ] = useState(false);
-    const [ settleModalOpen, setSettleModalOpen ] = useState(false);
+  const { mutate: settleDebt, isPending: isSettleDebtPending } = useSettleDebt();
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [settleModalOpen, setSettleModalOpen] = useState(false);
 
-    const onMarkPaid = () => {
-        setSettleModalOpen(true);
-    };
+  const onMarkPaid = () => {
+    setSettleModalOpen(true);
+  };
 
-    const onNotify = () => {
-        console.log("notify debt", debt.id);
-    };
+  const onNotify = () => {
+    console.log("notify debt", debt.id);
+  };
 
-    const handleSettleFromQr = () => {
-        settleDebt(
-            { debtId: debt.id, groupId },
-            {
-                onSuccess: () => setQrModalOpen(false),
-            }
-        );
-    };
-
-    const handleSettleFromModal = () => {
-        settleDebt(
-            { debtId: debt.id, groupId },
-            {
-                onSuccess: () => setSettleModalOpen(false),
-            }
-        );
-    };
-
-    return (
-        <>
-            <Stack
-                direction="row"
-                gap={2}
-                alignItems="center"
-                width={{xs: "100%", md: "auto"}}
-                justifyContent="space-around"
-            >
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={onMarkPaid}
-                    disabled={isSettleDebtPending}
-                    sx={{
-                        minWidth: 0,
-                        p: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        textTransform: "none",
-                        color: COLORS.PRIMARY
-                    }}
-                >
-                    <CheckBoxIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
-                    <Typography variant="caption">
-                        <FormattedMessage id="debts.actions.markPaid" />
-                    </Typography>
-                </Button>
-
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => setQrModalOpen(true)}
-                    sx={{
-                        minWidth: 0,
-                        p: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        textTransform: "none",
-                        color: COLORS.PRIMARY
-                    }}
-                >
-                    <QrCode2Icon sx={{ fontSize: { xs: 32, md: 20 } }} />
-                    <Typography variant="caption">
-                        <FormattedMessage id="debts.actions.generateQr" />
-                    </Typography>
-                </Button>
-
-                <Button
-                    variant="text"
-                    size="small"
-                    onClick={onNotify}
-                    sx={{
-                        minWidth: 0,
-                        p: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        textTransform: "none",
-                        color: COLORS.PRIMARY
-                    }}
-                >
-                    <NotificationsIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
-                    <Typography variant="caption">
-                        <FormattedMessage id="debts.actions.notify" />
-                    </Typography>
-                </Button>
-            </Stack>
-            <QRPaymentDialog
-                open={qrModalOpen}
-                onClose={() => {
-                    if (isSettleDebtPending) return;
-                    setQrModalOpen(false);
-                }}
-                debt={debt}
-                groupCurrency={groupCurrency}
-                onSettle={handleSettleFromQr}
-                isSettlePending={isSettleDebtPending}
-            />
-            <SettleModal
-                open={settleModalOpen}
-                onClose={() => {
-                    if (isSettleDebtPending) return;
-                    setSettleModalOpen(false);
-                }}
-                onSettle={handleSettleFromModal}
-                currency={groupCurrency}
-                isSettlePending={isSettleDebtPending}
-                owesLine={owesLine}
-            />
-        </>
+  const handleSettleFromQr = () => {
+    settleDebt(
+      { debtId: debt.id, groupId },
+      {
+        onSuccess: () => setQrModalOpen(false),
+      }
     );
+  };
+
+  const handleSettleFromModal = () => {
+    settleDebt(
+      { debtId: debt.id, groupId },
+      {
+        onSuccess: () => setSettleModalOpen(false),
+      }
+    );
+  };
+
+  return (
+    <>
+      <Stack
+        direction="row"
+        gap={2}
+        alignItems="center"
+        width={{ xs: "100%", md: "auto" }}
+        justifyContent="space-around"
+      >
+        <Button
+          variant="text"
+          size="small"
+          onClick={onMarkPaid}
+          disabled={isSettleDebtPending}
+          sx={{
+            minWidth: 0,
+            p: 0,
+            display: "flex",
+            flexDirection: "column",
+            textTransform: "none",
+            color: COLORS.PRIMARY,
+          }}
+        >
+          <CheckBoxIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
+          <Typography variant="caption">
+            <FormattedMessage id="debts.actions.markPaid" />
+          </Typography>
+        </Button>
+
+        <Button
+          variant="text"
+          size="small"
+          onClick={() => setQrModalOpen(true)}
+          sx={{
+            minWidth: 0,
+            p: 0,
+            display: "flex",
+            flexDirection: "column",
+            textTransform: "none",
+            color: COLORS.PRIMARY,
+          }}
+        >
+          <QrCode2Icon sx={{ fontSize: { xs: 32, md: 20 } }} />
+          <Typography variant="caption">
+            <FormattedMessage id="debts.actions.generateQr" />
+          </Typography>
+        </Button>
+
+        <Button
+          variant="text"
+          size="small"
+          onClick={onNotify}
+          sx={{
+            minWidth: 0,
+            p: 0,
+            display: "flex",
+            flexDirection: "column",
+            textTransform: "none",
+            color: COLORS.PRIMARY,
+          }}
+        >
+          <NotificationsIcon sx={{ fontSize: { xs: 32, md: 20 } }} />
+          <Typography variant="caption">
+            <FormattedMessage id="debts.actions.notify" />
+          </Typography>
+        </Button>
+      </Stack>
+      <QRPaymentDialog
+        open={qrModalOpen}
+        onClose={() => {
+          if (isSettleDebtPending) return;
+          setQrModalOpen(false);
+        }}
+        debt={debt}
+        groupCurrency={groupCurrency}
+        onSettle={handleSettleFromQr}
+        isSettlePending={isSettleDebtPending}
+      />
+      <SettleModal
+        open={settleModalOpen}
+        onClose={() => {
+          if (isSettleDebtPending) return;
+          setSettleModalOpen(false);
+        }}
+        onSettle={handleSettleFromModal}
+        currency={groupCurrency}
+        isSettlePending={isSettleDebtPending}
+        owesLine={owesLine}
+      />
+    </>
+  );
 };
 
 export const DebtsList = ({
-        userDebts,
-        user,
-        showActionButtons = false,
-        groupId,
-        groupCurrency,
-        display,
-    }: Props) => {
-    const intl = useIntl();
-    const currentUserId = useAuthStore((s) => s.currentUser.id);
-    const currencySymbol = getCurrencySymbol(groupCurrency);
+  userDebts,
+  user,
+  showActionButtons = false,
+  groupId,
+  groupCurrency,
+  display,
+}: Props) => {
+  const intl = useIntl();
+  const currentUserId = useAuthStore((s) => s.currentUser.id);
+  const currencySymbol = getCurrencySymbol(groupCurrency);
 
-    if (userDebts.length === 0) {
-        const isCurrentUser = user.id === currentUserId;
-        const name = `${user.firstName ?? ""}`.trim();
-        return (
-            <Typography variant="body1" sx={{display}}>
-                <FormattedMessage
-                    id="debts.settled"
-                    values={{ isCurrentUser, name }}
-                />
-            </Typography>
-        );
-    }
-
+  if (userDebts.length === 0) {
+    const isCurrentUser = user.id === currentUserId;
+    const name = `${user.firstName ?? ""}`.trim();
     return (
-        <Stack gap={1} sx={{display}}>
-            {userDebts.map(debt => {
-                const debtorIsCurrent = debt.debtor.id === currentUserId;
-                const creditorIsCurrent = debt.creditor.id === currentUserId;
-
-                const debtorName = (debt.debtor.firstName ?? debt.debtor.email ?? "").trim();
-                const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
-
-                const translatedMessage = intl.formatMessage(
-                    { id: "debts.owesLine" },
-                    {
-                        debtorIsCurrent,
-                        creditorIsCurrent,
-                        debtorName,
-                        creditorName,
-                        amount: debt.amount.toFixed(2),
-                        currencySymbol,
-                    }
-                );
-
-                return (
-                    <Stack
-                        direction={{xs: "column", md: "row"}}
-                        alignItems={{xs: "start", md: "center"}}
-                        justifyContent={{xs: "space-between", md: "space-between"}}
-                        key={debt.id}
-                        gap={2}
-                    >
-                        <Typography variant="body1" color={COLORS.PRIMARY}>
-                            {translatedMessage}
-                        </Typography>
-                        {showActionButtons &&
-                            <DebtActionButtons debt={debt} groupId={groupId} groupCurrency={groupCurrency} owesLine={translatedMessage}/>
-                        }
-                    </Stack>
-                );
-            })}
-        </Stack>
+      <Typography variant="body1" sx={{ display }}>
+        <FormattedMessage id="debts.settled" values={{ isCurrentUser, name }} />
+      </Typography>
     );
-}
+  }
+
+  return (
+    <Stack gap={1} sx={{ display }}>
+      {userDebts.map((debt) => {
+        const debtorIsCurrent = debt.debtor.id === currentUserId;
+        const creditorIsCurrent = debt.creditor.id === currentUserId;
+
+        const debtorName = (debt.debtor.firstName ?? debt.debtor.email ?? "").trim();
+        const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
+
+        const translatedMessage = intl.formatMessage(
+          { id: "debts.owesLine" },
+          {
+            debtorIsCurrent,
+            creditorIsCurrent,
+            debtorName,
+            creditorName,
+            amount: debt.amount.toFixed(2),
+            currencySymbol,
+          }
+        );
+
+        return (
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            alignItems={{ xs: "start", md: "center" }}
+            justifyContent={{ xs: "space-between", md: "space-between" }}
+            key={debt.id}
+            gap={2}
+          >
+            <Typography variant="body1" color={COLORS.PRIMARY}>
+              {translatedMessage}
+            </Typography>
+            {showActionButtons && (
+              <DebtActionButtons
+                debt={debt}
+                groupId={groupId}
+                groupCurrency={groupCurrency}
+                owesLine={translatedMessage}
+              />
+            )}
+          </Stack>
+        );
+      })}
+    </Stack>
+  );
+};

@@ -1,10 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Dialog, DialogContent, IconButton, Stack, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { FormattedMessage, useIntl } from "react-intl";
 import { COLORS } from "../constants/colors";
@@ -17,12 +11,7 @@ type Props = {
   onErrorMessage?: (msg: string) => void;
 };
 
-export function FriendRequestsModal({
-  open,
-  onClose,
-  onSuccessMessage,
-  onErrorMessage,
-}: Props) {
+export function FriendRequestsModal({ open, onClose, onSuccessMessage, onErrorMessage }: Props) {
   const intl = useIntl();
 
   return (
@@ -48,10 +37,7 @@ export function FriendRequestsModal({
       <DialogContent>
         <Stack spacing={2} sx={{ color: COLORS.PRIMARY }}>
           <Typography variant="h6" fontWeight={700}>
-            <FormattedMessage
-              id="friends.requests.manageTitle"
-              defaultMessage="Friend requests"
-            />
+            <FormattedMessage id="friends.requests.manageTitle" defaultMessage="Friend requests" />
           </Typography>
 
           <FriendRequestsPanel
