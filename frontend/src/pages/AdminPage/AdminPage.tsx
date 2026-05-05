@@ -1,9 +1,7 @@
 import {
   Box,
   CircularProgress,
-  FormControlLabel,
-  Paper,
-  Switch,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -12,19 +10,15 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useMemo, useState } from "react";
 import { Page404 } from "../Page404";
 import {
   useAdminGroupsQuery,
   useAdminQuery,
   useAdminUsersQuery,
 } from "../../hooks/useAdminQuery";
-
-type ViewMode = "groups" | "users";
+import {FormattedMessage} from "react-intl";
 
 export const AdminPage = () => {
-  const [mode, setMode] = useState<ViewMode>("groups");
-
   const {
     data: probe,
     isLoading: probeLoading,
@@ -37,112 +31,103 @@ export const AdminPage = () => {
     data: groups,
     isLoading: groupsLoading,
     isError: groupsError,
-  } = useAdminGroupsQuery(!isForbidden && mode === "groups");
+  } = useAdminGroupsQuery(!isForbidden);
 
   const {
     data: users,
     isLoading: usersLoading,
     isError: usersError,
-  } = useAdminUsersQuery(!isForbidden && mode === "users");
+  } = useAdminUsersQuery(!isForbidden);
 
-  const isLoading = probeLoading || (mode === "groups" ? groupsLoading : usersLoading);
-  const isError = probeError || (mode === "groups" ? groupsError : usersError);
-
-  const rows = useMemo(() => {
-    if (mode === "groups") {
-      return (groups ?? []).map((g) => ({ key: `g-${g.id}`, label: g.name }));
-    }
-
-    return (users ?? []).map((u) => ({
-      key: `u-${u.id}`,
-      label: `${u.firstName} ${u.lastName}`.trim(),
-    }));
-  }, [groups, mode, users]);
+  const isLoading = probeLoading || groupsLoading || usersLoading;
+  const isError = probeError || groupsError || usersError;
 
   if (isForbidden) return <Page404 />;
 
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          py: 10,
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <Stack gap={2} sx={{ py: 4 }}>
+          <Typography variant="h4" fontWeight={700}>
+              <FormattedMessage id="admin.title" />
+          </Typography>
+          <CircularProgress />
+      </Stack>
     );
   }
 
   if (isError) {
     return (
-      <Box sx={{ width: "100%", py: 10 }}>
+      <Stack gap={2} sx={{ py: 4 }}>
         <Typography variant="h4" fontWeight={700}>
-          Admin
+          <FormattedMessage id="admin.title" />
         </Typography>
-        <Typography sx={{ mt: 1 }} color="text.secondary">
-          Failed to load admin endpoints.
+        <Typography>
+            <FormattedMessage id="admin.error" />
         </Typography>
-      </Box>
+      </Stack>
     );
   }
 
   return (
-    <Box sx={{ width: "100%", py: 4 }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 2,
-          mb: 2,
-        }}
-      >
+    <Stack sx={{ py: 4 }} gap={5}>
         <Typography variant="h4" fontWeight={700}>
-          Admin Dashboard
+          <FormattedMessage id="admin.title" />
         </Typography>
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={mode === "users"}
-              onChange={(_, checked) => setMode(checked ? "users" : "groups")}
-            />
-          }
-          label={mode === "users" ? "Users" : "Groups"}
-        />
-      </Box>
+        <Stack direction="row" gap={20} justifyContent="space-between">
+            <Stack width="100%" gap={1}>
+              <Typography variant="h5" fontWeight={600}>
+                <FormattedMessage id="admin.groups" />
+              </Typography>
+              <TableContainer component={Box}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        <FormattedMessage id="admin.group.name" />
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {(groups ?? []).map((g) => (
+                      <TableRow key={g.id}>
+                        <TableCell>{g.name}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Stack>
 
-      <TableContainer component={Paper} variant="outlined">
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 800 }}>
-                {mode === "groups" ? "Group" : "User"}
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((r) => (
-              <TableRow key={r.key}>
-                <TableCell>{r.label || "—"}</TableCell>
-              </TableRow>
-            ))}
-
-            {rows.length === 0 && (
-              <TableRow>
-                <TableCell sx={{ color: "text.secondary" }}>
-                  No {mode} found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+            <Stack width="100%" gap={1}>
+                <Typography variant="h5" fontWeight={600}>
+                    <FormattedMessage id="admin.users" />
+                </Typography>
+                <TableContainer component={Box}>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 600 }}>
+                                    <FormattedMessage id="admin.user.name" />
+                                </TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>
+                                    <FormattedMessage id="admin.user.email" />
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {(users ?? []).map((u) => (
+                                <TableRow key={u.id}>
+                                    <TableCell>{u.firstName + u.lastName}</TableCell>
+                                    <TableCell>{u.email}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Stack>
+        </Stack>
+    </Stack>
   );
 };
 
-export default AdminPage;

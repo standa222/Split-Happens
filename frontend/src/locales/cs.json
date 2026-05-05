@@ -309,5 +309,24 @@
 
   "friends.detail.subtitle": "Vyúčtování s přítelem",
   "friends.detail.loading": "Načítám...",
-  "friends.detail.error": "Nepodařilo se načíst detail přítele."
+  "friends.detail.error": "Nepodařilo se načíst detail přítele.",
+
+  "admin.title": "Nástěnka administrátora",
+  "admin.error": "Chyba při načítání dat.",
+  "admin.loading": "Načítání dat...",
+  "admin.users": "Uživatelé",
+  "admin.groups": "Skupiny",
+  "admin.group.name": "Jméno skupiny",
+  "admin.group.delete.confirmation": "Opravdu chcete smazat skupinu '{groupName}'? Tuto akci nelze vzít zpět.",
+  "admin.group.delete.action": "Smazat skupinu",
+  "admin.group.delete.deleting": "Mažu...",
+  "admin.group.delete.success": "Skupina úspěšně smazána.",
+  "admin.group.delete.unsettled": "Nelze smazat nevyrovnanou skupinu (dluhy musí být urovnány).",
+  "admin.user.name": "Jméno",
+  "admin.user.email": "Email",
+  "admin.user.delete.confirmation": "Opravdu chcete smazat uživatele '{userName}'? Tuto akci nelze vzít zpět.",
+  "admin.user.delete.action": "Smazat uživatele",
+  "admin.user.delete.deleting": "Mažu...",
+  "admin.user.delete.success": "Uživatel úspěšně smazán.",
+  "admin.user.delete.unsettled": "Nelze smazat nevyrovnaného uživatele (dluhy musí být urovnány)."
 }
