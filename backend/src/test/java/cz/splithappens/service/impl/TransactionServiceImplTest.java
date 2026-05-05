@@ -31,8 +31,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,23 +53,32 @@ class TransactionServiceImplTest {
     @Mock private SettlementEngine settlementEngine;
     @Mock private SplitComputationStrategyFactory strategyFactory;
     @Mock private SplitComputationStrategy mockStrategy;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private TransactionServiceImpl transactionService;
     @Captor private ArgumentCaptor<Transaction> transactionCaptor;
 
     private static final Long G_ID = 1L;
     private Group testGroup;
+    private User user1;
+    private User user2;
 
     @BeforeEach
     void setUp() {
-        testGroup = group(G_ID, Currency.CZK);
+        testGroup = Group.builder()
+                .id(G_ID)
+                .name("Test Group")
+                .build();
+
+        user1 = user(1L);
+        user2 = user(2L);
     }
 
     @ParameterizedTest
     @EnumSource(value = TransactionSplitMode.class, names = {"FIXED", "PERCENTAGE", "PARTIAL"})
     void createTransaction_variousModes_computesCorrectAmounts(TransactionSplitMode mode) {
         when(groupRepository.findById(G_ID)).thenReturn(Optional.of(testGroup));
-        when(userRepository.findAllById(any())).thenReturn(List.of(user(1L), user(2L)));
+        when(userRepository.findAllById(any())).thenReturn(List.of(user1, user2));
         when(strategyFactory.get(mode)).thenReturn(mockStrategy);
         when(mockStrategy.computeAmounts(anyList(), any())).thenReturn(List.of(new BigDecimal("60.00"), new BigDecimal("40.00")));
 
@@ -79,7 +90,7 @@ class TransactionServiceImplTest {
         when(transactionRepository.save(any())).thenAnswer(i -> i.getArgument(0));
         when(transactionMapper.toDto(any())).thenReturn(new TransactionDto());
 
-        transactionService.createTransaction(dto);
+        transactionService.createTransaction(dto, null);
 
         verify(transactionRepository).save(transactionCaptor.capture());
         Transaction saved = transactionCaptor.getValue();
@@ -94,7 +105,7 @@ class TransactionServiceImplTest {
         TransactionCreateDto dto = createBaseDto(TransactionSplitMode.FIXED);
         when(groupRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+        assertThatThrownBy(() -> transactionService.createTransaction(dto, null))
                 .isInstanceOf(GroupNotFoundException.class);
     }
 
@@ -106,7 +117,7 @@ class TransactionServiceImplTest {
         TransactionCreateDto dto = createBaseDto(TransactionSplitMode.FIXED);
         dto.setCurrency(Currency.CZK);
 
-        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+        assertThatThrownBy(() -> transactionService.createTransaction(dto, null))
                 .isInstanceOf(BadRequestException.class);
     }
 
@@ -118,7 +129,7 @@ class TransactionServiceImplTest {
         dto.setPaidBy(List.of());
         dto.setSplitBetween(List.of());
 
-        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+        assertThatThrownBy(() -> transactionService.createTransaction(dto, null))
                 .isInstanceOf(BadRequestException.class);
     }
 
@@ -130,20 +141,20 @@ class TransactionServiceImplTest {
         dto.setPaidBy(List.of(split(1L, "60"), split(2L, "40")));
         dto.setSplitBetween(List.of(split(1L, "60"), split(2L, "40")));
 
-        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+        assertThatThrownBy(() -> transactionService.createTransaction(dto, null))
                 .isInstanceOf(BadRequestException.class);
     }
 
     @Test
     void createTransaction_userInSplitsNotFound_throws() {
         when(groupRepository.findById(G_ID)).thenReturn(Optional.of(testGroup));
-        when(userRepository.findAllById(any())).thenReturn(List.of(user(1L))); // missing user 2
+        when(userRepository.findAllById(any())).thenReturn(List.of(user1)); // missing user 2
 
         TransactionCreateDto dto = createBaseDto(TransactionSplitMode.FIXED);
         dto.setPaidBy(List.of(split(1L, "60"), split(2L, "40")));
         dto.setSplitBetween(List.of(split(1L, "60"), split(2L, "40")));
 
-        assertThatThrownBy(() -> transactionService.createTransaction(dto))
+        assertThatThrownBy(() -> transactionService.createTransaction(dto, null))
                 .isInstanceOf(UserNotFoundException.class);
     }
 
@@ -216,10 +227,10 @@ class TransactionServiceImplTest {
         Transaction existing = new Transaction();
         existing.setId(txId);
         existing.setGroup(spyGroup);
-        existing.setItems(new java.util.ArrayList<>(List.of(createItem(999L, "1.00", true))));
+        existing.setItems(new ArrayList<>(List.of(createItem(999L, "1.00", true))));
 
         when(transactionRepository.findById(txId)).thenReturn(Optional.of(existing));
-        when(userRepository.findAllById(any())).thenReturn(List.of(user(1L), user(2L)));
+        when(userRepository.findAllById(any())).thenReturn(List.of(user1, user2));
         when(strategyFactory.get(TransactionSplitMode.FIXED)).thenReturn(mockStrategy);
         when(mockStrategy.computeAmounts(anyList(), any()))
                 .thenReturn(List.of(new BigDecimal("60.00"), new BigDecimal("40.00")))
@@ -306,13 +317,6 @@ class TransactionServiceImplTest {
         User u = new User();
         u.setId(id);
         return u;
-    }
-
-    private Group group(Long id, Currency currency) {
-        Group g = new Group();
-        g.setId(id);
-        g.setDefaultCurrency(currency);
-        return g;
     }
 
     private TransactionSplitCreateDto split(Long userId, String val) {

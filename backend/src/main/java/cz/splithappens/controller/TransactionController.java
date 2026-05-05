@@ -2,6 +2,7 @@ package cz.splithappens.controller;
 
 import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.security.CustomUserDetails;
 import cz.splithappens.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,8 +40,11 @@ public class TransactionController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the transaction"),
             @ApiResponse(responseCode = "404", description = "Group not found")
     })
-    public ResponseEntity<TransactionDto> createTransaction(@RequestBody @Valid TransactionCreateDto createDto) {
-        return ResponseEntity.ok(transactionService.createTransaction(createDto));
+    public ResponseEntity<TransactionDto> createTransaction(
+            @RequestBody @Valid TransactionCreateDto createDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(transactionService.createTransaction(createDto, userDetails.getUser()));
     }
 
     @PutMapping("/{transactionId}")

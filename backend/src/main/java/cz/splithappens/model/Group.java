@@ -25,6 +25,7 @@ public class Group {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private Currency defaultCurrency = Currency.CZK;
 
