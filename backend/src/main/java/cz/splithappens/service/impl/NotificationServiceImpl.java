@@ -73,6 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
         params.put("creator", event.creator().getFirstName());
         params.put("group", event.group().getName());
         params.put("amount", event.transaction().getTotalAmount().toString());
+        params.put("currency", event.transaction().getCurrency().toString());
 
         for (User member : group.getMembers()) {
             if (member.getId().equals(event.creator().getId())) {
@@ -103,6 +104,7 @@ public class NotificationServiceImpl implements NotificationService {
         params.put("creditor", event.creditor().getFirstName());
         params.put("group", event.group().getName());
         params.put("amount", event.payment().getTotalAmount().toString());
+        params.put("currency", event.payment().getCurrency().toString());
 
         if (!event.settler().getId().equals(event.debtor().getId())) {
             toSave.add(Notification.builder()

@@ -8,6 +8,7 @@ import cz.splithappens.model.Group;
 import cz.splithappens.model.Notification;
 import cz.splithappens.model.Transaction;
 import cz.splithappens.model.User;
+import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.NotificationType;
 import cz.splithappens.repository.NotificationRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,7 +102,7 @@ class NotificationServiceImplTest {
     void onExpenseAdded_persistsNotificationForAllMembersExceptActor() {
         Transaction transaction = new Transaction();
         transaction.setTotalAmount(BigDecimal.TEN);
-
+        transaction.setCurrency(Currency.CZK);
         notificationService.onExpenseAdded(new ExpenseAddedEvent(group, transaction, actor));
 
         ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
@@ -124,6 +125,7 @@ class NotificationServiceImplTest {
     void onDebtSettled_persistsNotificationForBothParties() {
         Transaction payment = new Transaction();
         payment.setTotalAmount(BigDecimal.TEN);
+        payment.setCurrency(Currency.CZK);
         notificationService.onDebtSettled(new DebtSettledEvent(group, payment, actor, member2, member3));
 
         ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
@@ -146,6 +148,7 @@ class NotificationServiceImplTest {
     void onDebtSettled_persistsNotificationCreditorOnly() {
         Transaction payment = new Transaction();
         payment.setTotalAmount(BigDecimal.TEN);
+        payment.setCurrency(Currency.CZK);
         notificationService.onDebtSettled(new DebtSettledEvent(group, payment, member2, member2, member3));
 
         ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
