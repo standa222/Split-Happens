@@ -1,15 +1,15 @@
-import {ReactNode} from "react";
-import {TNotification, TNotificationType} from "../types/dto/TNotification";
-import {FormattedMessage} from "react-intl";
+import { ReactNode } from "react";
+import { TNotification, TNotificationType } from "../types/dto/TNotification";
+import { FormattedMessage } from "react-intl";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import GroupIcon from '@mui/icons-material/Group';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import HandshakeIcon from '@mui/icons-material/Handshake';
-import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import GroupIcon from "@mui/icons-material/Group";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import HandshakeIcon from "@mui/icons-material/Handshake";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import logo from "../assets/logo_dark.png";
 import { Box } from "@mui/material";
-import {formatMoneyWithSymbol} from "./currencyUtils";
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import { formatMoneyWithSymbol } from "./currencyUtils";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 
 export function extractNotificationMessage(notification: TNotification): ReactNode {
   const intlId = mapNotificationTypeToIntlId(notification.notificationType);
@@ -19,19 +19,11 @@ export function extractNotificationMessage(notification: TNotification): ReactNo
   if (parameters.amount !== undefined) {
     const numericAmount = Number(parameters.amount);
     if (!isNaN(numericAmount)) {
-      parameters.amount = formatMoneyWithSymbol(
-        numericAmount,
-        parameters.currency
-      );
+      parameters.amount = formatMoneyWithSymbol(numericAmount, parameters.currency);
     }
   }
 
-  return (
-    <FormattedMessage
-      id={intlId}
-      values={parameters}
-    />
-  );
+  return <FormattedMessage id={intlId} values={parameters} />;
 }
 
 const NOTIFICATION_ID_MAP: Record<TNotificationType, string> = {
@@ -46,7 +38,6 @@ const NOTIFICATION_ID_MAP: Record<TNotificationType, string> = {
 function mapNotificationTypeToIntlId(type: TNotificationType): string {
   return NOTIFICATION_ID_MAP[type] ?? "notifications.unknown";
 }
-
 
 const NOTIFICATION_LINK_MAP: Record<TNotificationType, (id?: number) => string> = {
   EXPENSE_ADDED: (id) => `/groups/${id}`,

@@ -23,8 +23,8 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useAuthStore } from "../store/authStore";
 import { FormattedMessage } from "react-intl";
 import { useLocaleStore } from "../store/localeStore";
-import {useUnreadNotificationsCountQuery} from "../hooks/useNotifications";
-import {NotificationsDrawer} from "./NotificationsDrawer";
+import { useUnreadNotificationsCountQuery } from "../hooks/useNotifications";
+import { NotificationsDrawer } from "./NotificationsDrawer";
 
 type BellIconProps = {
   onClick: () => void;

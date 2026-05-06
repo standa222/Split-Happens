@@ -5,11 +5,15 @@ import { COLORS } from "../../constants/colors";
 import { useMemo, useState } from "react";
 import { AppSnackbar } from "../../components/AppSnackbar";
 import { ImageAvatar } from "../../components/ImageAvatar";
-import {useFriendsQuery, useIncomingFriendRequestsQuery, useRemoveFriendMutation} from "../../hooks/useFriends";
+import {
+  useFriendsQuery,
+  useIncomingFriendRequestsQuery,
+  useRemoveFriendMutation,
+} from "../../hooks/useFriends";
 import { FriendRequestsModal } from "../../components/FriendRequestsModal";
 import { NavLink } from "react-router-dom";
 import { ROUTES } from "../../enums/routes";
-import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 
 export const FriendsPage = () => {
   const intl = useIntl();
@@ -36,7 +40,7 @@ export const FriendsPage = () => {
           defaultMessage: "Friend removed successfully.",
         }),
       });
-    }
+    },
   });
 
   return (
@@ -158,7 +162,9 @@ export const FriendsPage = () => {
                       color: COLORS.RED,
                     }}
                   >
-                    <PersonRemoveIcon sx={{ width: { xs: 20, md: 40 }, height: { xs: 20, md: 40 } }} />
+                    <PersonRemoveIcon
+                      sx={{ width: { xs: 20, md: 40 }, height: { xs: 20, md: 40 } }}
+                    />
                   </IconButton>
                 </Stack>
               ))}

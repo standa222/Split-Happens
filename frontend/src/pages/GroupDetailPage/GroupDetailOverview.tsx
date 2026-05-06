@@ -13,8 +13,8 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { compressToWebp } from "../../utils/imageUtils";
 import { useUploadGroupImage } from "../../hooks/useUploadGroupImage";
 import { useIntl } from "react-intl";
-import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import GroupRemoveIcon from '@mui/icons-material/GroupRemove';
+import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import GroupRemoveIcon from "@mui/icons-material/GroupRemove";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {

@@ -2,9 +2,8 @@ import { Typography, Stack, Box } from "@mui/material";
 import { ImagePlaceholder } from "../../components/ImagePlaceholder";
 import { COLORS } from "../../constants/colors";
 import { FormattedMessage } from "react-intl";
-import {NotificationItem} from "../../components/NotificationsDrawer";
-import {useLatestNotificationsQuery} from "../../hooks/useNotifications";
-
+import { NotificationItem } from "../../components/NotificationsDrawer";
+import { useLatestNotificationsQuery } from "../../hooks/useNotifications";
 
 export function RecentActivity() {
   const { data: activity, isLoading, isError } = useLatestNotificationsQuery();
@@ -18,9 +17,7 @@ export function RecentActivity() {
       <FormattedMessage id="home.activity.error" />
     </Typography>
   ) : (
-    activity.map((n) => (
-      <NotificationItem  key={n.id} notification={n} isNotification={false}/>
-    ))
+    activity.map((n) => <NotificationItem key={n.id} notification={n} isNotification={false} />)
   );
   return (
     <Stack>

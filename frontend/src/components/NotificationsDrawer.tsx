@@ -8,41 +8,49 @@ import {
   ListItem,
   Stack,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
-import DoneAllIcon from '@mui/icons-material/DoneAll';
-import CheckIcon from '@mui/icons-material/Check';
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import CheckIcon from "@mui/icons-material/Check";
 import { useNotificationsQuery } from "../hooks/useNotifications";
 import { FormattedMessage } from "react-intl";
 import { TNotification } from "../types/dto/TNotification";
-import {extractNotificationIcon, extractNotificationLink, extractNotificationMessage} from "../utils/notificationUtils";
+import {
+  extractNotificationIcon,
+  extractNotificationLink,
+  extractNotificationMessage,
+} from "../utils/notificationUtils";
 import {
   useMarkAllAsReadMutation,
-  useMarkNotificationAsReadMutation
+  useMarkNotificationAsReadMutation,
 } from "../hooks/useNotifications"; // Adjust path accordingly
 import { COLORS } from "../constants/colors";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CloseIcon from "@mui/icons-material/Close";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-}
+};
 
 type NotificationsContentProps = {
   notifications: TNotification[] | undefined;
   isLoading: boolean;
   isError: boolean;
   onClose: () => void;
-}
+};
 
 type NotificationItemProps = {
   notification: TNotification;
   isNotification: boolean;
   onClose?: () => void;
-}
+};
 
-export const NotificationItem = ({ notification, onClose, isNotification }: NotificationItemProps) => {
+export const NotificationItem = ({
+  notification,
+  onClose,
+  isNotification,
+}: NotificationItemProps) => {
   const message = extractNotificationMessage(notification);
   const link = extractNotificationLink(notification);
   const { mutate: markAsRead } = useMarkNotificationAsReadMutation();
@@ -54,7 +62,7 @@ export const NotificationItem = ({ notification, onClose, isNotification }: Noti
       markAsRead(notification.id);
     }
     onClose();
-  }
+  };
 
   return (
     <>
@@ -62,18 +70,21 @@ export const NotificationItem = ({ notification, onClose, isNotification }: Noti
         onClick={handleItemClick}
         sx={{
           color: COLORS.PRIMARY,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           py: 2,
           px: 2,
-          cursor: 'pointer',
+          cursor: "pointer",
           gap: 2,
-          '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.02)' }
+          "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.02)" },
         }}
       >
         {extractNotificationIcon(notification)}
-        <Typography variant="body1" sx={{ flex: 1, pr: 1, fontWeight: (notification.read || !isNotification) ? 400 : 600 }}>
+        <Typography
+          variant="body1"
+          sx={{ flex: 1, pr: 1, fontWeight: notification.read || !isNotification ? 400 : 600 }}
+        >
           {message}
         </Typography>
 
@@ -91,10 +102,15 @@ export const NotificationItem = ({ notification, onClose, isNotification }: Noti
       </ListItem>
       <Divider />
     </>
-  )
-}
+  );
+};
 
-const NotificationsContent = ({ notifications, isLoading, isError, onClose }: NotificationsContentProps) => {
+const NotificationsContent = ({
+  notifications,
+  isLoading,
+  isError,
+  onClose,
+}: NotificationsContentProps) => {
   if (isLoading) {
     return (
       <Stack alignItems="center" spacing={2} sx={{ mt: 4 }}>
@@ -103,27 +119,32 @@ const NotificationsContent = ({ notifications, isLoading, isError, onClose }: No
           <FormattedMessage id="notifications.loading" />
         </Typography>
       </Stack>
-    )
+    );
   }
 
   if (isError || !notifications || notifications.length === 0) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
+      <Box sx={{ p: 4, textAlign: "center" }}>
         <Typography variant="body2" color="text.secondary">
           <FormattedMessage id={isError ? "notifications.error" : "notifications.empty"} />
         </Typography>
       </Box>
-    )
+    );
   }
 
   return (
     <List sx={{ p: 0 }}>
       {notifications.map((notification: TNotification) => (
-        <NotificationItem key={notification.id} notification={notification} onClose={onClose} isNotification={true}/>
+        <NotificationItem
+          key={notification.id}
+          notification={notification}
+          onClose={onClose}
+          isNotification={true}
+        />
       ))}
     </List>
-  )
-}
+  );
+};
 
 export const NotificationsDrawer = ({ open, onClose }: Props) => {
   const { data: notifications, isLoading, isError } = useNotificationsQuery();
@@ -137,17 +158,23 @@ export const NotificationsDrawer = ({ open, onClose }: Props) => {
       slotProps={{
         paper: {
           sx: {
-            width: { xs: '100%', sm: 500 },
+            width: { xs: "100%", sm: 500 },
             backgroundColor: COLORS.SECONDARY,
-            borderLeft: `5px solid ${COLORS.PRIMARY}`
-          }
-        }
+            borderLeft: `5px solid ${COLORS.PRIMARY}`,
+          },
+        },
       }}
     >
-      <Box sx={{ py: 1, px: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <IconButton
-          onClick={onClose}
-        >
+      <Box
+        sx={{
+          py: 1,
+          px: 0.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <IconButton onClick={onClose}>
           <CloseIcon />
         </IconButton>
         <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 700, flex: 1 }}>
@@ -171,7 +198,7 @@ export const NotificationsDrawer = ({ open, onClose }: Props) => {
       <Divider sx={{ borderBottomWidth: 2, borderColor: COLORS.PRIMARY }} />
 
       {/* Content */}
-      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+      <Box sx={{ flex: 1, overflowY: "auto" }}>
         <NotificationsContent
           notifications={notifications}
           isLoading={isLoading}
@@ -180,5 +207,5 @@ export const NotificationsDrawer = ({ open, onClose }: Props) => {
         />
       </Box>
     </Drawer>
-  )
-}
+  );
+};
