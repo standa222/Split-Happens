@@ -7,14 +7,14 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import { ChangeEvent, useRef, useState } from "react";
 import { GroupFormModal } from "../../components/GroupFormModal";
 import { AddExpenseButton } from "../../components/AddExpenseButton";
-import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import { LeaveGroupModal } from "../../components/LeaveGroupModal";
 import { ImageAvatar } from "../../components/ImageAvatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { compressToWebp } from "../../utils/imageUtils";
 import { useUploadGroupImage } from "../../hooks/useUploadGroupImage";
 import { useIntl } from "react-intl";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import GroupRemoveIcon from '@mui/icons-material/GroupRemove';
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 
 export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
@@ -161,10 +161,10 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
             <SettingsIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
           </IconButton>
           <IconButton onClick={() => setEditGroupModalOpen(true)}>
-            <PersonAddAlt1Icon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
+            <GroupAddIcon sx={{ fontSize: 40, color: COLORS.PRIMARY }} />
           </IconButton>
           <IconButton onClick={() => setLeaveGroupModalOpen(true)}>
-            <PersonRemoveIcon sx={{ fontSize: 40, color: COLORS.RED }} />
+            <GroupRemoveIcon sx={{ fontSize: 40, color: COLORS.RED }} />
           </IconButton>
         </Stack>
       </Stack>
@@ -215,10 +215,10 @@ export const GroupDetailOverview = ({ group }: { group: TGroupDetail }) => {
               <SettingsIcon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
             </IconButton>
             <IconButton onClick={() => setEditGroupModalOpen(true)}>
-              <PersonAddAlt1Icon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
+              <GroupAddIcon sx={{ fontSize: 24, color: COLORS.PRIMARY }} />
             </IconButton>
             <IconButton onClick={() => setLeaveGroupModalOpen(true)}>
-              <PersonRemoveIcon sx={{ fontSize: 24, color: COLORS.RED }} />
+              <GroupRemoveIcon sx={{ fontSize: 24, color: COLORS.RED }} />
             </IconButton>
           </Stack>
         </Stack>

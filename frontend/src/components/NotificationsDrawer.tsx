@@ -1,8 +1,27 @@
-import {CircularProgress, Drawer, Typography} from "@mui/material"
-import {useNotificationsQuery} from "../hooks/useNotifications";
-import {FormattedMessage} from "react-intl";
-import {TNotification} from "../types/dto/TNotification";
-import {extractNotificationMessage} from "../utils/notificationMessageUtils";
+import {
+  Box,
+  CircularProgress,
+  Divider,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  Stack,
+  Tooltip,
+  Typography
+} from "@mui/material";
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import CheckIcon from '@mui/icons-material/Check';
+import { useNotificationsQuery } from "../hooks/useNotifications";
+import { FormattedMessage } from "react-intl";
+import { TNotification } from "../types/dto/TNotification";
+import {extractNotificationIcon, extractNotificationLink, extractNotificationMessage} from "../utils/notificationUtils";
+import {
+  useMarkAllAsReadMutation,
+  useMarkNotificationAsReadMutation
+} from "../hooks/useNotifications"; // Adjust path accordingly
+import { COLORS } from "../constants/colors";
+import {useNavigate} from "react-router-dom";
 
 type Props = {
   open: boolean;
@@ -13,75 +32,147 @@ type NotificationsContentProps = {
   notifications: TNotification[] | undefined;
   isLoading: boolean;
   isError: boolean;
+  onClose: () => void;
 }
 
-const NotificationItem = ({ notification }: { notification: TNotification }) => {
+type NotificationItemProps = {
+  notification: TNotification;
+  onClose: () => void;
+}
+
+const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {
   const message = extractNotificationMessage(notification);
+  const link = extractNotificationLink(notification);
+  const { mutate: markAsRead } = useMarkNotificationAsReadMutation();
+  const navigate = useNavigate();
 
-  return (
-    <Typography sx={{ py: 1 }}>
-      {message}
-    </Typography>
-  )
-}
-
-const NotificationsContent = ({ notifications, isLoading, isError }: NotificationsContentProps) => {
-  console.log("content", notifications);
-  if (isLoading) {
-    return (
-      <>
-        <Typography>
-          <FormattedMessage id="notifications.loading" />
-        </Typography>
-        <CircularProgress color="inherit" size={20} />
-      </>
-    )
+  const handleItemClick = () => {
+    navigate(link);
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    onClose();
   }
-  console.log("not loading", notifications);
-
-  if (isError) {
-    return (
-      <Typography color="error">
-        <FormattedMessage id="notifications.error" />
-      </Typography>
-    )
-  }
-
-  console.log("not error", notifications);
-
-  if (!notifications || notifications.length === 0) {
-    return (
-      <Typography>
-        <FormattedMessage id="notifications.empty" />
-      </Typography>
-    )
-  }
-
-  console.log("not empty", notifications);
 
   return (
     <>
-      {(notifications).map((notification) => (
-        <NotificationItem key={notification.id} notification={notification} />
-      ))}
+      <ListItem
+        onClick={handleItemClick}
+        sx={{
+          color: COLORS.PRIMARY,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          py: 2,
+          px: 2,
+          cursor: 'pointer',
+          gap: 2,
+          '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.02)' }
+        }}
+      >
+        {extractNotificationIcon(notification)}
+        <Typography variant="body1" sx={{ flex: 1, pr: 1, fontWeight: notification.read ? 400 : 600 }}>
+          {message}
+        </Typography>
+
+        {!notification.read && (
+          <Tooltip title={<FormattedMessage id="notifications.markAsRead" />}>
+            <IconButton
+              size="small"
+              onClick={() => markAsRead(notification.id)}
+              sx={{ color: COLORS.PRIMARY, mt: -0.5 }}
+            >
+              <CheckIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
+      </ListItem>
+      <Divider component="li" />
     </>
+  )
+}
+
+const NotificationsContent = ({ notifications, isLoading, isError, onClose }: NotificationsContentProps) => {
+  if (isLoading) {
+    return (
+      <Stack alignItems="center" spacing={2} sx={{ mt: 4 }}>
+        <CircularProgress size={30} sx={{ color: COLORS.PRIMARY }} />
+        <Typography variant="body2" color="text.secondary">
+          <FormattedMessage id="notifications.loading" />
+        </Typography>
+      </Stack>
+    )
+  }
+
+  if (isError || !notifications || notifications.length === 0) {
+    return (
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="body2" color="text.secondary">
+          <FormattedMessage id={isError ? "notifications.error" : "notifications.empty"} />
+        </Typography>
+      </Box>
+    )
+  }
+
+  return (
+    <List sx={{ p: 0 }}>
+      {notifications.map((notification: TNotification) => (
+        <NotificationItem key={notification.id} notification={notification} onClose={onClose}/>
+      ))}
+    </List>
   )
 }
 
 export const NotificationsDrawer = ({ open, onClose }: Props) => {
   const { data: notifications, isLoading, isError } = useNotificationsQuery();
-  console.log("drawer", notifications);
+  const { mutate: markAllRead } = useMarkAllAsReadMutation();
 
   return (
     <Drawer
       anchor="right"
       open={open}
       onClose={onClose}
+      slotProps={{
+        paper: {
+          sx: {
+            width: { xs: '100%', sm: 500 },
+            backgroundColor: COLORS.SECONDARY,
+            borderLeft: `5px solid ${COLORS.PRIMARY}`
+          }
+        }
+      }}
     >
-      <Typography>
-        <FormattedMessage id ="notifications.title" />
-      </Typography>
-      <NotificationsContent notifications={notifications} isLoading={isLoading} isError={isError} />
+      {/* Header */}
+      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 700 }}>
+          <FormattedMessage id="notifications.title" />
+        </Typography>
+
+        <Tooltip title={<FormattedMessage id="notifications.markAllAsRead" />}>
+          <IconButton
+            onClick={() => {
+              markAllRead();
+              onClose();
+            }}
+            disabled={!notifications || notifications.length === 0}
+            sx={{ color: COLORS.PRIMARY }}
+          >
+            <DoneAllIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <Divider sx={{ borderBottomWidth: 2, borderColor: COLORS.PRIMARY }} />
+
+      {/* Content */}
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        <NotificationsContent
+          notifications={notifications}
+          isLoading={isLoading}
+          isError={isError}
+          onClose={onClose}
+        />
+      </Box>
     </Drawer>
   )
 }

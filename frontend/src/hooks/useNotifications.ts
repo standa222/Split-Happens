@@ -21,7 +21,9 @@ export const useNotificationsQuery = () => {
         queryKey: ["notifications"],
         queryFn: fetchNotifications,
         retry: false,
-        staleTime: 10_000,
+        staleTime: 0,
+        refetchInterval: 5_000,
+        refetchOnWindowFocus: true,
     });
 }
 
@@ -30,7 +32,9 @@ export const useUnreadNotificationsCountQuery = () => {
         queryKey: ["notifications", "unreadCount"],
         queryFn: fetchUnreadNotificationsCount,
         retry: false,
-        staleTime: 10_000,
+        staleTime: 0,
+        refetchInterval: 5_000,
+        refetchOnWindowFocus: true,
     });
 }
 
