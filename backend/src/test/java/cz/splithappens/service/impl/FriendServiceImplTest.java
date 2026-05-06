@@ -3,6 +3,10 @@ package cz.splithappens.service.impl;
 import cz.splithappens.dto.response.FriendDto;
 import cz.splithappens.dto.response.FriendRequestDto;
 import cz.splithappens.dto.response.UserDto;
+import cz.splithappens.event.AcceptedFriendRequestEvent;
+import cz.splithappens.event.AddedToGroupEvent;
+import cz.splithappens.event.ReceivedFriendRequestEvent;
+import cz.splithappens.event.RejectedFriendRequestEvent;
 import cz.splithappens.exception.*;
 import cz.splithappens.mapper.FriendRequestMapper;
 import cz.splithappens.mapper.UserMapper;
@@ -23,6 +27,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +46,7 @@ class FriendServiceImplTest {
     @Mock private UserRepository userRepository;
     @Mock private FriendRequestMapper friendRequestMapper;
     @Mock private UserMapper userMapper;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private FriendServiceImpl friendService;
 
@@ -162,6 +168,7 @@ class FriendServiceImplTest {
 
         verify(groupRepository, never()).save(any());
         verify(friendRepository, never()).save(any());
+        verify(eventPublisher).publishEvent(any(ReceivedFriendRequestEvent.class));
     }
 
     @Test
@@ -188,7 +195,7 @@ class FriendServiceImplTest {
                 .isInstanceOf(FriendRequestForbiddenException.class);
 
         verify(friendRequestRepository, never()).save(any());
-        verifyNoInteractions(groupRepository, friendRepository);
+        verifyNoInteractions(groupRepository, friendRepository, eventPublisher);
     }
 
     @Test
@@ -251,6 +258,8 @@ class FriendServiceImplTest {
         assertThat(links).allMatch(l -> l.getGroupId().equals(777L));
         assertThat(links).extracting(l -> l.getId().getUserId()).containsExactlyInAnyOrder(1L, 2L);
         assertThat(links).extracting(l -> l.getId().getFriendId()).containsExactlyInAnyOrder(1L, 2L);
+
+        verify(eventPublisher).publishEvent(any(AcceptedFriendRequestEvent.class));
     }
 
     @Test
@@ -303,6 +312,8 @@ class FriendServiceImplTest {
         assertThat(result).isSameAs(mapped);
         assertThat(fr.getStatus()).isEqualTo(FriendRequestStatus.REJECTED);
         assertThat(fr.getRespondedAt()).isNotNull();
+
+        verify(eventPublisher).publishEvent(any(RejectedFriendRequestEvent.class));
     }
 
     @Test

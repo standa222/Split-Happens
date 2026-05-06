@@ -2,6 +2,9 @@ package cz.splithappens.service.impl;
 
 import cz.splithappens.dto.response.FriendDto;
 import cz.splithappens.dto.response.FriendRequestDto;
+import cz.splithappens.event.AcceptedFriendRequestEvent;
+import cz.splithappens.event.ReceivedFriendRequestEvent;
+import cz.splithappens.event.RejectedFriendRequestEvent;
 import cz.splithappens.exception.*;
 import cz.splithappens.mapper.FriendRequestMapper;
 import cz.splithappens.mapper.UserMapper;
@@ -15,6 +18,7 @@ import cz.splithappens.repository.*;
 import cz.splithappens.service.FriendService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -31,6 +35,7 @@ public class FriendServiceImpl implements FriendService {
     private final UserRepository userRepository;
     private final FriendRequestMapper friendRequestMapper;
     private final UserMapper userMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -42,12 +47,10 @@ public class FriendServiceImpl implements FriendService {
             throw new SelfFriendRequestException();
         }
 
-        // Already friends?
         if (friendRepository.existsByIdUserIdAndIdFriendId(currentUser.getId(), receiverUserId)) {
             throw new FriendAlreadyExistsException(receiverUserId);
         }
 
-        // Cross-request? If receiver already sent a pending request to me, accept it immediately.
         Optional<FriendRequest> cross = friendRequestRepository.findBySenderIdAndReceiverIdAndStatus(
                 receiverUserId,
                 currentUser.getId(),
@@ -57,7 +60,6 @@ public class FriendServiceImpl implements FriendService {
             return acceptFriendRequest(cross.get().getId(), currentUser);
         }
 
-        // Existing pending (same direction)
         if (friendRequestRepository.existsBySenderIdAndReceiverIdAndStatus(currentUser.getId(), receiverUserId, FriendRequestStatus.PENDING)) {
             throw new FriendRequestAlreadyExistsException(receiverUserId);
         }
@@ -70,6 +72,8 @@ public class FriendServiceImpl implements FriendService {
         fr.setReceiver(receiver);
         fr.setStatus(FriendRequestStatus.PENDING);
         fr.setCreatedAt(OffsetDateTime.now());
+
+        eventPublisher.publishEvent(new ReceivedFriendRequestEvent(fr.getSender(), fr.getReceiver()));
 
         return friendRequestMapper.toDto(friendRequestRepository.save(fr));
     }
@@ -90,7 +94,6 @@ public class FriendServiceImpl implements FriendService {
         User a = fr.getSender();
         User b = fr.getReceiver();
 
-        // If already friends, just mark request accepted (idempotent-ish)
         Optional<FriendLink> existing = friendRepository.findByIdUserIdAndIdFriendId(a.getId(), b.getId());
         Long groupId;
         if (existing.isPresent()) {
@@ -104,6 +107,8 @@ public class FriendServiceImpl implements FriendService {
         fr.setStatus(FriendRequestStatus.ACCEPTED);
         fr.setRespondedAt(OffsetDateTime.now());
         FriendRequest saved = friendRequestRepository.save(fr);
+
+        eventPublisher.publishEvent(new AcceptedFriendRequestEvent(fr.getSender(), fr.getReceiver(), groupId));
 
         return friendRequestMapper.toDto(saved);
     }
@@ -123,6 +128,9 @@ public class FriendServiceImpl implements FriendService {
 
         fr.setStatus(FriendRequestStatus.REJECTED);
         fr.setRespondedAt(OffsetDateTime.now());
+
+        eventPublisher.publishEvent(new RejectedFriendRequestEvent(fr.getSender(), fr.getReceiver()));
+
         return friendRequestMapper.toDto(friendRequestRepository.save(fr));
     }
 

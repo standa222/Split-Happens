@@ -4,6 +4,7 @@ import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
+import cz.splithappens.event.AddedToGroupEvent;
 import cz.splithappens.exception.*;
 import cz.splithappens.mapper.DebtMapper;
 import cz.splithappens.mapper.GroupMapper;
@@ -19,6 +20,7 @@ import cz.splithappens.service.GroupService;
 import cz.splithappens.service.TransactionService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,6 +45,7 @@ public class GroupServiceImpl implements GroupService {
     private final GroupMapper groupMapper;
     private final DebtRepository debtRepository;
     private final DebtMapper debtMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -51,6 +54,9 @@ public class GroupServiceImpl implements GroupService {
         List<User> members = userRepository.findAllById(createDto.getMemberIds());
         group.setMembers(new LinkedHashSet<>(members));
         group.setLastActivity(OffsetDateTime.now());
+
+        eventPublisher.publishEvent(new AddedToGroupEvent(group, user, members));
+
         return groupMapper.toDto(groupRepository.save(group), user);
     }
 

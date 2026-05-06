@@ -1,5 +1,6 @@
 package cz.splithappens.service.impl;
 
+import cz.splithappens.event.DebtSettledEvent;
 import cz.splithappens.exception.DebtNotFoundException;
 import cz.splithappens.exception.UserNotFoundException;
 import cz.splithappens.model.Debt;
@@ -13,6 +14,7 @@ import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.DebtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +26,11 @@ public class DebtServiceImpl implements DebtService {
     private final TransactionRepository transactionRepository;
     private final DebtRepository debtRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
-    public void settleDebt(Long debtId) {
+    public void settleDebt(Long debtId, User settler) {
         Debt debt = debtRepository.findById(debtId)
                 .orElseThrow(() -> new DebtNotFoundException(debtId));
 
@@ -36,6 +39,16 @@ public class DebtServiceImpl implements DebtService {
         User creditor = userRepository.findById(debt.getCreditor().getId())
                 .orElseThrow(() -> new UserNotFoundException(debt.getCreditor().getId()));
 
+        Transaction paymentTransaction = buildPayment(debt, debtor, creditor);
+
+        debt.getGroup().updateLastActivity();
+
+        transactionRepository.save(paymentTransaction);
+        debtRepository.delete(debt);
+        eventPublisher.publishEvent(new DebtSettledEvent(paymentTransaction.getGroup(), paymentTransaction, settler, debtor, creditor));
+    }
+
+    private Transaction buildPayment(Debt debt, User debtor, User creditor) {
         Transaction paymentTransaction = Transaction.builder()
                 .group(debt.getGroup())
                 .title("Payment")
@@ -62,10 +75,6 @@ public class DebtServiceImpl implements DebtService {
                         .filledValue(debt.getAmount().negate())
                         .build()
         ));
-
-        debt.getGroup().updateLastActivity();
-
-        transactionRepository.save(paymentTransaction);
-        debtRepository.delete(debt);
+        return paymentTransaction;
     }
 }

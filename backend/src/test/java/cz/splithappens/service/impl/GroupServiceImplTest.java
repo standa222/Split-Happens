@@ -6,6 +6,7 @@ import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
 import cz.splithappens.dto.response.GroupStatisticsDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.event.AddedToGroupEvent;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.NotGroupMemberException;
 import cz.splithappens.mapper.DebtMapper;
@@ -29,6 +30,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -51,6 +53,7 @@ class GroupServiceImplTest {
     @Mock private GroupMapper groupMapper;
     @Mock private DebtRepository debtRepository;
     @Mock private DebtMapper debtMapper;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private GroupServiceImpl groupService;
 
@@ -82,6 +85,7 @@ class GroupServiceImplTest {
         assertThat(saved.getMembers()).isInstanceOf(LinkedHashSet.class);
         assertThat(saved.getMembers()).containsExactly(member1, member2);
         assertThat(saved.getLastActivity()).isNotNull();
+        verify(eventPublisher).publishEvent(any(AddedToGroupEvent.class));
     }
 
     @Test
