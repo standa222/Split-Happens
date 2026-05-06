@@ -334,7 +334,7 @@
   "notifications.error": "Failed to load notifications.",
   "notifications.empty": "You have no notifications.",
   "notifications.expenseAdded": "{creator} added a new expense in {group}. Total amount: {amount}.",
-  "notifications.debtSettled": "{settler} settled a debt {group}. Payment amount: {amount}.",
+  "notifications.debtSettled": "{settler} settled a debt in {group}. Payment amount: {amount}.",
   "notifications.addedToGroup": "{addedBy} added you to a group {group}.",
   "notifications.receivedFriendRequest": "{from} sent you a friend request.",
   "notifications.acceptedFriendRequest": "{from} accepted your friend request.",

@@ -71,3 +71,23 @@ export const useMarkAllAsReadMutation = (options?: Options) => {
         },
     });
 }
+
+const fetchLatestNotifications = async (limit: number = 4): Promise<TNotification[]> => {
+  const { data } = await api.get("/notifications", {
+    params: {
+      size: limit,
+      page: 0,
+      sort: 'createdAt,desc'
+    }
+  });
+  return data.content;
+}
+
+export const useLatestNotificationsQuery = (limit: number = 4) => {
+  return useQuery({
+    queryKey: ["notifications", "latest", limit],
+    queryFn: () => fetchLatestNotifications(limit),
+    retry: false,
+    staleTime: 0,
+  });
+}

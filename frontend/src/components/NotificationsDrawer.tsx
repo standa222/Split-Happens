@@ -38,10 +38,11 @@ type NotificationsContentProps = {
 
 type NotificationItemProps = {
   notification: TNotification;
-  onClose: () => void;
+  isNotification: boolean;
+  onClose?: () => void;
 }
 
-const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {
+export const NotificationItem = ({ notification, onClose, isNotification }: NotificationItemProps) => {
   const message = extractNotificationMessage(notification);
   const link = extractNotificationLink(notification);
   const { mutate: markAsRead } = useMarkNotificationAsReadMutation();
@@ -72,11 +73,11 @@ const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {
         }}
       >
         {extractNotificationIcon(notification)}
-        <Typography variant="body1" sx={{ flex: 1, pr: 1, fontWeight: notification.read ? 400 : 600 }}>
+        <Typography variant="body1" sx={{ flex: 1, pr: 1, fontWeight: (notification.read || !isNotification) ? 400 : 600 }}>
           {message}
         </Typography>
 
-        {!notification.read && (
+        {isNotification && !notification.read && (
           <Tooltip title={<FormattedMessage id="notifications.markAsRead" />}>
             <IconButton
               size="small"
@@ -88,7 +89,7 @@ const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {
           </Tooltip>
         )}
       </ListItem>
-      <Divider component="li" />
+      <Divider />
     </>
   )
 }
@@ -118,7 +119,7 @@ const NotificationsContent = ({ notifications, isLoading, isError, onClose }: No
   return (
     <List sx={{ p: 0 }}>
       {notifications.map((notification: TNotification) => (
-        <NotificationItem key={notification.id} notification={notification} onClose={onClose}/>
+        <NotificationItem key={notification.id} notification={notification} onClose={onClose} isNotification={true}/>
       ))}
     </List>
   )
