@@ -21,13 +21,18 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status;
+    const originalRequest = error.config;
 
-    if (status === 401 && !isHandlingAuthFailure) {
+    const isLoginRequest = originalRequest.url.includes("/auth/login");
+
+    if (status === 401 && !isLoginRequest && !isHandlingAuthFailure) {
       isHandlingAuthFailure = true;
       try {
         useAuthStore.getState().logout();
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       } finally {
-        window.location.href = "/login";
         isHandlingAuthFailure = false;
       }
     }
