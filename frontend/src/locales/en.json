@@ -3,7 +3,6 @@
   "nav.groups": "Groups",
   "nav.friends": "Friends",
   "nav.profile": "Profile",
-  "nav.notifications": "Notifications",
   "nav.logout": "Log out",
 
   "login.email": "Email",
@@ -328,5 +327,16 @@
   "admin.user.delete.action": "Delete user",
   "admin.user.delete.deleting": "Deleting...",
   "admin.user.delete.success": "User deleted successfully.",
-  "admin.user.delete.unsettled": "Cannot delete unsettled user (debts must be settled first)."
+  "admin.user.delete.unsettled": "Cannot delete unsettled user (debts must be settled first).",
+
+  "notifications.title": "Notifications",
+  "notifications.loading": "Loading notifications...",
+  "notifications.error": "Failed to load notifications.",
+  "notifications.empty": "You have no notifications.",
+  "notifications.expenseAdded": "{creator} added a new expense in {group}. Total amount: {amount}.",
+  "notifications.debtSettled": "{settler} settled a debt {groupName}. Payment amount: {amount}.",
+  "notifications.addedToGroup": "{addedBy} added you to a group {groupName}.",
+  "notifications.receivedFriendRequest": "{senderName} sent you a friend request.",
+  "notifications.acceptedFriendRequest": "{senderName} accepted your friend request.",
+  "notifications.rejectedFriendRequest": "{senderName} rejected you friend request."
 }
