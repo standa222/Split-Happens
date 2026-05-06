@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 @Entity
 @Getter
 @Setter
@@ -25,7 +28,7 @@ public class FriendLink {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class FriendLinkId implements java.io.Serializable {
+    public static class FriendLinkId implements Serializable {
         @Column(name = "user_id")
         private Long userId;
 
@@ -37,8 +40,8 @@ public class FriendLink {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             FriendLinkId that = (FriendLinkId) o;
-            return java.util.Objects.equals(userId, that.userId)
-                    && java.util.Objects.equals(friendId, that.friendId);
+            return Objects.equals(userId, that.userId)
+                    && Objects.equals(friendId, that.friendId);
         }
 
         @Override

@@ -18,5 +18,7 @@ public interface FriendService {
     List<FriendRequestDto> getOutgoingRequests(User currentUser);
 
     List<FriendDto> getMyFriends(User currentUser);
+
+    void removeFriend(Long friendUserId, User currentUser);
 }
 

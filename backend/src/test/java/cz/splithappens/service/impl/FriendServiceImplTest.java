@@ -430,6 +430,33 @@ class FriendServiceImplTest {
                 .containsExactly(200L, 100L);
     }
 
+    @Test
+    void removeFriend_notFound_throws() {
+        when(friendRepository.findByIdUserIdAndIdFriendId(1L, 2L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> friendService.removeFriend(2L, user(1L)))
+                .isInstanceOf(NotFoundException.class);
+
+        verify(friendRepository).findByIdUserIdAndIdFriendId(1L, 2L);
+    }
+
+    @Test
+    void removeFriend_happyPath_deletesLinksAndGroup() {
+        Long userId = 1L;
+        Long friendId = 2L;
+        Long groupId = 100L;
+        FriendLink link = link(userId, friendId, groupId);
+
+        when(friendRepository.findByIdUserIdAndIdFriendId(userId, friendId))
+                .thenReturn(Optional.of(link));
+
+        friendService.removeFriend(friendId, user(userId));
+
+        verify(friendRepository).deleteByIdUserIdAndIdFriendId(userId, friendId);
+        verify(friendRepository).deleteByIdUserIdAndIdFriendId(friendId, userId);
+        verify(groupRepository).deleteById(groupId);
+    }
+
     private static User user(Long id) {
         User u = new User();
         u.setId(id);

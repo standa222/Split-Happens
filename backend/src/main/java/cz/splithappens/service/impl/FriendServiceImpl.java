@@ -175,6 +175,22 @@ public class FriendServiceImpl implements FriendService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public void removeFriend(Long friendUserId, User currentUser) {
+        FriendLink link = friendRepository.findByIdUserIdAndIdFriendId(currentUser.getId(), friendUserId)
+                .orElseThrow(() -> new NotFoundException("FRIEND_NOT_FOUND", "Friend was not found"));
+
+        Long sharedGroupId = link.getGroupId();
+
+        friendRepository.deleteByIdUserIdAndIdFriendId(currentUser.getId(), friendUserId);
+        friendRepository.deleteByIdUserIdAndIdFriendId(friendUserId, currentUser.getId());
+
+        if (sharedGroupId != null) {
+            groupRepository.deleteById(sharedGroupId);
+        }
+    }
+
     private void upsertFriendLink(Long userId, Long friendId, Long groupId) {
         FriendLink.FriendLinkId id = new FriendLink.FriendLinkId(userId, friendId);
         FriendLink link = new FriendLink();
