@@ -3,7 +3,6 @@
   "nav.groups": "Skupiny",
   "nav.friends": "Přátelé",
   "nav.profile": "Profil",
-  "nav.notifications": "Oznámení",
   "nav.logout": "Odhlásit se",
 
   "login.email": "Email",
@@ -329,5 +328,18 @@
   "admin.user.delete.action": "Smazat uživatele",
   "admin.user.delete.deleting": "Mažu...",
   "admin.user.delete.success": "Uživatel úspěšně smazán.",
-  "admin.user.delete.unsettled": "Nelze smazat nevyrovnaného uživatele (dluhy musí být urovnány)."
+  "admin.user.delete.unsettled": "Nelze smazat nevyrovnaného uživatele (dluhy musí být urovnány).",
+
+  "notifications.title": "Notifikace",
+  "notifications.loading": "Načítám notifikace...",
+  "notifications.error": "Nepodařilo se načíst notifikace.",
+  "notifications.empty": "Žádné notifikace.",
+  "notifications.expenseAdded": "{creator} přidal nový výdaj ve skupině {group}. Celková částka: {amount}.",
+  "notifications.debtSettled": "{settler} urovnal dluh ve skupině {groupName}. Platba: {amount}.",
+  "notifications.addedToGroup": "{addedBy} Vás přidal do skupiny {groupName}.",
+  "notifications.receivedFriendRequest": "{from} Vám poslal/a žádost o přátelství.",
+  "notifications.acceptedFriendRequest": "{from} přijal/a Vaši žádost o přátelství.",
+  "notifications.rejectedFriendRequest": "{from} odmítl/a Vaši žádost o přátelství.",
+  "notifications.markAllAsRead": "Označit vše jako přečtené.",
+  "notifications.markAsRead": "Označit jako přečtené."
 }

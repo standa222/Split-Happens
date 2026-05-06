@@ -13,6 +13,7 @@ import {
   ListItem,
   ListItemButton,
   Avatar,
+  Badge,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -22,6 +23,12 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useAuthStore } from "../store/authStore";
 import { FormattedMessage } from "react-intl";
 import { useLocaleStore } from "../store/localeStore";
+import {useUnreadNotificationsCountQuery} from "../hooks/useNotifications";
+import {NotificationsDrawer} from "./NotificationsDrawer";
+
+type BellIconProps = {
+  onClick: () => void;
+};
 
 function NavLogo() {
   return (
@@ -71,7 +78,10 @@ function NavButton({ labelId, path }: { labelId: string; path: string }) {
   );
 }
 
-function BellIcon() {
+function BellIcon({ onClick }: BellIconProps) {
+  const unread = useUnreadNotificationsCountQuery();
+  const unreadCount = unread.data ?? 0;
+
   return (
     <IconButton
       aria-label="Notifications"
@@ -79,13 +89,16 @@ function BellIcon() {
         color: COLORS.PRIMARY,
         padding: 0,
       }}
-      onClick={() => {
-        // TODO - open notifications panel
-        console.log("Notifications clicked");
-      }}
+      onClick={onClick}
     >
-      {/*TODO add badge with number of unread notifications and switch icon to filled version when there are unread notifications*/}
-      <NotificationsIcon sx={{ fontSize: 40 }} />
+      <Badge
+        badgeContent={unreadCount}
+        color="error"
+        invisible={unreadCount === 0}
+        overlap="circular"
+      >
+        <NotificationsIcon sx={{ fontSize: 40 }} />
+      </Badge>
     </IconButton>
   );
 }
@@ -182,6 +195,7 @@ export function Navigation() {
   const locale = useLocaleStore((s) => s.locale);
   const setLocale = useLocaleStore((s) => s.setLocale);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -204,7 +218,7 @@ export function Navigation() {
         </Box>
         <Stack direction="row" gap={2} alignItems="center">
           <LanguageSwitch value={locale} onChange={setLocale} />
-          <BellIcon />
+          <BellIcon onClick={() => setNotificationsOpen(true)} />
           <IconButton sx={{ color: COLORS.RED }} onClick={logout}>
             <LogoutIcon sx={{ fontSize: 40 }} />
           </IconButton>
@@ -222,7 +236,7 @@ export function Navigation() {
           <MenuIcon sx={{ fontSize: 35 }} />
         </IconButton>
         <NavLogo />
-        <BellIcon />
+        <BellIcon onClick={() => setNotificationsOpen(true)} />
       </Stack>
 
       <Drawer
@@ -314,6 +328,8 @@ export function Navigation() {
           <FormattedMessage id={"nav.logout"} />
         </Box>
       </Drawer>
+
+      <NotificationsDrawer open={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     </>
   );
 }
