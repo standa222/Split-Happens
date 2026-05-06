@@ -1,8 +1,8 @@
-import {TUser} from "./TUser";
+import { TUser } from "./TUser";
 
 export type TDebt = {
-    id: number;
-    amount: number;
-    creditor: TUser;
-    debtor: TUser;
-}
+  id: number;
+  amount: number;
+  creditor: TUser;
+  debtor: TUser;
+};

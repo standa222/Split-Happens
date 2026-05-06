@@ -28,6 +28,7 @@ public class Transaction {
     private Group group;
 
     private String title;
+    // TODO add default currency total amount when multi currency support is implemented
     private BigDecimal totalAmount;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)

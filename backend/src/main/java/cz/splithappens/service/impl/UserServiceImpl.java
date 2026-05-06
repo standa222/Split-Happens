@@ -3,13 +3,19 @@ package cz.splithappens.service.impl;
 import cz.splithappens.dto.request.BankAccountCreateDto;
 import cz.splithappens.dto.request.UserCreateDto;
 import cz.splithappens.dto.response.UserDto;
+import cz.splithappens.exception.AdminOnlyException;
 import cz.splithappens.exception.EmailAlreadyExistsException;
 import cz.splithappens.exception.UserNotFoundException;
+import cz.splithappens.exception.UserNotSettledException;
 import cz.splithappens.mapper.BankAccountMapper;
 import cz.splithappens.mapper.UserMapper;
 import cz.splithappens.model.BankAccount;
+import cz.splithappens.model.TransactionItem;
 import cz.splithappens.model.User;
+import cz.splithappens.repository.DebtRepository;
+import cz.splithappens.repository.TransactionItemRepository;
 import cz.splithappens.repository.UserRepository;
+import cz.splithappens.service.GroupService;
 import cz.splithappens.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +36,8 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final BankAccountMapper bankAccountMapper;
     private final PasswordEncoder passwordEncoder;
+    private final GroupService groupService;
+    private final TransactionItemRepository transactionItemRepository;
 
     @Override
     @Transactional
@@ -77,6 +85,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserDto> getAllUsersAdmin(User user, int limit) {
+        if (user == null || !user.isAdmin()) {
+            throw new AdminOnlyException();
+        }
+        Pageable pageable = PageRequest.of(0, limit);
+        return userRepository.findAll(pageable).stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+
+    @Override
     public byte[] getUserImage(Long userId) {
         return userRepository.findById(userId)
                 .flatMap(user -> Optional.ofNullable(user.getProfileImage()))
@@ -89,6 +108,22 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
         user.setProfileImage(imageData.getBytes());
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException(userId);
+        }
+
+        groupService.leaveAllGroups(userId);
+
+        List<TransactionItem> items = transactionItemRepository.findByUserId(userId);
+        items.forEach(item -> item.setUser(null));
+        transactionItemRepository.saveAll(items);
+
+        userRepository.deleteById(userId);
     }
 
     private void updateBankAccount(User user, BankAccountCreateDto bankAccountDto) {

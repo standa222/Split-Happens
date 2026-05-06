@@ -13,7 +13,16 @@ services:
     networks:
       - splithappens-network
 
-#  TODO add frontend service here
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        - VITE_BE_URL=${VITE_BE_URL}
+    container_name: splithappens-frontend
+    ports:
+      - "5173:80"
+    networks:
+      - splithappens-network
 
 networks:
   splithappens-network:

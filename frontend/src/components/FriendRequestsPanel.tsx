@@ -79,8 +79,7 @@ export function FriendRequestsPanel({
     },
   });
 
-  const isAnyPending =
-    sendRequest.isPending || accept.isPending || reject.isPending;
+  const isAnyPending = sendRequest.isPending || accept.isPending || reject.isPending;
 
   const incomingList = useMemo(() => incoming.data ?? [], [incoming.data]);
   const outgoingList = useMemo(() => outgoing.data ?? [], [outgoing.data]);
@@ -101,9 +100,7 @@ export function FriendRequestsPanel({
             value={selectedUser}
             onChange={(_, v) => setSelectedUser(v)}
             onInputChange={(_, value) => setSearchTerm(value)}
-            getOptionLabel={(u) =>
-              `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email
-            }
+            getOptionLabel={(u) => `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || u.email}
             isOptionEqualToValue={(a, b) => a.id === b.id}
             renderOption={(props, option) => (
               <li {...props}>
@@ -114,10 +111,7 @@ export function FriendRequestsPanel({
               <TextField
                 {...params}
                 label={
-                  <FormattedMessage
-                    id="friends.add.search.label"
-                    defaultMessage="Search users"
-                  />
+                  <FormattedMessage id="friends.add.search.label" defaultMessage="Search users" />
                 }
                 placeholder={intl.formatMessage({
                   id: "friends.add.search.placeholder",
@@ -129,9 +123,7 @@ export function FriendRequestsPanel({
                     ...params.InputProps,
                     endAdornment: (
                       <>
-                        {usersLoading ? (
-                          <CircularProgress color="inherit" size={20} />
-                        ) : null}
+                        {usersLoading ? <CircularProgress color="inherit" size={20} /> : null}
                         {params.InputProps.endAdornment}
                       </>
                     ),
@@ -149,8 +141,7 @@ export function FriendRequestsPanel({
               sendRequest.mutate(
                 { receiverUserId: selectedUser.id },
                 {
-                  onError: (e) =>
-                    onErrorMessage?.(formatApiError(intl, e)),
+                  onError: (e) => onErrorMessage?.(formatApiError(intl, e)),
                 }
               );
             }}
@@ -165,24 +156,15 @@ export function FriendRequestsPanel({
             }}
           >
             {sendRequest.isPending ? (
-              <FormattedMessage
-                id="friends.add.sending"
-                defaultMessage="Sending..."
-              />
+              <FormattedMessage id="friends.add.sending" defaultMessage="Sending..." />
             ) : (
-              <FormattedMessage
-                id="friends.add.send"
-                defaultMessage="Send request"
-              />
+              <FormattedMessage id="friends.add.send" defaultMessage="Send request" />
             )}
           </Button>
         </Stack>
 
         <Typography variant="caption">
-          <FormattedMessage
-            id="friends.add.hint"
-            defaultMessage="Search by name or email."
-          />
+          <FormattedMessage id="friends.add.hint" defaultMessage="Search by name or email." />
         </Typography>
       </Stack>
 
@@ -191,18 +173,12 @@ export function FriendRequestsPanel({
       {/* Incoming */}
       <Stack spacing={1.25}>
         <Typography sx={{ fontWeight: 700 }}>
-          <FormattedMessage
-            id="friends.incoming.title"
-            defaultMessage="Incoming requests"
-          />
+          <FormattedMessage id="friends.incoming.title" defaultMessage="Incoming requests" />
         </Typography>
 
         {incoming.isLoading ? (
           <Typography>
-            <FormattedMessage
-              id="friends.incoming.loading"
-              defaultMessage="Loading..."
-            />
+            <FormattedMessage id="friends.incoming.loading" defaultMessage="Loading..." />
           </Typography>
         ) : incoming.isError ? (
           <Typography color="error">
@@ -213,10 +189,7 @@ export function FriendRequestsPanel({
           </Typography>
         ) : incomingList.length === 0 ? (
           <Typography>
-            <FormattedMessage
-              id="friends.incoming.empty"
-              defaultMessage="No incoming requests."
-            />
+            <FormattedMessage id="friends.incoming.empty" defaultMessage="No incoming requests." />
           </Typography>
         ) : (
           <Stack spacing={1.25}>
@@ -248,8 +221,7 @@ export function FriendRequestsPanel({
                         reject.mutate(
                           { requestId: r.id },
                           {
-                            onError: (e) =>
-                              onErrorMessage?.(formatApiError(intl, e)),
+                            onError: (e) => onErrorMessage?.(formatApiError(intl, e)),
                           }
                         )
                       }
@@ -261,10 +233,7 @@ export function FriendRequestsPanel({
                         color: COLORS.PRIMARY,
                       }}
                     >
-                      <FormattedMessage
-                        id="friends.request.reject"
-                        defaultMessage="Reject"
-                      />
+                      <FormattedMessage id="friends.request.reject" defaultMessage="Reject" />
                     </Button>
 
                     <Button
@@ -274,8 +243,7 @@ export function FriendRequestsPanel({
                         accept.mutate(
                           { requestId: r.id },
                           {
-                            onError: (e) =>
-                              onErrorMessage?.(formatApiError(intl, e)),
+                            onError: (e) => onErrorMessage?.(formatApiError(intl, e)),
                           }
                         )
                       }
@@ -287,10 +255,7 @@ export function FriendRequestsPanel({
                         color: COLORS.SECONDARY,
                       }}
                     >
-                      <FormattedMessage
-                        id="friends.request.accept"
-                        defaultMessage="Accept"
-                      />
+                      <FormattedMessage id="friends.request.accept" defaultMessage="Accept" />
                     </Button>
                   </Stack>
                 </Stack>
@@ -303,18 +268,12 @@ export function FriendRequestsPanel({
       {/* Outgoing */}
       <Stack spacing={1.25}>
         <Typography sx={{ fontWeight: 700 }}>
-          <FormattedMessage
-            id="friends.outgoing.title"
-            defaultMessage="Outgoing requests"
-          />
+          <FormattedMessage id="friends.outgoing.title" defaultMessage="Outgoing requests" />
         </Typography>
 
         {outgoing.isLoading ? (
           <Typography>
-            <FormattedMessage
-              id="friends.outgoing.loading"
-              defaultMessage="Loading..."
-            />
+            <FormattedMessage id="friends.outgoing.loading" defaultMessage="Loading..." />
           </Typography>
         ) : outgoing.isError ? (
           <Typography color="error">
@@ -325,10 +284,7 @@ export function FriendRequestsPanel({
           </Typography>
         ) : outgoingList.length === 0 ? (
           <Typography>
-            <FormattedMessage
-              id="friends.outgoing.empty"
-              defaultMessage="No outgoing requests."
-            />
+            <FormattedMessage id="friends.outgoing.empty" defaultMessage="No outgoing requests." />
           </Typography>
         ) : (
           <Stack spacing={1.25}>
@@ -346,10 +302,7 @@ export function FriendRequestsPanel({
                   <Stack sx={{ flex: 1 }}>
                     <FriendUserOption option={r.receiver} />
                     <Typography variant="caption">
-                      <FormattedMessage
-                        id="friends.outgoing.pending"
-                        defaultMessage="Pending"
-                      />
+                      <FormattedMessage id="friends.outgoing.pending" defaultMessage="Pending" />
                     </Typography>
                   </Stack>
                 </Stack>
@@ -361,4 +314,3 @@ export function FriendRequestsPanel({
     </Stack>
   );
 }
-

@@ -3,6 +3,7 @@ package cz.splithappens.controller;
 import cz.splithappens.dto.request.GroupCreateDto;
 import cz.splithappens.dto.response.GroupDto;
 import cz.splithappens.dto.response.GroupLightDto;
+import cz.splithappens.dto.response.GroupStatisticsDto;
 import cz.splithappens.security.CustomUserDetails;
 import cz.splithappens.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,6 +53,35 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getUserGroups(userDetails.getUser()));
     }
 
+    @GetMapping("/admin")
+    @Operation(summary = "Get all groups (admin)", description = "Returns a list of all groups in the system. Admin-only endpoint.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin only")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<GroupLightDto>> getAllGroupsAdmin(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(groupService.getAllGroupsAdmin(userDetails.getUser()));
+    }
+
+    @DeleteMapping("/{groupId}")
+    @Operation(summary = "Delete group (admin)", description = "Deletes the specified group from the system. Admin-only endpoint. The group must be settled (no debts exist).")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Group deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin only"),
+            @ApiResponse(responseCode = "404", description = "Group not found"),
+            @ApiResponse(responseCode = "409", description = "Cannot delete an unsettled group (debts exist)")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        groupService.deleteGroup(groupId, userDetails.getUser());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{groupId}")
     @Operation(summary = "Get group details", description = "Returns details of a specific group, including its members and transactions.")
     @ApiResponses(value = {
@@ -63,6 +94,23 @@ public class GroupController {
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         return ResponseEntity.ok(groupService.getGroupDetails(groupId, userDetails.getUser()));
+    }
+
+    @GetMapping("/{groupId}/statistics")
+    @Operation(summary = "Get group statistics", description = "Returns aggregated statistics for a specific group.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group"),
+            @ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    public ResponseEntity<GroupStatisticsDto> getGroupStatistics(
+            @PathVariable Long groupId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(groupService.getGroupStatistics(groupId, userDetails.getUser(), year, month));
     }
 
     @PutMapping("/{groupId}")

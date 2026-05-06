@@ -40,19 +40,4 @@ public class TokenBlacklist {
         }
         return true;
     }
-
-    /**
-     * Optional: Removes all expired tokens from the blacklist.
-     * Can be scheduled to run periodically to clean up the blacklist.
-     */
-    public void removeExpiredTokens() {
-        Date now = new Date();
-        Iterator<Map.Entry<String, Date>> it = blacklist.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Date> entry = it.next();
-            if (entry.getValue().before(now)) {
-                it.remove();
-            }
-        }
-    }
 }

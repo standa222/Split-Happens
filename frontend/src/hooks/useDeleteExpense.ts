@@ -2,19 +2,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../axios/axios";
 
 type Options = {
-    onSuccess?: () => void;
+  onSuccess?: () => void;
 };
 
 export function useDeleteExpense(options?: Options) {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation<void, Error, { transactionId: number; groupId: number }>({
-        mutationFn: ({ transactionId }) => api.delete(`/transactions/${transactionId}`).then((res) => res.data),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
-            options?.onSuccess?.();
-        },
-        onError: (error) => console.error("Error deleting expense:", error),
-    });
+  return useMutation<void, Error, { transactionId: number; groupId: number }>({
+    mutationFn: ({ transactionId }) =>
+      api.delete(`/transactions/${transactionId}`).then((res) => res.data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["groupDetail", variables.groupId] });
+      options?.onSuccess?.();
+    },
+    onError: (error) => console.error("Error deleting expense:", error),
+  });
 }
-

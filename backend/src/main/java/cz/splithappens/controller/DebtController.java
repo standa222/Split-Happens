@@ -1,5 +1,6 @@
 package cz.splithappens.controller;
 
+import cz.splithappens.security.CustomUserDetails;
 import cz.splithappens.service.DebtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -7,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +28,11 @@ public class DebtController {
             @ApiResponse(responseCode = "403", description = "Forbidden - User is not a member of the group associated with the debt"),
             @ApiResponse(responseCode = "404", description = "Debt not found")
     })
-    public ResponseEntity<Void> settleDebt(@PathVariable Long debtId) {
-        debtService.settleDebt(debtId);
+    public ResponseEntity<Void> settleDebt(
+            @PathVariable Long debtId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        debtService.settleDebt(debtId, userDetails.getUser());
         return ResponseEntity.noContent().build();
     }
 }

@@ -76,5 +76,19 @@ public class FriendController {
     public ResponseEntity<List<FriendDto>> getMyFriends(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(friendService.getMyFriends(userDetails.getUser()));
     }
+
+    @DeleteMapping("/api/friends/{friendId}")
+    @ApiResponses(value ={
+            @ApiResponse(responseCode = "204", description = "Friend removed"),
+            @ApiResponse(responseCode = "404", description = "Friend not found")
+    })
+    @Operation(summary = "Remove friend", description = "Removes the friend and deletes the corresponding FRIEND group")
+    public ResponseEntity<Void> removeFriend(
+            @PathVariable Long friendId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        friendService.removeFriend(friendId, userDetails.getUser());
+        return ResponseEntity.noContent().build();
+    }
 }
 

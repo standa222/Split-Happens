@@ -20,9 +20,7 @@ export function FriendUserOption({
             <FormattedMessage id="common.unknownUser" />
           )}
         </Typography>
-        <Typography variant="caption">
-          {option.email}
-        </Typography>
+        <Typography variant="caption">{option.email}</Typography>
       </Stack>
     </Stack>
   );

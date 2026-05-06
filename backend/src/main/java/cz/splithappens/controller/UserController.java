@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,6 +48,21 @@ public class UserController {
             @RequestParam String query,
             @RequestParam(required = false, defaultValue = "20") int limit) {
         return ResponseEntity.ok(userService.searchUsers(query, limit));
+    }
+
+    @GetMapping("/admin")
+    @Operation(summary = "Get all users (admin)", description = "Returns a list of all users in the system. Admin-only endpoint.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Users returned successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin only")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDto>> getAllUsersAdmin(
+            @RequestParam(required = false, defaultValue = "100") int limit,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(userService.getAllUsersAdmin(userDetails.getUser(), limit));
     }
 
     @PutMapping
@@ -93,5 +109,19 @@ public class UserController {
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @DeleteMapping("/{userId}")
+    @Operation(summary = "Delete user (admin)", description = "Deletes the specified user from the system. Admin-only endpoint.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Admin only"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "409", description = "Cannot delete an unsettled user (debts exist)")
+    })
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -7,6 +7,7 @@ import cz.splithappens.exception.BadRequestException;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.TransactionNotFoundException;
 import cz.splithappens.exception.UserNotFoundException;
+import cz.splithappens.event.ExpenseAddedEvent;
 import cz.splithappens.mapper.TransactionMapper;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Transaction;
@@ -14,6 +15,7 @@ import cz.splithappens.model.TransactionItem;
 import cz.splithappens.model.User;
 import cz.splithappens.model.enums.TransactionSplitMode;
 import cz.splithappens.repository.GroupRepository;
+import cz.splithappens.repository.TransactionItemRepository;
 import cz.splithappens.repository.TransactionRepository;
 import cz.splithappens.repository.UserRepository;
 import cz.splithappens.service.SettlementEngine;
@@ -22,6 +24,7 @@ import cz.splithappens.strategy.transaction.SplitComputationStrategy;
 import cz.splithappens.strategy.transaction.SplitComputationStrategyFactory;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -39,11 +42,12 @@ public class TransactionServiceImpl implements TransactionService {
     private final UserRepository userRepository;
     private final SettlementEngine settlementEngine;
     private final SplitComputationStrategyFactory splitComputationStrategyFactory;
+    private final TransactionItemRepository transactionItemRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
-    public TransactionDto createTransaction(TransactionCreateDto createDto) {
-        // TODO distinguish between expense and payment types and validate accordingly (e.g. payment must have exactly 2 splits, one positive and one negative)
+    public TransactionDto createTransaction(TransactionCreateDto createDto, User user) {
         Group group = groupRepository.findById(createDto.getGroupId())
                 .orElseThrow(() -> new GroupNotFoundException(createDto.getGroupId()));
 
@@ -57,10 +61,13 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setItems(items);
         transaction.setGroup(group);
 
-        Transaction response = transactionRepository.save(transaction);
-        settlementEngine.calculateDebts(group.getId()); // TODO should only be done if type is expense, not payment
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        settlementEngine.calculateDebts(group.getId());
         group.updateLastActivity();
-        return transactionMapper.toDto(response);
+
+        eventPublisher.publishEvent(new ExpenseAddedEvent(group, savedTransaction, user));
+
+        return transactionMapper.toDto(savedTransaction);
     }
 
     @Override
@@ -107,6 +114,13 @@ public class TransactionServiceImpl implements TransactionService {
         transactionRepository.delete(transaction);
         transaction.getGroup().updateLastActivity();
         settlementEngine.calculateDebts(transaction.getGroup().getId());
+    }
+
+    @Override
+    public void deleteGroupTransactions(Long groupId) {
+        List<Transaction> transactions = transactionRepository.findByGroupId(groupId);
+        transactions.forEach(t -> transactionItemRepository.deleteByTransactionId(t.getId()));
+        transactionRepository.deleteAll(transactions);
     }
 
     private List<TransactionItem> createTransactionsItems(TransactionCreateDto createDto, Transaction transaction) {

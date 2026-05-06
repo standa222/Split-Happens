@@ -2,8 +2,7 @@ package cz.splithappens.model;
 
 import cz.splithappens.model.enums.*;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,6 +13,9 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "\"group\"")
 public class Group {
     @Id
@@ -23,15 +25,19 @@ public class Group {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private Currency defaultCurrency = Currency.CZK;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private PermissionMode permissionMode = PermissionMode.SOFT;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private GroupType groupType = GroupType.GROUP;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "group_member",
@@ -41,6 +47,7 @@ public class Group {
     @OrderBy("lastName ASC, firstName ASC, id ASC")
     private Set<User> members = new LinkedHashSet<>();
 
+    @Builder.Default
     @Column(name = "last_activity", nullable = false)
     private OffsetDateTime lastActivity = OffsetDateTime.now();
 
@@ -51,5 +58,10 @@ public class Group {
 
     public void updateLastActivity() {
         this.lastActivity = OffsetDateTime.now();
+    }
+
+    public void removeMember(Long userId) {
+        members.removeIf(user -> user.getId().equals(userId));
+        updateLastActivity();
     }
 }
