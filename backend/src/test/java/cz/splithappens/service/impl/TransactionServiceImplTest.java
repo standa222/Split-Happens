@@ -3,6 +3,8 @@ package cz.splithappens.service.impl;
 import cz.splithappens.dto.request.TransactionCreateDto;
 import cz.splithappens.dto.request.TransactionSplitCreateDto;
 import cz.splithappens.dto.response.TransactionDto;
+import cz.splithappens.event.DebtSettledEvent;
+import cz.splithappens.event.ExpenseAddedEvent;
 import cz.splithappens.exception.BadRequestException;
 import cz.splithappens.exception.GroupNotFoundException;
 import cz.splithappens.exception.TransactionNotFoundException;
@@ -98,6 +100,7 @@ class TransactionServiceImplTest {
         assertItem(saved, 1L, "60.00", "60", true);
         assertItem(saved, 2L, "-40.00", "40", false);
         verify(settlementEngine).calculateDebts(G_ID);
+        verify(eventPublisher).publishEvent(any(ExpenseAddedEvent.class));
     }
 
     @Test

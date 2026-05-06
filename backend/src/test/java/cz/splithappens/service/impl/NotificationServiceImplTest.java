@@ -1,6 +1,6 @@
 package cz.splithappens.service.impl;
 
-import cz.splithappens.event.ExpenseAddedEvent;
+import cz.splithappens.event.*;
 import cz.splithappens.exception.DebtNotFoundException;
 import cz.splithappens.exception.ForbiddenException;
 import cz.splithappens.exception.NotFoundException;
@@ -27,6 +27,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -38,44 +39,21 @@ class NotificationServiceImplTest {
     @InjectMocks private NotificationServiceImpl notificationService;
 
     private Group group;
-    private User creator;
+    private User actor;
     private User member2;
     private User member3;
 
     @BeforeEach
     void setUp() {
-        creator = user(1L, "actor@test.com");
+        actor = user(1L, "actor@test.com");
         member2 = user(2L, "m2@test.com");
         member3 = user(3L, "m3@test.com");
 
         group = Group.builder()
                 .id(10L)
                 .name("Trip")
-                .members(Set.of(creator, member2, member3))
+                .members(Set.of(actor, member2, member3))
                 .build();
-    }
-
-    @Test
-    void onExpenseAdded_persistsNotificationForAllMembersExceptActor() {
-        Transaction transaction = new Transaction();
-        transaction.setTotalAmount(BigDecimal.TEN);
-
-        notificationService.onExpenseAdded(new ExpenseAddedEvent(group, transaction, creator));
-
-        ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
-        verify(notificationRepository).saveAll(captor.capture());
-
-        List<Notification> saved = captor.getValue();
-        assertThat(saved).hasSize(2);
-
-        assertThat(saved).allSatisfy(n -> {
-            assertThat(n.getNotificationType()).isEqualTo(NotificationType.EXPENSE_ADDED);
-            assertThat(n.getTargetId()).isEqualTo(10L);
-            assertThat(n.isRead()).isFalse();
-            assertThat(n.getUser().getId()).isIn(2L, 3L);
-        });
-
-        verifyNoMoreInteractions(notificationRepository);
     }
 
     @Test
@@ -117,6 +95,144 @@ class NotificationServiceImplTest {
 
         assertThatThrownBy(() -> notificationService.markAsRead(member2, 404L))
                 .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void onExpenseAdded_persistsNotificationForAllMembersExceptActor() {
+        Transaction transaction = new Transaction();
+        transaction.setTotalAmount(BigDecimal.TEN);
+
+        notificationService.onExpenseAdded(new ExpenseAddedEvent(group, transaction, actor));
+
+        ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
+        verify(notificationRepository).saveAll(captor.capture());
+
+        List<Notification> saved = captor.getValue();
+        assertThat(saved).hasSize(2);
+
+        assertThat(saved).allSatisfy(n -> {
+            assertThat(n.getNotificationType()).isEqualTo(NotificationType.EXPENSE_ADDED);
+            assertThat(n.getTargetId()).isEqualTo(10L);
+            assertThat(n.isRead()).isFalse();
+            assertThat(n.getUser().getId()).isIn(2L, 3L);
+        });
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onDebtSettled_persistsNotificationForBothParties() {
+        Transaction payment = new Transaction();
+        payment.setTotalAmount(BigDecimal.TEN);
+        notificationService.onDebtSettled(new DebtSettledEvent(group, payment, actor, member2, member3));
+
+        ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
+        verify(notificationRepository).saveAll(captor.capture());
+
+        List<Notification> saved = captor.getValue();
+        assertThat(saved).hasSize(2);
+
+        assertThat(saved).allSatisfy(n -> {
+            assertThat(n.getNotificationType()).isEqualTo(NotificationType.DEBT_SETTLED);
+            assertThat(n.getTargetId()).isEqualTo(10L);
+            assertThat(n.isRead()).isFalse();
+            assertThat(n.getUser().getId()).isIn(2L, 3L);
+        });
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onDebtSettled_persistsNotificationCreditorOnly() {
+        Transaction payment = new Transaction();
+        payment.setTotalAmount(BigDecimal.TEN);
+        notificationService.onDebtSettled(new DebtSettledEvent(group, payment, member2, member2, member3));
+
+        ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
+        verify(notificationRepository).saveAll(captor.capture());
+
+        List<Notification> saved = captor.getValue();
+        assertThat(saved).hasSize(1);
+
+        assertThat(saved).allSatisfy(n -> {
+            assertThat(n.getNotificationType()).isEqualTo(NotificationType.DEBT_SETTLED);
+            assertThat(n.getTargetId()).isEqualTo(10L);
+            assertThat(n.isRead()).isFalse();
+            assertThat(n.getUser().getId()).isIn(3L);
+        });
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onAddedToGroup_persistsNotificationForAddedUsers() {
+        notificationService.onAddedToGroup(new AddedToGroupEvent(group, actor, List.of(actor, member2, member3)));
+
+        ArgumentCaptor<List<Notification>> captor = ArgumentCaptor.forClass(List.class);
+        verify(notificationRepository).saveAll(captor.capture());
+
+        List<Notification> saved = captor.getValue();
+        assertThat(saved).hasSize(2);
+
+        assertThat(saved).allSatisfy(n -> {
+            assertThat(n.getNotificationType()).isEqualTo(NotificationType.ADDED_TO_GROUP);
+            assertThat(n.getTargetId()).isEqualTo(10L);
+            assertThat(n.isRead()).isFalse();
+            assertThat(n.getUser().getId()).isIn(2L, 3L);
+        });
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onReceivedFriendRequest_persistsNotificationForReceiver() {
+        notificationService.onReceivedFriendRequest(new ReceivedFriendRequestEvent(actor, member2));
+
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(captor.capture());
+
+        Notification saved = captor.getValue();
+
+        assertThat(saved.getNotificationType()).isEqualTo(NotificationType.RECEIVED_FRIEND_REQUEST);
+        assertThat(saved.isRead()).isFalse();
+        assertNull(saved.getTargetId());
+        assertThat(saved.getUser().getId()).isEqualTo(2L);
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onAcceptedFriendRequest_persistsNotificationForSender() {
+        notificationService.onAcceptedFriendRequest(new AcceptedFriendRequestEvent(actor, member2, 55L));
+
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(captor.capture());
+
+        Notification saved = captor.getValue();
+
+        assertThat(saved.getNotificationType()).isEqualTo(NotificationType.ACCEPTED_FRIEND_REQUEST);
+        assertThat(saved.isRead()).isFalse();
+        assertThat(saved.getTargetId()).isEqualTo(55L);
+        assertThat(saved.getUser().getId()).isEqualTo(1L);
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onRejectedFriendRequest_persistsNotificationForReceiver() {
+        notificationService.onRejectedFriendRequest(new RejectedFriendRequestEvent(actor, member2));
+
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(captor.capture());
+
+        Notification saved = captor.getValue();
+
+        assertThat(saved.getNotificationType()).isEqualTo(NotificationType.REJECTED_FRIEND_REQUEST);
+        assertThat(saved.isRead()).isFalse();
+        assertNull(saved.getTargetId());
+        assertThat(saved.getUser().getId()).isEqualTo(1L);
+
+        verifyNoMoreInteractions(notificationRepository);
     }
 
     private static User user(Long id, String email) {
