@@ -25,6 +25,7 @@ import { FormattedMessage } from "react-intl";
 import { useLocaleStore } from "../store/localeStore";
 import { useUnreadNotificationsCountQuery } from "../hooks/useNotifications";
 import { NotificationsDrawer } from "./NotificationsDrawer";
+import {ImageAvatar} from "./ImageAvatar";
 
 type BellIconProps = {
   onClick: () => void;
@@ -262,23 +263,18 @@ export function Navigation() {
           </IconButton>
         </Box>
 
-        <Stack direction="row" alignItems="center" gap={2} sx={{ px: 3, pb: 4 }}>
-          <Avatar
-            sx={{
-              bgcolor: "transparent",
-              border: `2px dashed ${COLORS.SECONDARY}`,
-              width: 50,
-              height: 50,
-            }}
-          >
-            <PhotoCameraIcon sx={{ color: COLORS.SECONDARY }} />
-          </Avatar>
-          {currentUser && (
+        {currentUser && (
+          <Stack direction="row" alignItems="center" gap={2} sx={{ px: 3, pb: 4 }}>
+            <ImageAvatar
+              type="user"
+              id={currentUser.id}
+              invertColors={true}
+            />
             <Typography variant="h6" fontWeight={600}>
               {currentUser.firstName} {currentUser.lastName}
             </Typography>
-          )}
-        </Stack>
+          </Stack>
+        )}
 
         <List sx={{ flexGrow: 1, p: 0 }}>
           {NAV_ITEMS.map((item) => (

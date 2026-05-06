@@ -12,6 +12,7 @@ export type ImagePlaceholderProps = {
   shape?: ImagePlaceholderShape;
   iconSize?: any;
   sx?: SxProps<Theme>;
+  invertColors?: boolean;
 };
 
 export const ImagePlaceholder = ({
@@ -20,8 +21,10 @@ export const ImagePlaceholder = ({
   shape = "circle",
   iconSize = 24,
   sx,
+  invertColors = false,
 }: ImagePlaceholderProps) => {
   const borderRadius = shape === "circle" ? "50%" : "20px";
+  const color = invertColors ? COLORS.SECONDARY : COLORS.PRIMARY;
 
   return (
     <Box
@@ -29,7 +32,7 @@ export const ImagePlaceholder = ({
         width,
         height,
         borderRadius,
-        border: `2px dashed ${COLORS.PRIMARY}`,
+        border: `2px dashed ${color}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -37,7 +40,7 @@ export const ImagePlaceholder = ({
         ...sx,
       }}
     >
-      <PhotoCameraIcon sx={{ color: COLORS.PRIMARY, fontSize: iconSize }} />
+      <PhotoCameraIcon sx={{ color: color, fontSize: iconSize }} />
     </Box>
   );
 };

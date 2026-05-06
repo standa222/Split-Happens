@@ -14,6 +14,7 @@ export type ImageAvatarProps = {
   iconSize?: any;
   sx?: SxProps<Theme>;
   imgSx?: SxProps<Theme>;
+  invertColors?: boolean;
 };
 
 export const ImageAvatar = ({
@@ -25,6 +26,7 @@ export const ImageAvatar = ({
   iconSize = 24,
   sx,
   imgSx,
+  invertColors = false,
 }: ImageAvatarProps) => {
   const query = type === "group" ? useGroupImageQuery(id) : useUserImageQuery(id);
   const { data, isLoading, isError } = query;
@@ -70,7 +72,7 @@ export const ImageAvatar = ({
 
   if (showPlaceholder) {
     return (
-      <ImagePlaceholder width={width} height={height} shape={shape} iconSize={iconSize} sx={sx} />
+      <ImagePlaceholder width={width} height={height} shape={shape} iconSize={iconSize} sx={sx} invertColors={invertColors}/>
     );
   }
 

@@ -1,6 +1,4 @@
-import { Typography, Stack, Box } from "@mui/material";
-import { ImagePlaceholder } from "../../components/ImagePlaceholder";
-import { COLORS } from "../../constants/colors";
+import { Typography, Stack } from "@mui/material";
 import { FormattedMessage } from "react-intl";
 import { NotificationItem } from "../../components/NotificationsDrawer";
 import { useLatestNotificationsQuery } from "../../hooks/useNotifications";
