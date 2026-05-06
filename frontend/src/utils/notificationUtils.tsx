@@ -8,10 +8,23 @@ import HandshakeIcon from '@mui/icons-material/Handshake';
 import PersonRemoveIcon from '@mui/icons-material/PersonRemove';
 import logo from "../assets/logo_dark.png";
 import { Box } from "@mui/material";
+import {formatMoneyWithSymbol} from "./currencyUtils";
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 export function extractNotificationMessage(notification: TNotification): ReactNode {
   const intlId = mapNotificationTypeToIntlId(notification.notificationType);
-  const parameters = notification.messageParameters || {};
+
+  const parameters = { ...(notification.messageParameters || {}) };
+  console.log(parameters);
+  if (parameters.amount !== undefined) {
+    const numericAmount = Number(parameters.amount);
+    if (!isNaN(numericAmount)) {
+      parameters.amount = formatMoneyWithSymbol(
+        numericAmount,
+        parameters.currency
+      );
+    }
+  }
 
   return (
     <FormattedMessage
@@ -37,7 +50,7 @@ function mapNotificationTypeToIntlId(type: TNotificationType): string {
 
 const NOTIFICATION_LINK_MAP: Record<TNotificationType, (id?: number) => string> = {
   EXPENSE_ADDED: (id) => `/groups/${id}`,
-  DEBT_SETTLED: (id) => `/debts/${id}`,
+  DEBT_SETTLED: (id) => `/groups/${id}`,
   ADDED_TO_GROUP: (id) => `/groups/${id}`,
   RECEIVED_FRIEND_REQUEST: () => `/friends`,
   ACCEPTED_FRIEND_REQUEST: (id) => `/friends/${id}`,
@@ -50,7 +63,7 @@ export function extractNotificationLink(notification: TNotification): string {
 }
 
 const NOTIFICATION_ICON_MAP: Record<TNotificationType, ReactNode> = {
-  EXPENSE_ADDED: <NotificationsIcon sx={{ fontSize: { xs: 20, md: 30 } }} />,
+  EXPENSE_ADDED: <MonetizationOnIcon sx={{ fontSize: { xs: 20, md: 30 } }} />,
   DEBT_SETTLED: getLogo(),
   ADDED_TO_GROUP: <GroupIcon sx={{ fontSize: { xs: 20, md: 30 } }} />,
   RECEIVED_FRIEND_REQUEST: <PersonAddIcon sx={{ fontSize: { xs: 20, md: 30 } }} />,

@@ -22,6 +22,7 @@ import {
 } from "../hooks/useNotifications"; // Adjust path accordingly
 import { COLORS } from "../constants/colors";
 import {useNavigate} from "react-router-dom";
+import CloseIcon from "@mui/icons-material/Close";
 
 type Props = {
   open: boolean;
@@ -142,9 +143,13 @@ export const NotificationsDrawer = ({ open, onClose }: Props) => {
         }
       }}
     >
-      {/* Header */}
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 700 }}>
+      <Box sx={{ py: 1, px: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <IconButton
+          onClick={onClose}
+        >
+          <CloseIcon />
+        </IconButton>
+        <Typography variant="h6" sx={{ color: COLORS.PRIMARY, fontWeight: 700, flex: 1 }}>
           <FormattedMessage id="notifications.title" />
         </Typography>
 
