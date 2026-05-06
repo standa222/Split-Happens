@@ -286,6 +286,7 @@
   "friends.detail.subtitle": "Friend balance",
   "friends.detail.loading": "Loading...",
   "friends.detail.error": "Failed to load friend detail.",
+  "friends.remove.success": "Friend removed successfully.",
 
   "groupDetail.statistics.title": "{hasYear, select, no {Statistics} other {{hasMonth, select, no {Statistics for {year}} other {Statistics for {monthName} {year}}}}}",
   "groupDetail.statistics.allTime": "All time",

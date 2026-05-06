@@ -10,11 +10,11 @@ export function RecentActivity() {
   const { data: activity, isLoading, isError } = useLatestNotificationsQuery();
 
   const content = isLoading ? (
-    <Typography variant="h4">
+    <Typography variant="h6">
       <FormattedMessage id="home.activity.loading" />
     </Typography>
   ) : isError ? (
-    <Typography variant="h4">
+    <Typography variant="h6">
       <FormattedMessage id="home.activity.error" />
     </Typography>
   ) : (

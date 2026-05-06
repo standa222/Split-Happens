@@ -88,3 +88,15 @@ export const useRejectFriendRequestMutation = (options?: Options) => {
     },
   });
 };
+
+export const useRemoveFriendMutation = (options?: Options) => {
+  const qc = useQueryClient();
+
+  return useMutation<void, unknown, number>({
+    mutationFn: (friendId ) => api.delete(`/friends/${friendId}`).then(() => {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["friends"] });
+      options?.onSuccess?.();
+    },
+  });
+}

@@ -309,6 +309,7 @@
   "friends.detail.subtitle": "Vyúčtování s přítelem",
   "friends.detail.loading": "Načítám...",
   "friends.detail.error": "Nepodařilo se načíst detail přítele.",
+  "friends.remove.success": "Přítel úspěšně odebrán.",
 
   "admin.title": "Nástěnka administrátora",
   "admin.error": "Chyba při načítání dat.",
