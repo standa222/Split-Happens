@@ -12,6 +12,8 @@ import { QRPaymentDialog } from "./QRPaymentDialog";
 import { useState } from "react";
 import { getCurrencySymbol } from "../utils/currencyUtils";
 import { SettleModal } from "./SettleModal";
+import {AppSnackbar} from "./AppSnackbar";
+import {useNotifyDebt} from "../hooks/useNotifyDebt";
 
 type Props = {
   userDebts: TDebt[];
@@ -29,10 +31,19 @@ type DebtActionButtonsProps = {
   groupId: number;
   groupCurrency?: string;
   owesLine?: string;
+  onSnackbarSuccess?: (message: string) => void;
 };
 
-const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine }: DebtActionButtonsProps) => {
+type SnackbarState = {
+  open: boolean;
+  message: string;
+  severity: "success" | "error";
+};
+
+const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine, onSnackbarSuccess }: DebtActionButtonsProps) => {
+  const intl = useIntl();
   const { mutate: settleDebt, isPending: isSettleDebtPending } = useSettleDebt();
+  const { mutate: notify, isPending: isNotifyPending } = useNotifyDebt();
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [settleModalOpen, setSettleModalOpen] = useState(false);
 
@@ -41,14 +52,24 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine }: DebtActio
   };
 
   const onNotify = () => {
-    console.log("notify debt", debt.id);
+    notify(
+      { debtId: debt.id },
+      {
+        onSuccess: () => {
+          onSnackbarSuccess?.(intl.formatMessage({ id: "debt.notify.success" }));
+        },
+      }
+    )
   };
 
   const handleSettleFromQr = () => {
     settleDebt(
       { debtId: debt.id, groupId },
       {
-        onSuccess: () => setQrModalOpen(false),
+        onSuccess: () => {
+          setQrModalOpen(false);
+          onSnackbarSuccess(intl.formatMessage({id: "debt.settle.success"}));
+        }
       }
     );
   };
@@ -57,7 +78,10 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine }: DebtActio
     settleDebt(
       { debtId: debt.id, groupId },
       {
-        onSuccess: () => setSettleModalOpen(false),
+        onSuccess: () => {
+          setSettleModalOpen(false);
+          onSnackbarSuccess(intl.formatMessage({id: "debt.settle.success"}));
+        }
       }
     );
   };
@@ -114,6 +138,7 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine }: DebtActio
           variant="text"
           size="small"
           onClick={onNotify}
+          disabled={isNotifyPending}
           sx={{
             minWidth: 0,
             p: 0,
@@ -166,60 +191,77 @@ export const DebtsList = ({
   const intl = useIntl();
   const currentUserId = useAuthStore((s) => s.currentUser.id);
   const currencySymbol = getCurrencySymbol(groupCurrency);
+  const [snackbar, setSnackbar] = useState<SnackbarState>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  if (userDebts.length === 0) {
-    const isCurrentUser = user.id === currentUserId;
-    const name = `${user.firstName ?? ""}`.trim();
-    return (
-      <Typography variant="body1" sx={{ display }}>
-        <FormattedMessage id="debts.settled" values={{ isCurrentUser, name }} />
-      </Typography>
-    );
-  }
+  const isSettled = userDebts.length === 0;
+  const isCurrentUser = user.id === currentUserId;
+  const userName = `${user.firstName ?? ""}`.trim();
 
   return (
-    <Stack gap={1} sx={{ display }}>
-      {userDebts.map((debt) => {
-        const debtorIsCurrent = debt.debtor.id === currentUserId;
-        const creditorIsCurrent = debt.creditor.id === currentUserId;
+    <>
+      {isSettled ? (
+        <Typography variant="body1" sx={{ display }}>
+          <FormattedMessage id="debts.settled" values={{ isCurrentUser, name: userName }} />
+        </Typography>
+      ) : (
+        <Stack gap={1} sx={{ display }}>
+          {userDebts.map((debt) => {
+            const debtorIsCurrent = debt.debtor.id === currentUserId;
+            const creditorIsCurrent = debt.creditor.id === currentUserId;
 
-        const debtorName = (debt.debtor.firstName ?? debt.debtor.email ?? "").trim();
-        const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
+            const debtorName = (debt.debtor.firstName ?? debt.debtor.email ?? "").trim();
+            const creditorName = (debt.creditor.firstName ?? debt.creditor.email ?? "").trim();
 
-        const translatedMessage = intl.formatMessage(
-          { id: "debts.owesLine" },
-          {
-            debtorIsCurrent,
-            creditorIsCurrent,
-            debtorName,
-            creditorName,
-            amount: debt.amount.toFixed(2),
-            currencySymbol,
-          }
-        );
+            const translatedMessage = intl.formatMessage(
+              { id: "debts.owesLine" },
+              {
+                debtorIsCurrent,
+                creditorIsCurrent,
+                debtorName,
+                creditorName,
+                amount: debt.amount.toFixed(2),
+                currencySymbol,
+              }
+            );
 
-        return (
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            alignItems={{ xs: "start", md: "center" }}
-            justifyContent={{ xs: "space-between", md: "space-between" }}
-            key={debt.id}
-            gap={2}
-          >
-            <Typography variant="body1" color={COLORS.PRIMARY}>
-              {translatedMessage}
-            </Typography>
-            {showActionButtons && (
-              <DebtActionButtons
-                debt={debt}
-                groupId={groupId}
-                groupCurrency={groupCurrency}
-                owesLine={translatedMessage}
-              />
-            )}
-          </Stack>
-        );
-      })}
-    </Stack>
+            return (
+              <Stack
+                direction={{ xs: "column", md: "row" }}
+                alignItems={{ xs: "start", md: "center" }}
+                justifyContent="space-between"
+                key={debt.id}
+                gap={2}
+              >
+                <Typography variant="body1" color={COLORS.PRIMARY}>
+                  {translatedMessage}
+                </Typography>
+                {showActionButtons && (
+                  <DebtActionButtons
+                    debt={debt}
+                    groupId={groupId}
+                    groupCurrency={groupCurrency}
+                    owesLine={translatedMessage}
+                    onSnackbarSuccess={(message) =>
+                      setSnackbar({ open: true, severity: "success", message })
+                    }
+                  />
+                )}
+              </Stack>
+            );
+          })}
+        </Stack>
+      )}
+
+      <AppSnackbar
+        open={snackbar.open}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        message={snackbar.message}
+        severity={snackbar.severity}
+      />
+    </>
   );
 };

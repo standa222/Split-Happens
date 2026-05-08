@@ -1,5 +1,6 @@
 package cz.splithappens.service.impl;
 
+import cz.splithappens.event.DebtNotifiedEvent;
 import cz.splithappens.event.DebtSettledEvent;
 import cz.splithappens.exception.DebtNotFoundException;
 import cz.splithappens.exception.UserNotFoundException;
@@ -46,6 +47,14 @@ public class DebtServiceImpl implements DebtService {
         transactionRepository.save(paymentTransaction);
         debtRepository.delete(debt);
         eventPublisher.publishEvent(new DebtSettledEvent(paymentTransaction.getGroup(), paymentTransaction, settler, debtor, creditor));
+    }
+
+    @Override
+    public void notifyDebtor(Long debtId, User actor) {
+        Debt debt = debtRepository.findById(debtId)
+                .orElseThrow(() -> new DebtNotFoundException(debtId));
+
+        eventPublisher.publishEvent(new DebtNotifiedEvent(debt, debt.getGroup(), actor));
     }
 
     private Transaction buildPayment(Debt debt, User debtor, User creditor) {

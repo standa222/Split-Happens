@@ -337,10 +337,16 @@
   "notifications.expenseAdded": "{creator} added a new expense in {group}. Total amount: {amount}.",
   "notifications.expenseAddedFriend": "{creator} added a new non-group expense. Total amount: {amount}.",
   "notifications.debtSettled": "{settler} settled a debt in {group}. Payment amount: {amount}.",
+  "notifications.debtSettledFriend": "{settler} settled a non-group debt. Payment amount: {amount}.",
+  "notifications.debtNotified": "You still owe {creditor} {amount} in {group}. Settle your debt.",
+  "notifications.debtNotifiedFriend": "You still owe {creditor} {amount}. Settle your debt.",
   "notifications.addedToGroup": "{addedBy} added you to a group {group}.",
   "notifications.receivedFriendRequest": "{from} sent you a friend request.",
   "notifications.acceptedFriendRequest": "{from} accepted your friend request.",
   "notifications.rejectedFriendRequest": "{from} rejected you friend request.",
   "notifications.markAllAsRead": "Mark all as read.",
-  "notifications.markAsRead": "Mark as read."
+  "notifications.markAsRead": "Mark as read.",
+
+  "debt.notify.success": "Notification sent to debtor.",
+  "debt.settle.success": "Debt settled successfully."
 }

@@ -4,4 +4,5 @@ import cz.splithappens.model.User;
 
 public interface DebtService {
     void settleDebt(Long debtId, User settler);
+    void notifyDebtor(Long debtId, User actor);
 }

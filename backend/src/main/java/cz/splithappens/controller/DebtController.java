@@ -9,10 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/debts")
@@ -34,5 +31,19 @@ public class DebtController {
     ) {
         debtService.settleDebt(debtId, userDetails.getUser());
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{debtId}/notify")
+    @Operation(summary = "Notify debtor about a debt", description = "Sends a notification to the debtor about the specified debt.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Notification sent successfully"),
+            @ApiResponse(responseCode = "404", description = "Debt not found")
+    })
+    public ResponseEntity<Void> notifyDebtor(
+            @PathVariable Long debtId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        debtService.notifyDebtor(debtId, userDetails.getUser());
+        return ResponseEntity.ok().build();
     }
 }

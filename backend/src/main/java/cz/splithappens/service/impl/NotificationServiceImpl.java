@@ -13,6 +13,7 @@ import cz.splithappens.model.enums.NotificationType;
 import cz.splithappens.repository.NotificationRepository;
 import cz.splithappens.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -107,12 +108,13 @@ public class NotificationServiceImpl implements NotificationService {
         params.put("group", event.group().getName());
         params.put("amount", event.payment().getTotalAmount().toString());
         params.put("currency", event.payment().getCurrency().toString());
+        boolean isFriendGroup = event.group().getGroupType() == GroupType.FRIEND;
 
         if (!event.settler().getId().equals(event.debtor().getId())) {
             toSave.add(Notification.builder()
                     .user(event.debtor())
                     .messageParameters(params)
-                    .notificationType(NotificationType.DEBT_SETTLED)
+                    .notificationType(isFriendGroup ? NotificationType.DEBT_SETTLED_FRIEND : NotificationType.DEBT_SETTLED)
                     .targetId(event.group().getId())
                     .build());
         }
@@ -198,6 +200,26 @@ public class NotificationServiceImpl implements NotificationService {
                 .user(event.frSender())
                 .messageParameters(params)
                 .notificationType(NotificationType.REJECTED_FRIEND_REQUEST)
+                .build();
+
+        notificationRepository.save(notification);
+    }
+
+    @EventListener
+    public void onDebtNotified(DebtNotifiedEvent event) {
+        Map<String, String> params = new HashMap<>();
+        params.put("notifier", event.actor().getFirstName());
+        params.put("creditor", event.debt().getCreditor().getFirstName());
+        params.put("amount", event.debt().getAmount().toString());
+        params.put("currency", event.debt().getGroup().getDefaultCurrency().toString());
+        params.put("group", event.group().getName());
+        boolean isFriendGroup = event.group().getGroupType() == GroupType.FRIEND;
+
+        Notification notification = Notification.builder()
+                .user(event.debt().getDebtor())
+                .messageParameters(params)
+                .notificationType(isFriendGroup ? NotificationType.DEBT_NOTIFIED_FRIEND : NotificationType.DEBT_NOTIFIED)
+                .targetId(event.group().getId())
                 .build();
 
         notificationRepository.save(notification);
