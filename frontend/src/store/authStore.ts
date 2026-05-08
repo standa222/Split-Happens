@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { TUser } from "../types/TUser";
+import {QueryClient, useQueryClient} from "@tanstack/react-query";
 
 interface AuthState {
   token: string | null;
@@ -10,6 +11,8 @@ interface AuthState {
   logout: () => void;
 }
 
+export const queryClient = new QueryClient();
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -17,7 +20,10 @@ export const useAuthStore = create<AuthState>()(
       currentUser: null,
       setToken: (token) => set({ token }),
       setCurrentUser: (user) => set({ currentUser: user }),
-      logout: () => set({ token: null, currentUser: null }),
+      logout: () => {
+        set({ token: null, currentUser: null })
+        queryClient.clear();
+      },
     }),
     { name: "auth-storage" }
   )
