@@ -8,6 +8,7 @@ import cz.splithappens.mapper.NotificationMapper;
 import cz.splithappens.model.Group;
 import cz.splithappens.model.Notification;
 import cz.splithappens.model.User;
+import cz.splithappens.model.enums.GroupType;
 import cz.splithappens.model.enums.NotificationType;
 import cz.splithappens.repository.NotificationRepository;
 import cz.splithappens.service.NotificationService;
@@ -74,6 +75,7 @@ public class NotificationServiceImpl implements NotificationService {
         params.put("group", event.group().getName());
         params.put("amount", event.transaction().getTotalAmount().toString());
         params.put("currency", event.transaction().getCurrency().toString());
+        boolean isFriendGroup = event.group().getGroupType() == GroupType.FRIEND;
 
         for (User member : group.getMembers()) {
             if (member.getId().equals(event.creator().getId())) {
@@ -82,7 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
             toSave.add(Notification.builder()
                     .user(member)
                     .messageParameters(params)
-                    .notificationType(NotificationType.EXPENSE_ADDED)
+                    .notificationType(isFriendGroup ? NotificationType.EXPENSE_ADDED_FRIEND : NotificationType.EXPENSE_ADDED)
                     .targetId(event.group().getId())
                     .read(false)
                     .build());

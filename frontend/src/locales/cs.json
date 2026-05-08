@@ -336,6 +336,7 @@
   "notifications.error": "Nepodařilo se načíst notifikace.",
   "notifications.empty": "Žádné notifikace.",
   "notifications.expenseAdded": "{creator} přidal nový výdaj ve skupině {group}. Celková částka: {amount}.",
+  "notifications.expenseAddedFriend": "{creator} přidal nový mimoskupinový výdaj. Celková částka: {amount}.",
   "notifications.debtSettled": "{settler} urovnal dluh ve skupině {groupName}. Platba: {amount}.",
   "notifications.addedToGroup": "{addedBy} Vás přidal do skupiny {groupName}.",
   "notifications.receivedFriendRequest": "{from} Vám poslal/a žádost o přátelství.",
