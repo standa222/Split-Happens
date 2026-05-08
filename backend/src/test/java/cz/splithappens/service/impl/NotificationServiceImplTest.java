@@ -4,10 +4,7 @@ import cz.splithappens.event.*;
 import cz.splithappens.exception.DebtNotFoundException;
 import cz.splithappens.exception.ForbiddenException;
 import cz.splithappens.exception.NotFoundException;
-import cz.splithappens.model.Group;
-import cz.splithappens.model.Notification;
-import cz.splithappens.model.Transaction;
-import cz.splithappens.model.User;
+import cz.splithappens.model.*;
 import cz.splithappens.model.enums.Currency;
 import cz.splithappens.model.enums.NotificationType;
 import cz.splithappens.repository.NotificationRepository;
@@ -234,6 +231,28 @@ class NotificationServiceImplTest {
         assertThat(saved.isRead()).isFalse();
         assertNull(saved.getTargetId());
         assertThat(saved.getUser().getId()).isEqualTo(1L);
+
+        verifyNoMoreInteractions(notificationRepository);
+    }
+
+    @Test
+    void onDebtNotified_persistsNotificationForDebtor() {
+        Debt debt = new Debt();
+        debt.setAmount(BigDecimal.TEN);
+        debt.setCreditor(member3);
+        debt.setGroup(group);
+        debt.setDebtor(member2);
+        notificationService.onDebtNotified(new DebtNotifiedEvent(debt, group, member3));
+
+        ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(captor.capture());
+
+        Notification saved = captor.getValue();
+
+        assertThat(saved.getNotificationType()).isEqualTo(NotificationType.DEBT_NOTIFIED);
+        assertThat(saved.isRead()).isFalse();
+        assertThat(saved.getTargetId()).isEqualTo(10L);
+        assertThat(saved.getUser().getId()).isEqualTo(2L);
 
         verifyNoMoreInteractions(notificationRepository);
     }
