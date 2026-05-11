@@ -116,8 +116,8 @@ export const theme = createTheme({
           "&.Mui-checked": {
             color: COLORS.PRIMARY,
           },
-        }
-      }
-    }
+        },
+      },
+    },
   },
 });

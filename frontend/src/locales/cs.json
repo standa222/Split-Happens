@@ -317,6 +317,10 @@
   "friends.detail.error": "Nepodařilo se načíst detail přítele.",
 
   "friends.remove.aria": "Odebrat přítele",
+  "friends.remove.modal.title": "Odebrat přítele",
+  "friends.remove.modal.confirmation": "Opravdu chcete odebrat tohoto přítele?",
+  "friends.remove.modal.action": "Odebrat",
+  "friends.remove.modal.removing": "Odebírám...",
   "friends.remove.success": "Přítel úspěšně odebrán.",
 
   "admin.title": "Nástěnka administrátora",

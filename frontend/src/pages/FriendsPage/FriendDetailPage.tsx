@@ -24,10 +24,12 @@ import { ImageAvatar } from "../../components/ImageAvatar";
 import type { TGroupDetail } from "../../types/dto/TGroupDetail";
 import { useRemoveFriendMutation } from "../../hooks/useFriends";
 import { ROUTES } from "../../enums/routes";
+import { RemoveFriendModal } from "../../components/RemoveFriendModal";
 
 const FriendOverview = ({ group }: { group: TGroupDetail }) => {
   const currentUserId = useAuthStore((s) => s.currentUser.id);
   const [showDebts, setShowDebts] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
   const navigate = useNavigate();
   const intl = useIntl();
 
@@ -43,11 +45,22 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
     ? `${friend.firstName ?? ""} ${friend.lastName ?? ""}`.trim() || friend.email
     : "";
 
-  const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriendMutation({
-    onSuccess: () => {
-      navigate(ROUTES.FRIENDS.LIST);
-    },
-  });
+  const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriendMutation();
+
+  const closeRemove = () => {
+    if (isRemoving) return;
+    setRemoveOpen(false);
+  };
+
+  const confirmRemove = () => {
+    if (!friend) return;
+    removeFriend(friend.id, {
+      onSuccess: () => {
+        closeRemove();
+        navigate(ROUTES.FRIENDS.LIST);
+      },
+    });
+  };
 
   return (
     <Stack alignItems="flex-start" justifyContent="space-between" gap={{ xs: 2, md: 2 }}>
@@ -80,7 +93,7 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
 
               {friend ? (
                 <IconButton
-                  onClick={() => removeFriend(friend.id)}
+                  onClick={() => setRemoveOpen(true)}
                   disabled={isRemoving}
                   aria-label={intl.formatMessage({
                     id: "friends.remove.aria",
@@ -102,6 +115,14 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
             </Typography>
           </Stack>
         </Stack>
+
+        <RemoveFriendModal
+          open={removeOpen}
+          onClose={closeRemove}
+          onRemove={confirmRemove}
+          isRemovePending={isRemoving}
+          friendName={friendName}
+        />
         {/* Desktop: show debts inline. Mobile: show behind a drawer. */}
         {!isMobile && (
           <DebtsList

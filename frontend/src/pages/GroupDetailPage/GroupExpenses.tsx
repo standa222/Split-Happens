@@ -34,7 +34,7 @@ import { getCurrencySymbol } from "../../utils/currencyUtils";
 import { categories, type Category, getCategoryIcon } from "../../utils/categoryUtils";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 type Props = {
   transactions: TTransaction[];
@@ -245,27 +245,31 @@ export const GroupExpenses = ({ transactions, group }: Props) => {
 
     return transactions.filter((t) => {
       const matchesSearch = !q || (t.title ?? "").toLowerCase().includes(q);
-      const matchesCategory = categorySet.size === 0 || (t.expenseCategory && categorySet.has(t.expenseCategory));
+      const matchesCategory =
+        categorySet.size === 0 || (t.expenseCategory && categorySet.has(t.expenseCategory));
       return matchesSearch && matchesCategory;
     });
   }, [transactions, searchQuery, selectedCategories]);
 
   const groupTransactionsByMonth = useMemo(() => {
-    return filteredTransactions.reduce((acc, transaction) => {
-      const month = new Intl.DateTimeFormat(intl.locale, {
-        month: "long",
-        year: "numeric",
-      }).format(new Date(transaction.createdAt));
+    return filteredTransactions.reduce(
+      (acc, transaction) => {
+        const month = new Intl.DateTimeFormat(intl.locale, {
+          month: "long",
+          year: "numeric",
+        }).format(new Date(transaction.createdAt));
 
-      if (!acc[month]) acc[month] = [];
-      acc[month].push(transaction);
-      return acc;
-    }, {} as Record<string, TTransaction[]>);
+        if (!acc[month]) acc[month] = [];
+        acc[month].push(transaction);
+        return acc;
+      },
+      {} as Record<string, TTransaction[]>
+    );
   }, [filteredTransactions, intl.locale]);
 
   const toggleCategory = (name: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name]
+    setSelectedCategories((prev) =>
+      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
     );
   };
 
@@ -290,25 +294,21 @@ export const GroupExpenses = ({ transactions, group }: Props) => {
                 <IconButton size="small" onClick={() => setSearchQuery("")}>
                   <ClearIcon fontSize="small" />
                 </IconButton>
-              )
-            }
+              ),
+            },
           }}
         />
 
         <IconButton
           onClick={(e) => setAnchorEl(e.currentTarget)}
-          sx={{ color: selectedCategories.length ? COLORS.PRIMARY : 'inherit' }}
+          sx={{ color: selectedCategories.length ? COLORS.PRIMARY : "inherit" }}
         >
           <Badge badgeContent={selectedCategories.length} color="primary">
             <FilterAltIcon />
           </Badge>
         </IconButton>
 
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={() => setAnchorEl(null)}
-        >
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
           {categories.map((category) => (
             <MenuItem key={category.name} onClick={() => toggleCategory(category.name)}>
               <Checkbox
@@ -316,15 +316,18 @@ export const GroupExpenses = ({ transactions, group }: Props) => {
                 checked={selectedCategories.includes(category.name)}
                 sx={{ mr: 1 }}
               />
-              <ListItemText
-                primary={<FormattedMessage id={category.intlId} />}
-              />
+              <ListItemText primary={<FormattedMessage id={category.intlId} />} />
             </MenuItem>
           ))}
           {selectedCategories.length > 0 && (
             <MenuItem
               onClick={() => setSelectedCategories([])}
-              sx={{ justifyContent: 'center', color: 'error.main', borderTop: 1, borderColor: 'divider' }}
+              sx={{
+                justifyContent: "center",
+                color: "error.main",
+                borderTop: 1,
+                borderColor: "divider",
+              }}
             >
               <Typography variant="caption" fontWeight="bold" color={COLORS.RED}>
                 <FormattedMessage id="groupDetail.expenses.clearFilter" />
