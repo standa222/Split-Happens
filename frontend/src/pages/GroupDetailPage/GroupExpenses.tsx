@@ -1,16 +1,40 @@
-import { Box, Button, Collapse, Divider, Stack, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Collapse,
+  Divider,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  ListItemText,
+  Menu,
+  MenuItem,
+  OutlinedInput,
+  Popover,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { TTransaction } from "../../types/TTransaction";
 import { COLORS } from "../../constants/colors";
 import { useAuthStore } from "../../store/authStore";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { ExpenseDetailModal } from "./ExpenseDetailModal";
 import { TGroupDetail } from "../../types/dto/TGroupDetail";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { getCurrencySymbol } from "../../utils/currencyUtils";
-import { getCategoryIcon } from "../../utils/categoryUtils";
+import { categories, type Category, getCategoryIcon } from "../../utils/categoryUtils";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 type Props = {
   transactions: TTransaction[];
@@ -209,31 +233,120 @@ const MonthSection = ({
 export const GroupExpenses = ({ transactions, group }: Props) => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<TTransaction | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
   const intl = useIntl();
 
-  const groupTransactionsByMonth = transactions.reduce(
-    (acc, transaction) => {
-      const month = new Intl.DateTimeFormat(intl.locale, {
-        month: "long",
-        year: "numeric",
-      }).format(new Date(transaction.createdAt));
+  const filteredTransactions = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const categorySet = new Set(selectedCategories);
 
-      if (!acc[month]) acc[month] = [];
-      acc[month].push(transaction);
-      return acc;
-    },
-    {} as Record<string, TTransaction[]>
-  );
+    return transactions.filter((t) => {
+      const matchesSearch = !q || (t.title ?? "").toLowerCase().includes(q);
+      const matchesCategory =
+        categorySet.size === 0 || (t.expenseCategory && categorySet.has(t.expenseCategory));
+      return matchesSearch && matchesCategory;
+    });
+  }, [transactions, searchQuery, selectedCategories]);
 
-  const onOpenDetail = (t: TTransaction) => {
-    setSelectedTransaction(t);
-    setDetailOpen(true);
+  const groupTransactionsByMonth = useMemo(() => {
+    return filteredTransactions.reduce(
+      (acc, transaction) => {
+        const month = new Intl.DateTimeFormat(intl.locale, {
+          month: "long",
+          year: "numeric",
+        }).format(new Date(transaction.createdAt));
+
+        if (!acc[month]) acc[month] = [];
+        acc[month].push(transaction);
+        return acc;
+      },
+      {} as Record<string, TTransaction[]>
+    );
+  }, [filteredTransactions, intl.locale]);
+
+  const toggleCategory = (name: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(name) ? prev.filter((c) => c !== name) : [...prev, name]
+    );
   };
 
   return (
     <Box>
+      <Stack mb={2} direction="row" gap={2} alignItems="center" sx={{ mt: { xs: 1, md: 0 } }}>
+        <TextField
+          size="small"
+          fullWidth
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          label={<FormattedMessage id="groupDetail.expenses.search.label" />}
+          placeholder={intl.formatMessage({ id: "groupDetail.expenses.search.placeholder" })}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: searchQuery && (
+                <IconButton size="small" onClick={() => setSearchQuery("")}>
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              ),
+            },
+          }}
+        />
+
+        <IconButton
+          onClick={(e) => setAnchorEl(e.currentTarget)}
+          sx={{ color: selectedCategories.length ? COLORS.PRIMARY : "inherit" }}
+        >
+          <Badge badgeContent={selectedCategories.length} color="primary">
+            <FilterAltIcon />
+          </Badge>
+        </IconButton>
+
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+          {categories.map((category) => (
+            <MenuItem key={category.name} onClick={() => toggleCategory(category.name)}>
+              <Checkbox
+                size="small"
+                checked={selectedCategories.includes(category.name)}
+                sx={{ mr: 1 }}
+              />
+              <ListItemText primary={<FormattedMessage id={category.intlId} />} />
+            </MenuItem>
+          ))}
+          {selectedCategories.length > 0 && (
+            <MenuItem
+              onClick={() => setSelectedCategories([])}
+              sx={{
+                justifyContent: "center",
+                color: "error.main",
+                borderTop: 1,
+                borderColor: "divider",
+              }}
+            >
+              <Typography variant="caption" fontWeight="bold" color={COLORS.RED}>
+                <FormattedMessage id="groupDetail.expenses.clearFilter" />
+              </Typography>
+            </MenuItem>
+          )}
+        </Menu>
+      </Stack>
+
       {Object.entries(groupTransactionsByMonth).map(([month, txs]) => (
-        <MonthSection key={month} month={month} transactions={txs} onOpenDetail={onOpenDetail} />
+        <MonthSection
+          key={month}
+          month={month}
+          transactions={txs}
+          onOpenDetail={(t) => {
+            setSelectedTransaction(t);
+            setDetailOpen(true);
+          }}
+        />
       ))}
 
       <ExpenseDetailModal

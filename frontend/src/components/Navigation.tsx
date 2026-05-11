@@ -25,7 +25,7 @@ import { FormattedMessage } from "react-intl";
 import { useLocaleStore } from "../store/localeStore";
 import { useUnreadNotificationsCountQuery } from "../hooks/useNotifications";
 import { NotificationsDrawer } from "./NotificationsDrawer";
-import {ImageAvatar} from "./ImageAvatar";
+import { ImageAvatar } from "./ImageAvatar";
 
 type BellIconProps = {
   onClick: () => void;
@@ -265,11 +265,7 @@ export function Navigation() {
 
         {currentUser && (
           <Stack direction="row" alignItems="center" gap={2} sx={{ px: 3, pb: 4 }}>
-            <ImageAvatar
-              type="user"
-              id={currentUser.id}
-              invertColors={true}
-            />
+            <ImageAvatar type="user" id={currentUser.id} invertColors={true} />
             <Typography variant="h6" fontWeight={600}>
               {currentUser.firstName} {currentUser.lastName}
             </Typography>

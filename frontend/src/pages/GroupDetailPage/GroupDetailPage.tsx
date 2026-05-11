@@ -1,15 +1,17 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useGroupDetail } from "../../hooks/useGroupsQuery";
 import { TGroupDetail } from "../../types/dto/TGroupDetail";
-import { Box, Typography, Stack, Button } from "@mui/material";
+import { Box, IconButton, Typography, Stack, Button } from "@mui/material";
 import { GroupDetailOverview } from "./GroupDetailOverview";
 import { useState } from "react";
 import { COLORS } from "../../constants/colors";
 import { AddExpenseButton } from "../../components/AddExpenseButton";
 import { GroupExpenses } from "./GroupExpenses";
 import { GroupMembers } from "./GroupMembers";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { GroupStatistics } from "./GroupStatistics";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { ROUTES } from "../../enums/routes";
 
 type WrapperProps = {
   group: TGroupDetail | undefined;
@@ -188,12 +190,23 @@ const GroupDetailWrapper = ({ group, isLoading, isError }: WrapperProps) => {
 };
 
 export const GroupDetailPage = () => {
+  const navigate = useNavigate();
+  const intl = useIntl();
   const { groupId } = useParams<{ groupId: string }>();
   // TODO check if groupId is valid number and user has access to this group
   const { data: group, isLoading, isError } = useGroupDetail(groupId ? parseInt(groupId) : 0);
 
   return (
-    <Box mt={{ xs: 2, md: 4 }} px={0}>
+    <Box mt={1} px={0}>
+      <Stack direction="row" alignItems="center" sx={{ mb: { xs: 1, md: 2 } }}>
+        <IconButton
+          onClick={() => navigate(ROUTES.GROUPS.LIST)}
+          aria-label={intl.formatMessage({ id: "common.back", defaultMessage: "Back" })}
+          sx={{ color: COLORS.PRIMARY }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
+      </Stack>
       <GroupDetailWrapper group={group} isLoading={isLoading} isError={isError} />
     </Box>
   );

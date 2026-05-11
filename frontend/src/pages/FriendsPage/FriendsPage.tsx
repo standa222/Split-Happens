@@ -14,6 +14,7 @@ import { FriendRequestsModal } from "../../components/FriendRequestsModal";
 import { NavLink } from "react-router-dom";
 import { ROUTES } from "../../enums/routes";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import { RemoveFriendModal } from "../../components/RemoveFriendModal";
 
 export const FriendsPage = () => {
   const intl = useIntl();
@@ -28,20 +29,40 @@ export const FriendsPage = () => {
 
   const [requestsOpen, setRequestsOpen] = useState(false);
 
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const [friendToRemove, setFriendToRemove] = useState<{ id: number; name: string } | null>(null);
+
   const friends = useFriendsQuery();
   const friendsList = useMemo(() => friends.data ?? [], [friends.data]);
-  const { mutate: remove } = useRemoveFriendMutation({
-    onSuccess: () => {
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: intl.formatMessage({
-          id: "friends.remove.success",
-          defaultMessage: "Friend removed successfully.",
-        }),
-      });
-    },
-  });
+  const { mutate: remove, isPending: isRemovePending } = useRemoveFriendMutation();
+
+  const openRemove = (friendId: number, friendName: string) => {
+    setFriendToRemove({ id: friendId, name: friendName });
+    setRemoveOpen(true);
+  };
+
+  const closeRemove = () => {
+    if (isRemovePending) return;
+    setRemoveOpen(false);
+    setFriendToRemove(null);
+  };
+
+  const confirmRemove = () => {
+    if (!friendToRemove) return;
+    remove(friendToRemove.id, {
+      onSuccess: () => {
+        closeRemove();
+        setSnackbar({
+          open: true,
+          severity: "success",
+          message: intl.formatMessage({
+            id: "friends.remove.success",
+            defaultMessage: "Friend removed successfully.",
+          }),
+        });
+      },
+    });
+  };
 
   return (
     <Box width="100%" sx={{ py: 2, color: COLORS.PRIMARY }}>
@@ -157,7 +178,12 @@ export const FriendsPage = () => {
                     <FormattedMessage id="common.detail" defaultMessage="Detail" />
                   </Button>
                   <IconButton
-                    onClick={() => remove(f.user.id)}
+                    onClick={() =>
+                      openRemove(
+                        f.user.id,
+                        `${f.user.firstName ?? ""} ${f.user.lastName ?? ""}`.trim() || f.user.email
+                      )
+                    }
                     sx={{
                       color: COLORS.RED,
                     }}
@@ -178,6 +204,14 @@ export const FriendsPage = () => {
         onClose={() => setRequestsOpen(false)}
         onSuccessMessage={(message) => setSnackbar({ open: true, severity: "success", message })}
         onErrorMessage={(message) => setSnackbar({ open: true, severity: "error", message })}
+      />
+
+      <RemoveFriendModal
+        open={removeOpen}
+        onClose={closeRemove}
+        onRemove={confirmRemove}
+        isRemovePending={isRemovePending}
+        friendName={friendToRemove?.name}
       />
 
       <AppSnackbar

@@ -1,5 +1,5 @@
-import {useMutation} from "@tanstack/react-query";
-import {api} from "../axios/axios";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "../axios/axios";
 
 export function useNotifyDebt() {
   return useMutation<void, Error, { debtId: number }>({

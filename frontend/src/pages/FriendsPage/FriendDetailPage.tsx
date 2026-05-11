@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { useParams } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
+import { useNavigate, useParams } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
   Divider,
@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CloseIcon from "@mui/icons-material/Close";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useState } from "react";
 
 import { COLORS } from "../../constants/colors";
@@ -21,10 +23,16 @@ import { DebtsList } from "../../components/DebtsList";
 import { GroupExpenses } from "../GroupDetailPage/GroupExpenses";
 import { ImageAvatar } from "../../components/ImageAvatar";
 import type { TGroupDetail } from "../../types/dto/TGroupDetail";
+import { useRemoveFriendMutation } from "../../hooks/useFriends";
+import { ROUTES } from "../../enums/routes";
+import { RemoveFriendModal } from "../../components/RemoveFriendModal";
 
 const FriendOverview = ({ group }: { group: TGroupDetail }) => {
   const currentUserId = useAuthStore((s) => s.currentUser.id);
   const [showDebts, setShowDebts] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const navigate = useNavigate();
+  const intl = useIntl();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -37,6 +45,23 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
   const friendName = friend
     ? `${friend.firstName ?? ""} ${friend.lastName ?? ""}`.trim() || friend.email
     : "";
+
+  const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriendMutation();
+
+  const closeRemove = () => {
+    if (isRemoving) return;
+    setRemoveOpen(false);
+  };
+
+  const confirmRemove = () => {
+    if (!friend) return;
+    removeFriend(friend.id, {
+      onSuccess: () => {
+        closeRemove();
+        navigate(ROUTES.FRIENDS.LIST);
+      },
+    });
+  };
 
   return (
     <Stack alignItems="flex-start" justifyContent="space-between" gap={{ xs: 2, md: 2 }}>
@@ -54,15 +79,36 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
           ) : null}
 
           <Stack gap={0.25} minWidth={0}>
-            <Typography
-              variant="h5"
-              sx={{
-                color: COLORS.PRIMARY,
-                fontWeight: 700,
-              }}
-            >
-              {friendName}
-            </Typography>
+            <Stack direction="row" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: COLORS.PRIMARY,
+                  fontWeight: 700,
+                  minWidth: 0,
+                }}
+                noWrap
+              >
+                {friendName}
+              </Typography>
+
+              {friend ? (
+                <IconButton
+                  onClick={() => setRemoveOpen(true)}
+                  disabled={isRemoving}
+                  aria-label={intl.formatMessage({
+                    id: "friends.remove.aria",
+                    defaultMessage: "Remove friend",
+                  })}
+                  sx={{
+                    color: COLORS.RED,
+                    ml: "auto",
+                  }}
+                >
+                  <PersonRemoveIcon />
+                </IconButton>
+              ) : null}
+            </Stack>
 
             {/* Optional helper line */}
             <Typography variant="body2" sx={{ color: COLORS.PRIMARY }}>
@@ -70,6 +116,14 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
             </Typography>
           </Stack>
         </Stack>
+
+        <RemoveFriendModal
+          open={removeOpen}
+          onClose={closeRemove}
+          onRemove={confirmRemove}
+          isRemovePending={isRemoving}
+          friendName={friendName}
+        />
         {/* Desktop: show debts inline. Mobile: show behind a drawer. */}
         {!isMobile && (
           <DebtsList
@@ -166,33 +220,55 @@ export const FriendDetailPage = () => {
   const { friendId } = useParams<{ friendId: string }>();
   const groupId = friendId ? Number(friendId) : NaN;
 
+  const navigate = useNavigate();
+  const intl = useIntl();
+
   const {
     data: group,
     isLoading,
     isError,
   } = useGroupDetail(Number.isFinite(groupId) ? groupId : 0);
 
+  const backButton = (
+    <Stack direction="row" alignItems="center" sx={{ mb: { xs: 1, md: 2 } }}>
+      <IconButton
+        onClick={() => navigate(ROUTES.FRIENDS.LIST)}
+        aria-label={intl.formatMessage({ id: "common.back", defaultMessage: "Back" })}
+        sx={{ color: COLORS.PRIMARY }}
+      >
+        <ArrowBackIcon />
+      </IconButton>
+    </Stack>
+  );
+
   if (isLoading) {
     return (
-      <Typography sx={{ color: COLORS.PRIMARY }}>
-        <FormattedMessage id="friends.detail.loading" defaultMessage="Loading..." />
-      </Typography>
+      <Box mt={1} width="100%">
+        {backButton}
+        <Typography sx={{ color: COLORS.PRIMARY }}>
+          <FormattedMessage id="friends.detail.loading" defaultMessage="Loading..." />
+        </Typography>
+      </Box>
     );
   }
 
   if (isError || !group) {
     return (
-      <Typography sx={{ color: COLORS.PRIMARY }}>
-        <FormattedMessage
-          id="friends.detail.error"
-          defaultMessage="Failed to load friend detail."
-        />
-      </Typography>
+      <Box mt={1} width="100%">
+        {backButton}
+        <Typography sx={{ color: COLORS.PRIMARY }}>
+          <FormattedMessage
+            id="friends.detail.error"
+            defaultMessage="Failed to load friend detail."
+          />
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <Box mt={{ xs: 2, md: 4 }} width="100%">
+    <Box mt={1} width="100%">
+      {backButton}
       <FriendOverview group={group} />
 
       <Box mt={{ xs: 2, md: 3 }}>

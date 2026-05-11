@@ -13,7 +13,7 @@ import { IntlProvider } from "react-intl";
 import { messages } from "./locales";
 import { useLocaleStore } from "./store/localeStore";
 import { AdminPage } from "./pages/AdminPage/AdminPage";
-import {queryClient} from "./store/authStore";
+import { queryClient } from "./store/authStore";
 
 export function App() {
   const locale = useLocaleStore((s) => s.locale);
