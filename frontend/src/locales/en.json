@@ -93,6 +93,12 @@
   "groupDetail.expenses.totalPaid": "total",
   "groupDetail.expenses.detail": "Detail",
   "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+  "groupDetail.expenses.search.label": "Search",
+  "groupDetail.expenses.search.placeholder": "Filter by title…",
+  "groupDetail.expenses.filter.tooltip": "Filter",
+  "groupDetail.expenses.filter.categories.label": "Categories",
+  "groupDetail.expenses.filter.categories.placeholder": "Select categories…",
+  "groupDetail.expenses.clearFilter": "Clear selected",
 
   "common.detail": "Detail",
 

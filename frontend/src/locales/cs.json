@@ -114,6 +114,12 @@
   "groupDetail.expenses.totalPaid": "celkem",
   "groupDetail.expenses.detail": "Detail",
   "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {Vy} other {{debtorName}}} jste zaplatil/a {amount} {currencySymbol} {creditorIsCurrent, select, true {Vám} other {uživateli {creditorName}}}",
+  "groupDetail.expenses.search.label": "Hledat",
+  "groupDetail.expenses.search.placeholder": "Filtrovat podle názvu…",
+  "groupDetail.expenses.filter.tooltip": "Filtr",
+  "groupDetail.expenses.filter.categories.label": "Kategorie",
+  "groupDetail.expenses.filter.categories.placeholder": "Vyberte kategorie…",
+  "groupDetail.expenses.clearFilter": "Vyčistit filtr",
 
   "common.detail": "Detail",
 
