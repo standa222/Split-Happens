@@ -1,6 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
-import { useParams } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
+import { useNavigate, useParams } from "react-router-dom";
+import { FormattedMessage, useIntl } from "react-intl";
 import {
   Button,
   Divider,
@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CloseIcon from "@mui/icons-material/Close";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import { useState } from "react";
 
 import { COLORS } from "../../constants/colors";
@@ -21,10 +22,14 @@ import { DebtsList } from "../../components/DebtsList";
 import { GroupExpenses } from "../GroupDetailPage/GroupExpenses";
 import { ImageAvatar } from "../../components/ImageAvatar";
 import type { TGroupDetail } from "../../types/dto/TGroupDetail";
+import { useRemoveFriendMutation } from "../../hooks/useFriends";
+import { ROUTES } from "../../enums/routes";
 
 const FriendOverview = ({ group }: { group: TGroupDetail }) => {
   const currentUserId = useAuthStore((s) => s.currentUser.id);
   const [showDebts, setShowDebts] = useState(false);
+  const navigate = useNavigate();
+  const intl = useIntl();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -37,6 +42,12 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
   const friendName = friend
     ? `${friend.firstName ?? ""} ${friend.lastName ?? ""}`.trim() || friend.email
     : "";
+
+  const { mutate: removeFriend, isPending: isRemoving } = useRemoveFriendMutation({
+    onSuccess: () => {
+      navigate(ROUTES.FRIENDS.LIST);
+    },
+  });
 
   return (
     <Stack alignItems="flex-start" justifyContent="space-between" gap={{ xs: 2, md: 2 }}>
@@ -54,15 +65,36 @@ const FriendOverview = ({ group }: { group: TGroupDetail }) => {
           ) : null}
 
           <Stack gap={0.25} minWidth={0}>
-            <Typography
-              variant="h5"
-              sx={{
-                color: COLORS.PRIMARY,
-                fontWeight: 700,
-              }}
-            >
-              {friendName}
-            </Typography>
+            <Stack direction="row" alignItems="center" gap={1} sx={{ minWidth: 0 }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: COLORS.PRIMARY,
+                  fontWeight: 700,
+                  minWidth: 0,
+                }}
+                noWrap
+              >
+                {friendName}
+              </Typography>
+
+              {friend ? (
+                <IconButton
+                  onClick={() => removeFriend(friend.id)}
+                  disabled={isRemoving}
+                  aria-label={intl.formatMessage({
+                    id: "friends.remove.aria",
+                    defaultMessage: "Remove friend",
+                  })}
+                  sx={{
+                    color: COLORS.RED,
+                    ml: "auto",
+                  }}
+                >
+                  <PersonRemoveIcon />
+                </IconButton>
+              ) : null}
+            </Stack>
 
             {/* Optional helper line */}
             <Typography variant="body2" sx={{ color: COLORS.PRIMARY }}>
