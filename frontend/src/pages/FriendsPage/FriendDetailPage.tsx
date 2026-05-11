@@ -12,6 +12,7 @@ import {
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useState } from "react";
 
 import { COLORS } from "../../constants/colors";
@@ -219,33 +220,55 @@ export const FriendDetailPage = () => {
   const { friendId } = useParams<{ friendId: string }>();
   const groupId = friendId ? Number(friendId) : NaN;
 
+  const navigate = useNavigate();
+  const intl = useIntl();
+
   const {
     data: group,
     isLoading,
     isError,
   } = useGroupDetail(Number.isFinite(groupId) ? groupId : 0);
 
+  const backButton = (
+    <Stack direction="row" alignItems="center" sx={{ mb: { xs: 1, md: 2 } }}>
+      <IconButton
+        onClick={() => navigate(ROUTES.FRIENDS.LIST)}
+        aria-label={intl.formatMessage({ id: "common.back", defaultMessage: "Back" })}
+        sx={{ color: COLORS.PRIMARY }}
+      >
+        <ArrowBackIcon />
+      </IconButton>
+    </Stack>
+  );
+
   if (isLoading) {
     return (
-      <Typography sx={{ color: COLORS.PRIMARY }}>
-        <FormattedMessage id="friends.detail.loading" defaultMessage="Loading..." />
-      </Typography>
+      <Box mt={1} width="100%">
+        {backButton}
+        <Typography sx={{ color: COLORS.PRIMARY }}>
+          <FormattedMessage id="friends.detail.loading" defaultMessage="Loading..." />
+        </Typography>
+      </Box>
     );
   }
 
   if (isError || !group) {
     return (
-      <Typography sx={{ color: COLORS.PRIMARY }}>
-        <FormattedMessage
-          id="friends.detail.error"
-          defaultMessage="Failed to load friend detail."
-        />
-      </Typography>
+      <Box mt={1} width="100%">
+        {backButton}
+        <Typography sx={{ color: COLORS.PRIMARY }}>
+          <FormattedMessage
+            id="friends.detail.error"
+            defaultMessage="Failed to load friend detail."
+          />
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <Box mt={{ xs: 2, md: 4 }} width="100%">
+    <Box mt={1} width="100%">
+      {backButton}
       <FriendOverview group={group} />
 
       <Box mt={{ xs: 2, md: 3 }}>

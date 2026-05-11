@@ -101,6 +101,7 @@
   "groupDetail.expenses.clearFilter": "Clear selected",
 
   "common.detail": "Detail",
+  "common.back": "Back",
 
   "groups.createButton": "Create new group",
   "groups.loading": "Loading...",
