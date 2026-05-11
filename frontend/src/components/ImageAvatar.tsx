@@ -72,7 +72,14 @@ export const ImageAvatar = ({
 
   if (showPlaceholder) {
     return (
-      <ImagePlaceholder width={width} height={height} shape={shape} iconSize={iconSize} sx={sx} invertColors={invertColors}/>
+      <ImagePlaceholder
+        width={width}
+        height={height}
+        shape={shape}
+        iconSize={iconSize}
+        sx={sx}
+        invertColors={invertColors}
+      />
     );
   }
 

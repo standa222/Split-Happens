@@ -12,8 +12,8 @@ import { QRPaymentDialog } from "./QRPaymentDialog";
 import { useState } from "react";
 import { getCurrencySymbol } from "../utils/currencyUtils";
 import { SettleModal } from "./SettleModal";
-import {AppSnackbar} from "./AppSnackbar";
-import {useNotifyDebt} from "../hooks/useNotifyDebt";
+import { AppSnackbar } from "./AppSnackbar";
+import { useNotifyDebt } from "../hooks/useNotifyDebt";
 
 type Props = {
   userDebts: TDebt[];
@@ -40,7 +40,13 @@ type SnackbarState = {
   severity: "success" | "error";
 };
 
-const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine, onSnackbarSuccess }: DebtActionButtonsProps) => {
+const DebtActionButtons = ({
+  debt,
+  groupId,
+  groupCurrency,
+  owesLine,
+  onSnackbarSuccess,
+}: DebtActionButtonsProps) => {
   const intl = useIntl();
   const { mutate: settleDebt, isPending: isSettleDebtPending } = useSettleDebt();
   const { mutate: notify, isPending: isNotifyPending } = useNotifyDebt();
@@ -59,7 +65,7 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine, onSnackbarS
           onSnackbarSuccess?.(intl.formatMessage({ id: "debt.notify.success" }));
         },
       }
-    )
+    );
   };
 
   const handleSettleFromQr = () => {
@@ -68,8 +74,8 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine, onSnackbarS
       {
         onSuccess: () => {
           setQrModalOpen(false);
-          onSnackbarSuccess(intl.formatMessage({id: "debt.settle.success"}));
-        }
+          onSnackbarSuccess(intl.formatMessage({ id: "debt.settle.success" }));
+        },
       }
     );
   };
@@ -80,8 +86,8 @@ const DebtActionButtons = ({ debt, groupId, groupCurrency, owesLine, onSnackbarS
       {
         onSuccess: () => {
           setSettleModalOpen(false);
-          onSnackbarSuccess(intl.formatMessage({id: "debt.settle.success"}));
-        }
+          onSnackbarSuccess(intl.formatMessage({ id: "debt.settle.success" }));
+        },
       }
     );
   };

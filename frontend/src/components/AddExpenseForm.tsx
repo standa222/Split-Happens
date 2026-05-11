@@ -122,7 +122,7 @@ export const AddExpenseForm = ({ onClose, initGroup, initTransaction, onSuccess 
     resolver: zodResolver(addExpenseFormSchema),
     defaultValues: {
       title: initTransaction?.title ?? "",
-      expenseCategory: initTransaction?.expenseCategory ?? "",
+      expenseCategory: initTransaction?.expenseCategory ?? "OTHER",
       groupId: initGroup?.id ?? 0,
       totalAmount: initTransaction?.totalAmount ?? 0,
       currency: initGroup?.defaultCurrency ?? "",

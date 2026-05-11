@@ -93,8 +93,15 @@
   "groupDetail.expenses.totalPaid": "total",
   "groupDetail.expenses.detail": "Detail",
   "groupDetail.expenses.paymentLine": "{debtorIsCurrent, select, true {You} other {{debtorName}}} paid {amount} {currencySymbol} to {creditorIsCurrent, select, true {you} other {{creditorName}}}",
+  "groupDetail.expenses.search.label": "Search",
+  "groupDetail.expenses.search.placeholder": "Filter by title…",
+  "groupDetail.expenses.filter.tooltip": "Filter",
+  "groupDetail.expenses.filter.categories.label": "Categories",
+  "groupDetail.expenses.filter.categories.placeholder": "Select categories…",
+  "groupDetail.expenses.clearFilter": "Clear selected",
 
   "common.detail": "Detail",
+  "common.back": "Back",
 
   "groups.createButton": "Create new group",
   "groups.loading": "Loading...",
@@ -286,6 +293,12 @@
   "friends.detail.subtitle": "Friend balance",
   "friends.detail.loading": "Loading...",
   "friends.detail.error": "Failed to load friend detail.",
+
+  "friends.remove.aria": "Remove friend",
+  "friends.remove.modal.title": "Remove friend",
+  "friends.remove.modal.confirmation": "Are you sure you want to remove this friend?",
+  "friends.remove.modal.action": "Remove",
+  "friends.remove.modal.removing": "Removing...",
   "friends.remove.success": "Friend removed successfully.",
 
   "groupDetail.statistics.title": "{hasYear, select, no {Statistics} other {{hasMonth, select, no {Statistics for {year}} other {Statistics for {monthName} {year}}}}}",
